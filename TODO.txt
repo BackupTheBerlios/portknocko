@@ -1,0 +1,6 @@
+- Validar parametros en espacio de kernel y usuario
+- Hash de ipt_pknock_rule y peer_status
+- OO style
+- Timer en lugar de jiffies
+- Nuevo modo de enviar el secreto a traves de un hash(IPsource, secreto)
+- ¿ipv6?
