@@ -1,0 +1,12 @@
+*** /usr/src/linux-2.6.16.1/net/ipv4/netfilter/Makefile	2006-03-28 03:49:02.000000000 -0300
+--- Makefile	2006-04-17 10:21:20.245192256 -0300
+***************
+*** 58,63 ****
+--- 58,64 ----
+  obj-$(CONFIG_IP_NF_MATCH_TTL) += ipt_ttl.o
+  obj-$(CONFIG_IP_NF_MATCH_ADDRTYPE) += ipt_addrtype.o
+  obj-$(CONFIG_IP_NF_MATCH_POLICY) += ipt_policy.o
++ obj-$(CONFIG_IP_NF_MATCH_PKNOCK) += ipt_pknock.o
+  
+  # targets
+  obj-$(CONFIG_IP_NF_TARGET_REJECT) += ipt_REJECT.o

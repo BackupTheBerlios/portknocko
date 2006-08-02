@@ -1,0 +1,81 @@
+Apr 24 04:50:49 sishapangma kernel: [4302440.537000] ipt_pknock: register.
+Apr 24 04:50:49 sishapangma kernel: [4302440.565000] ipt_pknock: rule_name: SSH - created.
+Apr 24 04:51:00 sishapangma kernel: [4302451.252000] ipt_pknock: port: 1000
+Apr 24 04:51:00 sishapangma kernel: [4302451.252000] ipt_pknock: IPT_SETIP
+Apr 24 04:51:00 sishapangma kernel: [4302451.254000] ipt_pknock: Peer status MATCHED.
+Apr 24 04:51:04 sishapangma kernel: [4302455.547000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:51:04 sishapangma kernel: [4302455.548000] ipt_pknock: port: 2000
+Apr 24 04:51:04 sishapangma kernel: [4302455.548000] ipt_pknock: IPT_SETIP
+Apr 24 04:51:04 sishapangma kernel: [4302455.549000] ipt_pknock: Peer status MATCHED.
+Apr 24 04:51:04 sishapangma kernel: [4302455.549000] ipt_pknock: Peer status ALLOWED.
+Apr 24 04:51:14 sishapangma kernel: [4302465.026000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:51:14 sishapangma kernel: [4302465.027000] ipt_pknock: port: 22
+Apr 24 04:51:14 sishapangma kernel: [4302465.027000] ipt_pknock: IPT_CHKIP
+Apr 24 04:51:14 sishapangma kernel: [4302465.027000] ipt_pknock: Peer: 1.0.168.192 ALLOWED.
+Apr 24 04:51:59 sishapangma kernel: [4302510.415000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:51:59 sishapangma kernel: [4302510.416000] ipt_pknock: port: 1000
+Apr 24 04:51:59 sishapangma kernel: [4302510.416000] ipt_pknock: IPT_SETIP
+Apr 24 04:51:59 sishapangma kernel: [4302510.416000] ipt_pknock: Peer status MATCHED.
+Apr 24 04:52:00 sishapangma kernel: [4302511.449000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:00 sishapangma kernel: [4302511.450000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:00 sishapangma kernel: [4302511.450000] ipt_pknock: port: 1000
+Apr 24 04:52:00 sishapangma kernel: [4302511.450000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:01 sishapangma kernel: [4302512.436000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:01 sishapangma kernel: [4302512.436000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:01 sishapangma kernel: [4302512.436000] ipt_pknock: port: 1000
+Apr 24 04:52:01 sishapangma kernel: [4302512.436000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:02 sishapangma kernel: [4302513.453000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:02 sishapangma kernel: [4302513.453000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:02 sishapangma kernel: [4302513.453000] ipt_pknock: port: 1000
+Apr 24 04:52:02 sishapangma kernel: [4302513.454000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:03 sishapangma kernel: [4302514.456000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:03 sishapangma kernel: [4302514.457000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:03 sishapangma kernel: [4302514.457000] ipt_pknock: port: 1000
+Apr 24 04:52:03 sishapangma kernel: [4302514.457000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:04 sishapangma kernel: [4302515.422000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:04 sishapangma kernel: [4302515.423000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:04 sishapangma kernel: [4302515.423000] ipt_pknock: port: 1000
+Apr 24 04:52:04 sishapangma kernel: [4302515.423000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:05 sishapangma kernel: [4302516.435000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:05 sishapangma kernel: [4302516.435000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:05 sishapangma kernel: [4302516.435000] ipt_pknock: port: 1000
+Apr 24 04:52:05 sishapangma kernel: [4302516.435000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:06 sishapangma kernel: [4302517.436000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:06 sishapangma kernel: [4302517.437000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:06 sishapangma kernel: [4302517.437000] ipt_pknock: port: 1000
+Apr 24 04:52:06 sishapangma kernel: [4302517.438000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:27 sishapangma kernel: [4302538.888000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:27 sishapangma kernel: [4302538.888000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:27 sishapangma kernel: [4302538.888000] ipt_pknock: port: 2000
+Apr 24 04:52:27 sishapangma kernel: [4302538.889000] ipt_pknock: IPT_SETIP
+Apr 24 04:52:27 sishapangma kernel: [4302538.889000] ipt_pknock: Peer status MATCHED.
+Apr 24 04:52:27 sishapangma kernel: [4302538.889000] ipt_pknock: Peer status ALLOWED.
+Apr 24 04:52:45 sishapangma kernel: [4302556.536000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:45 sishapangma kernel: [4302556.536000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:45 sishapangma kernel: [4302556.536000] ipt_pknock: port: 22
+Apr 24 04:52:45 sishapangma kernel: [4302556.536000] ipt_pknock: IPT_CHKIP
+Apr 24 04:52:45 sishapangma kernel: [4302556.537000] ipt_pknock: Peer: 254.0.168.192 ALLOWED.
+Apr 24 04:52:59 sishapangma kernel: [4302570.029000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:52:59 sishapangma kernel: [4302570.029000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:52:59 sishapangma kernel: [4302570.030000] ipt_pknock: port: 22
+Apr 24 04:52:59 sishapangma kernel: [4302570.031000] ipt_pknock: IPT_CHKIP
+Apr 24 04:52:59 sishapangma kernel: [4302570.031000] ipt_pknock: Peer: 254.0.168.192 ALLOWED.
+Apr 24 04:53:25 sishapangma kernel: [4302596.304000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:53:25 sishapangma kernel: [4302596.304000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:53:25 sishapangma kernel: [4302596.305000] ipt_pknock: port: 2000
+Apr 24 04:53:25 sishapangma kernel: [4302596.305000] ipt_pknock: IPT_SETIP
+Apr 24 04:53:25 sishapangma kernel: [4302596.305000] ipt_pknock: Peer status BLOCKED.
+Apr 24 04:53:25 sishapangma kernel: [4302596.305000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:53:25 sishapangma kernel: [4302596.305000] ipt_pknock: peer->ip: 192.168.0.254
+Apr 24 04:53:25 sishapangma kernel: [4302596.306000] ipt_pknock: port: 2000
+Apr 24 04:53:25 sishapangma kernel: [4302596.306000] ipt_pknock: IPT_RMIP
+Apr 24 04:53:31 sishapangma kernel: [4302602.422000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:53:31 sishapangma kernel: [4302602.424000] ipt_pknock: port: 22
+Apr 24 04:53:31 sishapangma kernel: [4302602.424000] ipt_pknock: IPT_CHKIP
+Apr 24 04:53:34 sishapangma kernel: [4302605.443000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:53:34 sishapangma kernel: [4302605.443000] ipt_pknock: port: 22
+Apr 24 04:53:34 sishapangma kernel: [4302605.444000] ipt_pknock: IPT_CHKIP
+Apr 24 04:53:40 sishapangma kernel: [4302611.442000] ipt_pknock: peer->ip: 192.168.0.1
+Apr 24 04:53:40 sishapangma kernel: [4302611.442000] ipt_pknock: port: 22
+Apr 24 04:53:40 sishapangma kernel: [4302611.443000] ipt_pknock: IPT_CHKIP
+Apr 24 04:54:08 sishapangma kernel: [4302639.582000] ipt_pknock: rule deleted: SSH.
