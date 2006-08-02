@@ -3,7 +3,7 @@
  *
  * (C) 2006 J. Federico Hernandez <fede.hernandez@gmail.com>
  *
- * $Id: libipt_pknock.c,v 1.17 2006/06/02 03:52:41 brugge Exp $
+ * $Id$
  *
  * This program is released under the terms of GNU GPL.
  */
@@ -246,63 +246,3 @@ void _init(void) {
 	register_match(&pknock);
 }
 
-/*
- * $Log: libipt_pknock.c,v $
- * Revision 1.17  2006/06/02 03:52:41  brugge
- * Correccion menor.
- *
- * Revision 1.16  2006/05/24 06:23:16  brugge
- * *** empty log message ***
- *
- * Revision 1.15  2006/05/15 21:31:33  brugge
- * Correciones menores debido al cambio del nombre del campo time de la
- * estructura ipt_pknock_info a max_time.
- *
- * Revision 1.14  2006/05/14 23:34:14  brugge
- * Se corrigió la implementación, dentro de la fc parse(), de la opción 'n'
- * (--name).
- *
- * Revision 1.13  2006/05/11 13:54:46  brugge
- * Correcciones menores en las fc print() y save().
- *
- * Revision 1.12  2006/05/11 13:42:54  brugge
- * Corrección menor.
- *
- * Revision 1.11  2006/05/11 13:28:34  brugge
- * Se implementaron las funciones final_check(), print() y save().
- *
- * Revision 1.10  2006/04/28 22:57:31  brugge
- * Corrección menor.
- *
- * Revision 1.9  2006/04/28 21:54:57  brugge
- * Se agregó la opción --name y todo el tratamiento de la misma en la fc.
- * parse().
- *
- * Revision 1.8  2006/04/27 22:15:08  brugge
- * Se modificaron los nombres de algunas opciones en la estructura option.
- *
- * Revision 1.7  2006/04/26 18:31:48  brugge
- * Se hicieron correcciones en la fc. parse().
- *
- * Revision 1.6  2006/04/17 03:36:59  brugge
- * Correcciones menores.
- *
- * Revision 1.5  2006/04/16 14:34:21  brugge
- * Se cambió la funcion error_report() por la macro de función
- * EXIT_ERR_REPORT().
- *
- * Revision 1.4  2006/04/16 13:51:19  brugge
- * Corrección de la función parse().
- *
- * Revision 1.3  2006/04/11 00:12:23  brugge
- * Se terminó la implementación de la función parse().
- * El módulo está en condiciones de ser probado.
- * Versión testing.
- *
- * Revision 1.2  2006/04/07 22:12:51  brugge
- * Se implementó la fc parse().
- *
- * Revision 1.1.1.1  2006/04/07 13:29:53  brugge
- * Versión inicial.
- *
- */
