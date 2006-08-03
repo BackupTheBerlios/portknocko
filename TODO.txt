@@ -4,3 +4,4 @@
 - Timer en lugar de jiffies
 - Nuevo modo de enviar el secreto a traves de un hash(IPsource, secreto)
 - ¿ipv6?
+- ¿?
