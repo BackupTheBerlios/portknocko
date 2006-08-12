@@ -611,30 +611,25 @@ static int match(const struct sk_buff *skb,
 			peer = new_peer_status(iph->saddr, proto);
 			add_peer_status(peer, rule);
 			set_peer_status(peer);
-			ret = update_peer_status(peer, info, port);
-			
-			spin_unlock_bh(&rule_list_lock);
-			return ret;
+			goto update;
 		}
 		if (peer != NULL) {
-			ret = update_peer_status(peer, info, port);
-			
-			spin_unlock_bh(&rule_list_lock);
-			return ret;
+			goto update;
 		}
 	} else if (info->option & IPT_PKNOCK_CHKIP) {
 		if (peer != NULL) {
 			ret = check_peer_status(peer);
-			
-			spin_unlock_bh(&rule_list_lock);
-			return ret;
+			goto end;
 		}
 	}
-	/*
-	 * Default: it doesn't match. 
-	 */
+
+	goto end;
+
+update:
+	ret = update_peer_status(peer, info, port);
+end:
 	spin_unlock_bh(&rule_list_lock);
-	return 0;
+	return ret;
 }
 #if 0 
 /*!*/ //_SOLO_ para versiones del kernel superiores a 2.6.12
