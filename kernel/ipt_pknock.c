@@ -611,10 +611,12 @@ static int match(const struct sk_buff *skb,
 			peer = new_peer_status(iph->saddr, proto);
 			add_peer_status(peer, rule);
 			set_peer_status(peer);
-			goto update;
+			ret = update_peer_status(peer, info, port);
+			goto end;
 		}
 		if (peer != NULL) {
-			goto update;
+			ret = update_peer_status(peer, info, port);
+			goto end;
 		}
 	} else if (info->option & IPT_PKNOCK_CHKIP) {
 		if (peer != NULL) {
@@ -623,10 +625,6 @@ static int match(const struct sk_buff *skb,
 		}
 	}
 
-	goto end;
-
-update:
-	ret = update_peer_status(peer, info, port);
 end:
 	spin_unlock_bh(&rule_list_lock);
 	return ret;
