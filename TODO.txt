@@ -3,5 +3,5 @@
 - OO style
 - Timer en lugar de jiffies
 - Nuevo modo de enviar el secreto a traves de un hash(IPsource, secreto)
+- Comunicacion kernel/user con "netlink"
 - ¿ipv6?
-- ¿?
