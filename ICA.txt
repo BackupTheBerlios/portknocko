@@ -1,0 +1,45 @@
+Inter Callings Analysis:
+========================
+
+
+Setting:
+--------
+
+iptables ... -m pknock --setip ...
+
+|checkentry
+|__add_rule -> A or E
+
+
+
+Knocking:
+---------
+
+telnet port_number
+
+|match (with --setip)
+|__search_rule
+|__get_peer_status
+|__new_peer_status
+|__update_peer_status 
+| -> S
+
+
+Entering:
+---------
+
+ssh user@host
+
+|match (with --chkip)
+|__search_rule
+|__get_peer_status
+|__check_peer_status
+| -> S
+
+References:
+-----------
+
+(A) -> added
+(E) -> exist
+(S) -> status
+(D) -> deleted (rule or peer)
