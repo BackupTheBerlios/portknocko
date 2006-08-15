@@ -43,3 +43,29 @@ References:
 (E) -> exist
 (S) -> status
 (D) -> deleted (rule or peer)
+
+
+List of functions:
+------------------
+
+print_ip_packet
+print_options
+print_list_peer
+status_itoa
+read_proc
+peer_status_gc
+search_rule
+add_rule
+remove_rule
+update_rule_timer
+get_peer_status 
+new_peer_status
+add_peer_status 
+remove_peer_status
+is_1st_port_match
+set_peer_status
+update_peer_status 
+check_peer_status
+match
+checkentry
+destroy
