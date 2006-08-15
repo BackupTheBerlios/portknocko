@@ -1,0 +1,22 @@
+El proyecto PortKnocko está compuesto de dos partes: un módulo iptables (espacio de usuario) y 
+un módulo netfilter (espacio de kernel). El primero es una extensión de iptables y el otro una 
+extensión match de netfiler.
+
+Los dos módulos en conjunto sirven para implementar una técnica de firewalling conocida como 
+"port knocking". Mediante esta técnica se pueden, por ejemplo, evitar ataques por fuerza bruta
+al servicio ssh, ftp, etc.
+
+Estos dos módulos también permiten implementar black lists, indicándo a través de iptables 
+los puertos que el host remoto debe golpear (knock) para quedar dentro de la black list.
+
+----------------------------------------------------------------------------------------------
+
+The PortKnocko project is composed of two parts: an iptables module (user space) and a netfilter 
+module (kernel space). The first one is an iptables extension, and the other one is a netfilter 
+extension.
+
+Both modules are used to implement the "port knocking" firewalling technique. For instance, this 
+can be used to avoid brute force attacks to ssh or ftp services.
+
+These two modules allow black list implementation, by indicating the ports that the remote host
+must knock to forbid its access (through iptables).
