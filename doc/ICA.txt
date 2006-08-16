@@ -19,9 +19,9 @@ telnet port_number
 
 |match (with --setip)
 |__search_rule
-|__get_peer_status
-|__new_peer_status
-|__update_peer_status 
+|__get_peer
+|__new_peer
+|__update_peer 
 | -> S
 
 
@@ -32,8 +32,8 @@ ssh user@host
 
 |match (with --chkip)
 |__search_rule
-|__get_peer_status
-|__check_peer_status
+|__get_peer
+|__check_peer
 | -> S
 
 References:
@@ -53,19 +53,19 @@ print_options
 print_list_peer
 status_itoa
 read_proc
-peer_status_gc
+peer_gc
 search_rule
 add_rule
 remove_rule
 update_rule_timer
-get_peer_status 
-new_peer_status
-add_peer_status 
-remove_peer_status
+get_peer 
+new_peer
+add_peer 
+remove_peer
 is_1st_port_match
-set_peer_status
-update_peer_status 
-check_peer_status
+set_peer
+update_peer 
+check_peer
 match
 checkentry
 destroy
