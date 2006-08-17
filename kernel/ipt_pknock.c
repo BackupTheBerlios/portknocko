@@ -60,7 +60,7 @@ static struct list_head *alloc_hashtable(int size) {
 	}
 
 #if DEBUG
-	printk(KERN_DEBUG MOD "%d buckets malloced. \n", size);
+	printk(KERN_DEBUG MOD "%d buckets created. \n", size);
 #endif				
         return hash;
 }
@@ -307,7 +307,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
 				rule->ref_count++;
 #if DEBUG
-				printk(KERN_DEBUG MOD "(E) rule found: %s - ref_count: %d\n", 
+				printk(KERN_DEBUG MOD "add_rule() (E) rule found: %s - ref_count: %d\n", 
 					rule->rule_name, rule->ref_count);
 #endif				
 				return 1;
@@ -371,10 +371,6 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		// If the rule exists.
 		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
 			rule->ref_count--;
-#if DEBUG
-			printk(KERN_DEBUG MOD "(E) rule found: %s - ref_count: %d\n", 
-				rule->rule_name, rule->ref_count);
-#endif	
 			break;
 		}
 #if DEBUG
@@ -443,7 +439,7 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule,
 	hash = pknock_hash(&ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 
 #if DEBUG
-	printk(KERN_DEBUG MOD "get_peer() -> hash %d \n", hash);
+//	printk(KERN_DEBUG MOD "get_peer() -> hash %d \n", hash);
 #endif				
 	
 	if (list_empty(&rule->peer_head[hash])) return NULL;
@@ -496,7 +492,7 @@ static inline void add_peer(struct peer *peer,
 	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 
 #if DEBUG
-	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
+//	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
 #endif				
 	list_add_tail(&peer->head, &rule->peer_head[hash]);
 }
@@ -701,6 +697,10 @@ static int checkentry(const char *tablename,
 			unsigned int hook_mask) 
 #endif
 /*!*/ //_SOLO_ para versiones del kernel hasta la 2.6.12
+
+/**
+ * If it returns 0, then the iptable rule is not accepted
+ */
 static int checkentry(const char *tablename,
 			const struct ipt_ip *ip,
 			void *matchinfo,
@@ -717,9 +717,6 @@ static int checkentry(const char *tablename,
 		get_random_bytes(&ipt_pknock_hash_rnd, sizeof(u32));
 	}
 	
-	/* 
-	 * Adds a rule to list only if it doesn't exist. 
-	 */
 	if (!add_rule(info)) {
 		printk(KERN_ERR MOD "add_rule() error in checkentry() function.\n");
 		return 0;
@@ -727,6 +724,9 @@ static int checkentry(const char *tablename,
 	return 1;
 }
 
+/**
+ * when is this called?
+ */
 static void destroy(void *matchinfo, unsigned int matchinfosize) 
 {
 	struct ipt_pknock_info *info = (void *)matchinfo;

@@ -1,31 +1,26 @@
+load
+expect "register"
 
-knock "192.168.0.10" "2000"
-expect "MATCHING,192.168.0.10" "SSH"
-expect "!ALLOWED" "SSH"
+rule1 "SSH" "2000" "2001"
+expect "SSH,(A)" 
 
-knock "192.168.0.10" "2001"
-expect "ALLOWED,192.168.0.10" "SSH"
+rule2 "SSH" "22"
+expect "SSH,(E)"
 
-knock "192.168.0.11" "2000"
-expect "MATCHING,192.168.0.11" "SSH"
+knock "10.10.0.1" "2000"
+expect "MATCHING"
 
-knock "192.168.0.11" "2001"
-expect "ALLOWED,192.168.0.11" "SSH"
+knock "10.10.0.1" "2001"
+expect "ALLOWED"
 
-knock "10.0.0.1" "2002"
-knock "10.0.0.1" "2003"
-expect "ALLOWED,10.0.0.1" "HTTP"
+rule1 "HTTP" "2002" "2003"
+expect "HTTP,(A)" 
 
-knock "10.0.0.2" "2004"
-knock "10.0.0.2" "2005"
-expect "ALLOWED,10.0.0.2" "HTTP2"
+rule2 "HTTP" "80"
+expect "HTTP,(E)"
 
-knock "10.0.0.3" "2004"
-expect "MATCHING,10.0.0.3" "HTTP2"
+knock "10.10.0.2" "2002"
+expect "MATCHING"
 
-knock "10.0.0.4" "2004"
-expect "MATCHING,10.0.0.4" "HTTP2"
-
-knock "10.0.0.4" "2004"
-expect "DIDN'T MATCH" "dmesg"
-
+knock "10.10.0.2" "2003"
+expect "ALLOWED"

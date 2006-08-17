@@ -1,11 +1,19 @@
 #!/bin/bash
 
+function load() {
+	insmod ../kernel/ipt_pknock.ko	
+}
+
+function rule1() {
+	iptables -A INPUT -m state --state NEW -m pknock --dports $2,$3 --setip --time 10 --name $1 -j DROP 1> /dev/null
+}
+
+function rule2() {
+	iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport $2 -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
+}
+
 function expect() {
-	if [ $2 == "dmesg" ]; then
-		dmesg | tail -n 1 >> $file
-	else
-		tail -n 1 /proc/net/ipt_pknock/$2 >> $file
-	fi
+	dmesg | grep ipt_pknock | tail -n 1 >> $file
 	echo $1 >> $file
 }
 
@@ -19,18 +27,12 @@ function run() {
 }
 
 function init() {
-	./reset.sh
 	./rules.sh 2> /dev/null 1> /dev/null
 	> $1
 }
 
 if [ -z $1 ]; then 
-    echo "You must specify a test file"
-    exit 1
-fi
-
-if [ ! -r $1 ]; then 
-    echo "You must specify an existing test file"
+    echo "usage: ./testrunner.sh <testfile>"
     exit 1
 fi
 
