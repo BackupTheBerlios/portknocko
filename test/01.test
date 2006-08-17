@@ -1,7 +1,10 @@
+#### loading module ####
 load
 expect "register"
+########################
 
-rule1 "SSH" "2000" "2001"
+#### typical example ####
+rule1 "SSH" "2000,2001"
 expect "SSH,(A)" 
 
 rule2 "SSH" "22"
@@ -9,11 +12,12 @@ expect "SSH,(E)"
 
 knock "10.10.0.1" "2000"
 expect "MATCHING"
-
 knock "10.10.0.1" "2001"
 expect "ALLOWED"
+########################
 
-rule1 "HTTP" "2002" "2003"
+#### typical example 2 ####
+rule1 "HTTP" "2002,2003,2004"
 expect "HTTP,(A)" 
 
 rule2 "HTTP" "80"
@@ -21,6 +25,44 @@ expect "HTTP,(E)"
 
 knock "10.10.0.2" "2002"
 expect "MATCHING"
-
 knock "10.10.0.2" "2003"
+expect "MATCHING"
+knock "10.10.0.2" "2004"
 expect "ALLOWED"
+########################
+
+#### big example ####
+rule1 "BIG" "4000,4001,4002,4003,4004"
+expect "BIG,(A)" 
+
+rule2 "BIG" "80"
+expect "BIG,(E)"
+
+knock "10.10.0.2" "4000"
+expect "MATCHING"
+knock "10.10.0.2" "4001"
+expect "MATCHING"
+knock "10.10.0.2" "4002"
+expect "MATCHING"
+knock "10.10.0.2" "4003"
+expect "MATCHING"
+knock "10.10.0.2" "4004"
+expect "ALLOWED"
+########################
+
+#### miss one knock ####
+rule1 "MISS" "9990,9991"
+expect "MISS,(A)" 
+
+rule2 "MISS" "80"
+expect "MISS,(E)"
+
+knock "10.10.0.3" "9990"
+expect "MATCHING"
+
+knock "10.10.0.3" "9992"
+expect "DIDN'T MATCH"
+
+knock "10.10.0.3" "9991"
+expect "ALLOWED"
+########################

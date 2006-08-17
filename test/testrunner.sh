@@ -5,7 +5,7 @@ function load() {
 }
 
 function rule1() {
-	iptables -A INPUT -m state --state NEW -m pknock --dports $2,$3 --setip --time 10 --name $1 -j DROP 1> /dev/null
+	iptables -A INPUT -m state --state NEW -m pknock --dports $2 --setip --time 10 --name $1 -j DROP 1> /dev/null
 }
 
 function rule2() {
@@ -27,7 +27,7 @@ function run() {
 }
 
 function init() {
-	./rules.sh 2> /dev/null 1> /dev/null
+	./init.sh 2> /dev/null 1> /dev/null
 	> $1
 }
 

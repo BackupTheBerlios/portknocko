@@ -374,7 +374,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 			break;
 		}
 #if DEBUG
-		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
+//		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
 #endif
 	}
 
