@@ -1,7 +1,11 @@
 #!/bin/bash
 
 function load() {
-	insmod ../kernel/ipt_pknock.ko	
+	insmod ../kernel/ipt_pknock.ko
+}
+
+function unload() {
+	./reset.sh
 }
 
 function rule1() {

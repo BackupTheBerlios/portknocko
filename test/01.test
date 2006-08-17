@@ -16,7 +16,7 @@ knock "10.10.0.1" "2001"
 expect "ALLOWED"
 ########################
 
-#### typical example 2 ####
+#### typical example with 2 peers ####
 rule1 "HTTP" "2002,2003,2004"
 expect "HTTP,(A)" 
 
@@ -28,6 +28,12 @@ expect "MATCHING"
 knock "10.10.0.2" "2003"
 expect "MATCHING"
 knock "10.10.0.2" "2004"
+expect "ALLOWED"
+knock "10.10.0.3" "2002"
+expect "MATCHING"
+knock "10.10.0.3" "2003"
+expect "MATCHING"
+knock "10.10.0.3" "2004"
 expect "ALLOWED"
 ########################
 
@@ -66,3 +72,10 @@ expect "DIDN'T MATCH"
 knock "10.10.0.3" "9991"
 expect "ALLOWED"
 ########################
+
+#### unloading module ####
+unload
+expect "unregister"
+########################
+
+# VERIFICAR QUE TODOS LOS PEERS Y REGLAS FUERON BORRADOS!
