@@ -1,0 +1,31 @@
+
+knock "192.168.0.10" "2000"
+expect "MATCHING,192.168.0.10" "SSH"
+expect "!ALLOWED" "SSH"
+
+knock "192.168.0.10" "2001"
+expect "ALLOWED,192.168.0.10" "SSH"
+
+knock "192.168.0.11" "2000"
+expect "MATCHING,192.168.0.11" "SSH"
+
+knock "192.168.0.11" "2001"
+expect "ALLOWED,192.168.0.11" "SSH"
+
+knock "10.0.0.1" "2002"
+knock "10.0.0.1" "2003"
+expect "ALLOWED,10.0.0.1" "HTTP"
+
+knock "10.0.0.2" "2004"
+knock "10.0.0.2" "2005"
+expect "ALLOWED,10.0.0.2" "HTTP2"
+
+knock "10.0.0.3" "2004"
+expect "MATCHING,10.0.0.3" "HTTP2"
+
+knock "10.0.0.4" "2004"
+expect "MATCHING,10.0.0.4" "HTTP2"
+
+knock "10.0.0.4" "2004"
+expect "DIDN'T MATCH" "dmesg"
+

@@ -55,7 +55,7 @@ struct ipt_pknock_rule {
 	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
 	unsigned int		ref_count;
 	struct timer_list 	timer;		/* garbage collector timer */
-	struct list_head 	peer_head;
+	struct list_head 	*peer_head;
 	struct proc_dir_entry  	*status_proc;
 	unsigned long		max_time;	/* max matching time between ports */
 };

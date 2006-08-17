@@ -16,6 +16,8 @@
 #include <linux/list.h>
 #include <linux/proc_fs.h>
 #include <linux/spinlock.h>
+#include <linux/jhash.h>
+#include <linux/random.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
@@ -27,9 +29,42 @@ MODULE_LICENSE("GPL");
 
 #define EXPIRATION_TIME 50000 /* in msecs */
 
-static LIST_HEAD(rule_list);
+#define DEFAULT_RULE_HASH_SIZE 16
+#define DEFAULT_PEER_HASH_SIZE 64
+
+static u32 ipt_pknock_hash_rnd;
+
+static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
+static unsigned int ipt_pknock_peer_htable_size = DEFAULT_PEER_HASH_SIZE;
+
+static struct list_head *rule_hashtable = NULL;
+
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
+
+static u32 pknock_hash(const void *key, u32 length, u32 initval, u32 max) {
+	return jhash(key, length, initval) % max;
+}
+
+static struct list_head *alloc_hashtable(int size) {
+        struct list_head *hash = NULL;
+        unsigned int i;
+
+        if ((hash = kmalloc(sizeof(struct list_head) * size, GFP_KERNEL)) == NULL) {
+		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable() function.\n");
+		return 0;
+	}
+
+        for (i = 0; i < size; i++) {
+        	INIT_LIST_HEAD(&hash[i]);
+	}
+
+#if DEBUG
+	printk(KERN_DEBUG MOD "%d buckets malloced. \n", size);
+#endif				
+        return hash;
+}
+
 
 #if DEBUG
 /**
@@ -37,7 +72,7 @@ static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
  *
  * @param struct iphdr *iph
  */
-static inline void print_ip_packet(struct iphdr *iph) {
+/*static inline void print_ip_packet(struct iphdr *iph) {
 	printk(KERN_INFO MOD "\nIP packet:\n"
 		"VER=%d | IHL=%d | TOS=0x%02X | LEN=%d\n"
 		"ID=%u | Flags | FRAG_OFF=%d\n"
@@ -49,14 +84,14 @@ static inline void print_ip_packet(struct iphdr *iph) {
 		iph->ttl, iph->protocol, ntohl(iph->check),
 		NIPQUAD(iph->saddr), 
 		NIPQUAD(iph->daddr));
-}
+}*/
 
 /**
  * print_options()
  *
  * @param struct ipt_pknock_info *info
  */
-static inline void print_options(struct ipt_pknock_info *info) {
+/*static inline void print_options(struct ipt_pknock_info *info) {
 	int i;
 
 	printk(KERN_INFO MOD "pknock options from kernel:\n"
@@ -65,29 +100,29 @@ static inline void print_options(struct ipt_pknock_info *info) {
 	
 	for (i=0; i<info->count_ports; i++)
 		printk(KERN_INFO MOD "port[%d]: %d\n", i, info->port[i]);
-}
+}*/
 
 /**
  * print_list_peer()
  *
  * @param struct ipt_pknock_info *info
  */
-static inline void print_list_peer(struct ipt_pknock_rule *rule) {
+/*static inline void print_list_peer(struct ipt_pknock_rule *rule) {
 	struct list_head *pos = NULL;
 	struct peer *peer = NULL;
 	u_int32_t ip;
 
-	if (list_empty(&rule->peer_head)) return;
+	if (list_empty(&rule->peer_head[0])) return;
 	
 	printk(KERN_INFO MOD "(*) %s list peer matching status:\n", rule->rule_name);
 	
-	list_for_each(pos, &rule->peer_head) {
+	list_for_each(pos, &rule->peer_head[0]) {
 		peer = list_entry(pos, struct peer, head);
 		ip = htonl(peer->ip);
 		printk(KERN_INFO MOD "(*) peer: %u.%u.%u.%u - tstamp: %ld\n", 
 					NIPQUAD(ip), peer->timestamp);
 	}
-}
+}*/
 #endif
 
 /**
@@ -131,7 +166,7 @@ static int read_proc(char *page, char **start, off_t off, int count, int *eof, v
  * This function produces the peer matching status data when the file is read.
  */
 static int read_proc(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
-	int limit = count, len = 0;
+	int limit = count, len = 0, i;
 	off_t pos = 0, begin = 0;
 	u_int32_t ip;
 	const char *status = NULL, *proto = NULL;
@@ -146,46 +181,48 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 
 	rule = (struct ipt_pknock_rule *)data;
 
-	if (list_empty(&rule->peer_head)) {
+/*	if (list_empty(&rule->peer_head[0])) {
 		spin_unlock_bh(&rule_list_lock);
 		return 0;
 	}
-	max_time = rule->max_time;
+*/	max_time = rule->max_time;
 
-	list_for_each(p, &rule->peer_head) {
-		peer = list_entry(p, struct peer, head);
+	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
+		if (list_empty(&rule->peer_head[i])) continue;
+
+		list_for_each(p, &rule->peer_head[i]) {
+			peer = list_entry(p, struct peer, head);
 		
-		status = status_itoa(peer->status);
+			status = status_itoa(peer->status);
 		
-		proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
-		ip = htonl(peer->ip);
+			proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
+			ip = htonl(peer->ip);
 		
-/*!*/// 	usar time_before() o alguno de sus derivados.
-		expiration_time = ((jiffies/HZ) < (peer->timestamp + max_time)) ?
+			expiration_time = ((jiffies/HZ) < (peer->timestamp + max_time)) ?
 				((peer->timestamp+max_time)-(jiffies/HZ)) : 0;
-/*!*/			
-		len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", NIPQUAD(ip));
-		len += snprintf(buf+len, limit-len, "proto=%s ", proto);
-		len += snprintf(buf+len, limit-len, "status=%s ", status);
-		len += snprintf(buf+len, limit-len, "expiration_time=%ld ", 
+			len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", NIPQUAD(ip));
+			len += snprintf(buf+len, limit-len, "proto=%s ", proto);
+			len += snprintf(buf+len, limit-len, "status=%s ", status);
+			len += snprintf(buf+len, limit-len, "expiration_time=%ld ", 
 				expiration_time);
-/*		len += snprintf(buf+len, limit-len, "next_port=%d ", 
-				info->port[peer->id_port_knocked-1]); */
-		len += snprintf(buf+len, limit-len, "next_port_id=%d ",
+			len += snprintf(buf+len, limit-len, "next_port_id=%d ",
 				peer->id_port_knocked-1);
-		len += snprintf(buf+len, limit-len, "\n");
+			len += snprintf(buf+len, limit-len, "\n");
 		
-		limit -= len;
-		
-		pos = begin + len;
-		if(pos < offset) { len = 0; begin = pos; }
-		if(pos > offset + count) { len = 0; break; }
+			limit -= len;
+			
+			pos = begin + len;
+			if(pos < offset) { len = 0; begin = pos; }
+			if(pos > offset + count) { len = 0; break; }
+		}
+
 	}
+	
 	*start = buf + (offset - begin);
 	len -= (offset - begin);
 	if(len > count) len = count;
 	*eof=1;
-
+	
 	spin_unlock_bh(&rule_list_lock);
 	return len;
 }
@@ -199,15 +236,16 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
  *
  * @param unsigned long r
  */
-static void peer_gc(unsigned long r) {
+
+/*static void peer_gc(unsigned long r) {
 	struct ipt_pknock_rule *rule = (struct ipt_pknock_rule *)r;
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 
 	if(timer_pending(&rule->timer) == 0) {
-		if (list_empty(&rule->peer_head)) return;
+		if (list_empty(&rule->peer_head[0])) return;
 
-		list_for_each_safe(pos, n, &rule->peer_head) {
+		list_for_each_safe(pos, n, &rule->peer_head[0]) {
 			peer = list_entry(pos, struct peer, head);
 
 			if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
@@ -220,7 +258,7 @@ static void peer_gc(unsigned long r) {
 			}
 		}
 	}
-}
+}*/
 
 /**
  * search_rule()
@@ -234,14 +272,17 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 
-	if (!list_empty(&rule_list)) {
-		list_for_each_safe(pos, n, &rule_list) {
+	int hash = pknock_hash(info->rule_name, info->rule_name_len, ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
+	
+	if (!list_empty(&rule_hashtable[hash])) {
+		list_for_each_safe(pos, n, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
 			
 			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0)
 				return rule;
 		}		
 	}
+
 	return NULL;
 }
 
@@ -256,11 +297,13 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
 static int add_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL;
+	
+	int hash = pknock_hash(info->rule_name, info->rule_name_len, ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
 
-	if (!list_empty(&rule_list)) {
-		list_for_each(pos, &rule_list) {
+	if (!list_empty(&rule_hashtable[hash])) {
+		list_for_each(pos, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
-			/* If the rule exists. */
+			// If the rule exists.
 			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
 				rule->ref_count++;
 #if DEBUG
@@ -271,7 +314,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 			}
 		}
 	}
-	/* If it doesn't exist. */
+	// If it doesn't exist.
 	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in add_rule() function.\n");
 		return 0;
@@ -286,7 +329,9 @@ static int add_rule(struct ipt_pknock_info *info) {
 //	rule->timer.data	= (unsigned long)rule;
 //	rule->timer.function 	= peer_gc;
 //	add_timer(&rule->timer);
-	INIT_LIST_HEAD(&rule->peer_head);
+	
+	//INIT_LIST_HEAD(&rule->peer_head);
+	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
 	
 	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
 	proc_net_ipt_pknock, read_proc, rule))) {
@@ -295,11 +340,12 @@ static int add_rule(struct ipt_pknock_info *info) {
 		return 0;
 	}
 
-	list_add_tail(&rule->head, &rule_list);
+	list_add_tail(&rule->head, &rule_hashtable[hash]);
 #if DEBUG
 	printk(KERN_INFO MOD "(A) rule_name: %s - created.\n", rule->rule_name);
 #endif	
 	return 1;
+	
 }
 
 
@@ -314,12 +360,15 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	struct peer *peer = NULL;
-	
-	if (list_empty(&rule_list)) return;
+	int i;
 
-	list_for_each(pos, &rule_list) {
+	int hash = pknock_hash(info->rule_name, info->rule_name_len, ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
+	
+	if (list_empty(&rule_hashtable[hash])) return;
+
+	list_for_each(pos, &rule_hashtable[hash]) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
-		/* If the rule exists. */
+		// If the rule exists.
 		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
 			rule->ref_count--;
 #if DEBUG
@@ -334,21 +383,20 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	}
 
 	if (rule != NULL && rule->ref_count == 0) {
-		/* If it had added peers matching status. */
-		if (!list_empty(&rule->peer_head)) {
-			list_for_each_safe(pos, n, &rule->peer_head) {
+		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
+			if (list_empty(&rule->peer_head[i])) continue;
+			list_for_each_safe(pos, n, &rule->peer_head[i]) {
 				peer = list_entry(pos, struct peer, head);
 				if (peer != NULL) {
-#if DEBUG
+#if DEBUG	
 					printk(KERN_INFO MOD "(D) peer deleted: %u.%u.%u.%u\n", 
-						NIPQUAD(peer->ip));
-#endif					
+					NIPQUAD(peer->ip));
+#endif				
 					list_del(pos);
 					kfree(peer);
 				}
 			}
 		}
-		
 		if (rule->status_proc) remove_proc_entry(info->rule_name, proc_net_ipt_pknock);
 #if DEBUG
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", rule->rule_name);
@@ -359,6 +407,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		list_del(&rule->head);
 		kfree(rule);
 	}
+
 }
 
 /**
@@ -387,10 +436,19 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule,
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	
-	if (list_empty(&rule->peer_head)) return NULL;
+	int hash;
 
 	ip = ntohl(ip);
-	list_for_each_safe(pos, n, &rule->peer_head) {
+	
+	hash = pknock_hash(&ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
+
+#if DEBUG
+	printk(KERN_DEBUG MOD "get_peer() -> hash %d \n", hash);
+#endif				
+	
+	if (list_empty(&rule->peer_head[hash])) return NULL;
+	
+	list_for_each_safe(pos, n, &rule->peer_head[hash]) {
 		peer = list_entry(pos, struct peer, head);
 		if (peer->ip == ip) return peer;
 	}
@@ -435,7 +493,12 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
  */
 static inline void add_peer(struct peer *peer, 
 						struct ipt_pknock_rule *rule) {
-	list_add_tail(&peer->head, &rule->peer_head);
+	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
+
+#if DEBUG
+	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
+#endif				
+	list_add_tail(&peer->head, &rule->peer_head[hash]);
 }
 
 /**
@@ -648,6 +711,12 @@ static int checkentry(const char *tablename,
 	
 	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
 		return 0;
+
+	if (!rule_hashtable) {
+		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
+		get_random_bytes(&ipt_pknock_hash_rnd, sizeof(u32));
+	}
+	
 	/* 
 	 * Adds a rule to list only if it doesn't exist. 
 	 */
@@ -674,6 +743,36 @@ static struct ipt_match ipt_pknock_match = {
 	.destroy	= destroy,
 	.me 		= THIS_MODULE
 };
+
+static int set_rule_hashsize(const char *val, struct kernel_param *kp) {
+        int hashsize;
+	
+        hashsize = simple_strtol(val, NULL, 0);
+        
+	if (!hashsize)
+                return -EINVAL;
+
+	ipt_pknock_rule_htable_size = hashsize;
+				
+	return 0;
+}
+
+static int set_peer_hashsize(const char *val, struct kernel_param *kp) {
+        int hashsize;
+	
+        hashsize = simple_strtol(val, NULL, 0);
+        
+	if (!hashsize)
+                return -EINVAL;
+
+	ipt_pknock_peer_htable_size = hashsize;
+				
+	return 0;
+}	
+
+module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, &ipt_pknock_rule_htable_size, 0600);
+module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, &ipt_pknock_peer_htable_size, 0600);
+
 
 static int __init init(void) 
 {

@@ -1,8 +1,6 @@
 - Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - Hash de ipt_pknock_rule y peer_status
-- OO style
 - Timer en lugar de jiffies
 - Nuevo modo de enviar el secreto a traves de un hash(IPsource, secreto)
 - Comunicacion kernel/user con "netlink"
 - Poder configurarlo en una sola regla de iptables ?
-- ¿ipv6?
