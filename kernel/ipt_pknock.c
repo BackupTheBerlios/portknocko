@@ -360,7 +360,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	struct peer *peer = NULL;
-	int i;
+	int i, found = 0;
 
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
 	
@@ -370,13 +370,16 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
 		// If the rule exists.
 		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
+			found = 1;
 			rule->ref_count--;
 			break;
 		}
-#if DEBUG
-//		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
-#endif
 	}
+
+#if DEBUG
+	if (!found)
+		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
+#endif
 
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
