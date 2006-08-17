@@ -29,8 +29,8 @@ MODULE_LICENSE("GPL");
 
 #define EXPIRATION_TIME 50000 /* in msecs */
 
-#define DEFAULT_RULE_HASH_SIZE 16
-#define DEFAULT_PEER_HASH_SIZE 64
+#define DEFAULT_RULE_HASH_SIZE 8
+#define DEFAULT_PEER_HASH_SIZE 16
 
 static u32 ipt_pknock_hash_rnd;
 
