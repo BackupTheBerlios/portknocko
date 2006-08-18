@@ -2,6 +2,7 @@
  * Kernel module to implement port knocking matching support.
  * 
  * (C) 2006 J. Federico Hernandez <fede.hernandez@gmail.com>
+ * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
  *
  * $Id$
  *
