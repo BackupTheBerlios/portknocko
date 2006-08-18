@@ -189,8 +189,6 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 */	max_time = rule->max_time;
 
 	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
-		if (list_empty(&rule->peer_head[i])) continue;
-
 		list_for_each(p, &rule->peer_head[i]) {
 			peer = list_entry(p, struct peer, head);
 		
@@ -384,7 +382,6 @@ static void remove_rule(struct ipt_pknock_info *info) {
 
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
-			if (list_empty(&rule->peer_head[i])) continue;
 			list_for_each_safe(pos, n, &rule->peer_head[i]) {
 				peer = list_entry(pos, struct peer, head);
 				if (peer != NULL) {
