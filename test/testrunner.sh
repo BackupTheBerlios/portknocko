@@ -17,11 +17,6 @@ function rule_check() {
 	iptables -A INPUT -p udp --dport $2 -m state --state NEW -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
 }
 
-function enter() {
-	ssh lucho@localhost
-	exit
-}
-
 function expect() {
 	dmesg | grep ipt_pknock | tail -n 1 >> $file
 	echo $1 >> $file
