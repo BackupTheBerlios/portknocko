@@ -8,12 +8,12 @@ function unload() {
 	./reset.sh
 }
 
-function rule1() {
+function rule_set() {
 	iptables -A INPUT -m state --state NEW -m pknock --dports $2 --setip --time 10 --name $1 -j DROP 1> /dev/null
 }
 
-function rule2() {
-	iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport $2 -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
+function rule_check() {
+	iptables -A INPUT -p tcp -m state --state NEW --dport $2 -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
 }
 
 function expect() {

@@ -692,6 +692,10 @@ end:
 	spin_unlock_bh(&rule_list_lock);
 	return ret;
 }
+
+/**
+ * If it returns 0, then the iptable rule is not accepted
+ */
 #if 0 
 /*!*/ //_SOLO_ para versiones del kernel superiores a 2.6.12
 static int checkentry(const char *tablename,
@@ -701,10 +705,6 @@ static int checkentry(const char *tablename,
 			unsigned int hook_mask) 
 #endif
 /*!*/ //_SOLO_ para versiones del kernel hasta la 2.6.12
-
-/**
- * If it returns 0, then the iptable rule is not accepted
- */
 static int checkentry(const char *tablename,
 			const struct ipt_ip *ip,
 			void *matchinfo,

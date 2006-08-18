@@ -1,0 +1,38 @@
+simple analysis of pknock rules
+===============================
+
+tables:
+	filter
+	nat
+	mangle
+
+chains for filter:
+	INPUT
+	OUTPUT
+	FORWARD
+
+A Packet Traversing the Netfilter System:
+
+   --->[1]--->[ROUTE]--->[3]--->[4]--->
+                 |            ^
+                 |            |
+                 |         [ROUTE]
+                 v            |
+                [2]          [5]
+                 |            ^
+                 |            |
+                 v            |
+
+In PortKnocking we will consider the 'filter' table, and the hooks [2], [3] and [4] which are involved in 'filtering'.
+
+So for example we could try:
+
+(1) iptables -A INPUT -m pknock --dports 2000,2002,2001 --setip --name TEST -j DROP
+(2) iptables -A INPUT -m pknock --dport 22 -m pknock --chkip --name TEST -j ACCEPT
+
+(1) This means that if I send some tcp or udp packets to the ports 2000, 2002 and 2001 respectively, these packets are going to match the rule (match() returning 1) and so target DROP is applied.
+Else, we continue traveling through the rules related to the INPUT chain until one rule matches. If no rule is found, the chain POLICY is applied (e.g: iptables -P INPUT DROP).
+
+(2) Now imagine you try to connect to the port 22. If you are in a previous state of ALLOWED (means you already knocked ports 2000, 2002 and 2001 in that order) the match() function is going to return 1 telling netfilter that the packet matched the rule and the target ACCEPT is applied. Now you can connect to port 22.
+
+

@@ -4,10 +4,10 @@ expect "register"
 ########################
 
 #### typical example ####
-rule1 "SSH" "2000,2001"
+rule_set "SSH" "2000,2001"
 expect "SSH,(A)" 
 
-rule2 "SSH" "22"
+rule_check "SSH" "22"
 expect "SSH,(E)"
 
 knock "10.10.0.1" "2000"
@@ -17,10 +17,10 @@ expect "ALLOWED"
 ########################
 
 #### typical example with 2 peers ####
-rule1 "HTTP" "2002,2003,2004"
+rule_set "HTTP" "2002,2003,2004"
 expect "HTTP,(A)" 
 
-rule2 "HTTP" "80"
+rule_check "HTTP" "80"
 expect "HTTP,(E)"
 
 knock "10.10.0.2" "2002"
@@ -38,10 +38,10 @@ expect "ALLOWED"
 ########################
 
 #### big example ####
-rule1 "BIG" "4000,4001,4002,4003,4004"
+rule_set "BIG" "4000,4001,4002,4003,4004"
 expect "BIG,(A)" 
 
-rule2 "BIG" "80"
+rule_check "BIG" "80"
 expect "BIG,(E)"
 
 knock "10.10.0.2" "4000"
@@ -57,10 +57,10 @@ expect "ALLOWED"
 ########################
 
 #### miss one knock ####
-rule1 "MISS" "9990,9991"
+rule_set "MISS" "9990,9991"
 expect "MISS,(A)" 
 
-rule2 "MISS" "80"
+rule_check "MISS" "80"
 expect "MISS,(E)"
 
 knock "10.10.0.3" "9990"
