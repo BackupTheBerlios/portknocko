@@ -13,7 +13,13 @@ function rule_set() {
 }
 
 function rule_check() {
-	iptables -A INPUT -p tcp -m state --state NEW --dport $2 -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
+	iptables -A INPUT -p tcp --dport $2 -m state --state NEW -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
+	iptables -A INPUT -p udp --dport $2 -m state --state NEW -m pknock --chkip --name $1 -j ACCEPT 1> /dev/null
+}
+
+function enter() {
+	ssh lucho@localhost
+	exit
 }
 
 function expect() {

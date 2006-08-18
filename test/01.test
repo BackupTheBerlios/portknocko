@@ -10,10 +10,14 @@ expect "SSH,(A)"
 rule_check "SSH" "22"
 expect "SSH,(E)"
 
+knock "10.10.0.1" "22"
+expect "PASS FAIL"
 knock "10.10.0.1" "2000"
 expect "MATCHING"
 knock "10.10.0.1" "2001"
 expect "ALLOWED"
+knock "10.10.0.1" "22"
+expect "PASS OK"
 ########################
 
 #### typical example with 2 peers ####
@@ -23,6 +27,8 @@ expect "HTTP,(A)"
 rule_check "HTTP" "80"
 expect "HTTP,(E)"
 
+knock "10.10.0.2" "80"
+expect "PASS FAIL"
 knock "10.10.0.2" "2002"
 expect "MATCHING"
 knock "10.10.0.2" "2003"
@@ -35,6 +41,13 @@ knock "10.10.0.3" "2003"
 expect "MATCHING"
 knock "10.10.0.3" "2004"
 expect "ALLOWED"
+knock "10.10.0.2" "80"
+expect "PASS OK"
+knock "10.10.0.3" "80"
+expect "PASS OK"
+# a third peer must fail
+knock "10.10.0.4" "80"
+expect "PASS FAIL"
 ########################
 
 #### big example ####
@@ -44,16 +57,20 @@ expect "BIG,(A)"
 rule_check "BIG" "80"
 expect "BIG,(E)"
 
-knock "10.10.0.2" "4000"
+knock "10.10.0.20" "80"
+expect "PASS FAIL"
+knock "10.10.0.20" "4000"
 expect "MATCHING"
-knock "10.10.0.2" "4001"
+knock "10.10.0.20" "4001"
 expect "MATCHING"
-knock "10.10.0.2" "4002"
+knock "10.10.0.20" "4002"
 expect "MATCHING"
-knock "10.10.0.2" "4003"
+knock "10.10.0.20" "4003"
 expect "MATCHING"
-knock "10.10.0.2" "4004"
+knock "10.10.0.20" "4004"
 expect "ALLOWED"
+knock "10.10.0.20" "80"
+expect "PASS OK"
 ########################
 
 #### miss one knock ####

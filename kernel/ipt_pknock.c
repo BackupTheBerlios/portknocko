@@ -598,14 +598,14 @@ static int update_peer(struct peer *peer,
 }
 
 /**
- * check_peer()
+ * is_allowed()
  *
  * It checks the peer matching status.
  *
  * @param struct peer *peer
  * @return int: 1 allow, 0 otherwise
  */
-static inline int check_peer(struct peer *peer) {
+static inline int is_allowed(struct peer *peer) {
 	return (peer->status == ST_ALLOWED) ? 1 : 0;
 }
 
@@ -637,7 +637,7 @@ static int match(const struct sk_buff *skb,
 	u_int16_t port = 0;
 	u_int8_t proto = 0;
 	int ret=0;
-
+	
 	switch ((proto = iph->protocol)) {
 	case IPPROTO_TCP:
 		port = ntohs(tcph->dest); break;
@@ -669,6 +669,7 @@ static int match(const struct sk_buff *skb,
 	/*
 	 * Sets, adds, removes or checks the peer matching status.
 	 */
+	
 	if (info->option & IPT_PKNOCK_SETIP) {
 		if (peer == NULL && is_1st_port_match(info, port)) {
 			peer = new_peer(iph->saddr, proto);
@@ -676,16 +677,18 @@ static int match(const struct sk_buff *skb,
 			set_peer(peer);
 			ret = update_peer(peer, info, port);
 			goto end;
-		}
-		if (peer != NULL) {
+		} else if (peer != NULL) {
 			ret = update_peer(peer, info, port);
 			goto end;
 		}
 	} else if (info->option & IPT_PKNOCK_CHKIP) {
 		if (peer != NULL) {
-			ret = check_peer(peer);
+			ret = is_allowed(peer);
+			if (ret)
+				printk(KERN_INFO MOD "(P) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
 			goto end;
 		}
+		printk(KERN_INFO MOD "(P) PASS FAIL.\n");
 	}
 
 end:
