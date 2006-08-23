@@ -2,6 +2,6 @@
 - Timer en lugar de jiffies
 - Nuevo modo de enviar el secreto a traves de un hash(IPsource, secreto)
 - Comunicacion kernel/user con "netlink"
-- Poder configurarlo en una sola regla de iptables ?
+- DONE by Fede. Poder configurarlo en una sola regla de iptables ;-)
 - seq file para leer el /proc
 - DONE by Lucho. Hash de ipt_pknock_rule y peer_status
