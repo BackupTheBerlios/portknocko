@@ -20,6 +20,25 @@ knock "10.10.0.1" "22"
 expect "PASS OK"
 ########################
 
+#### typical example with a bad start####
+rule_set "SSH2" "8080,8081"
+expect "SSH2,(A)" 
+
+rule_check "SSH2" "2222"
+expect "SSH2,(E)"
+
+knock "11.10.0.1" "2222"
+expect "PASS FAIL"
+knock "11.10.0.1" "8082"
+expect "PASS FAIL"
+knock "11.10.0.1" "8080"
+expect "MATCHING"
+knock "11.10.0.1" "8081"
+expect "ALLOWED"
+knock "11.10.0.1" "2222"
+expect "PASS OK"
+########################
+
 #### typical example with 2 peers ####
 rule_set "HTTP" "2002,2003,2004"
 expect "HTTP,(A)" 
