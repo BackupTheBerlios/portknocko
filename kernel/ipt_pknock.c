@@ -53,13 +53,11 @@ static struct list_head *alloc_hashtable(int size) {
 
         if ((hash = kmalloc(sizeof(struct list_head) * size, GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable() function.\n");
-		return 0;
+		return NULL;
 	}
 
-        for (i = 0; i < size; i++) {
+        for (i = 0; i < size; i++)
         	INIT_LIST_HEAD(&hash[i]);
-	}
-
 #if DEBUG
 	printk(KERN_DEBUG MOD "%d buckets created. \n", size);
 #endif				
