@@ -9,7 +9,7 @@ function unload() {
 }
 
 function rule() {
-	iptables -A INPUT -m state --state NEW -m pknock --knockports $2 --name $1 -p udp --dport $3 -j ACCEPT 1> /dev/null
+	iptables -A INPUT -m state --state NEW -m pknock $4 --name $1 --knockports $2 -p udp --dport $3 -j ACCEPT 1> /dev/null
 }
 
 function expect() {
@@ -18,7 +18,7 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 8 -E secret.txt --fast 2> /dev/null 1> /dev/null
 }
 
 function run() {
@@ -29,6 +29,7 @@ function run() {
 function init() {
 	./init.sh 2> /dev/null 1> /dev/null
 	> $1
+	echo '' > "secret.txt"
 }
 
 if [ -z $1 ]; then 

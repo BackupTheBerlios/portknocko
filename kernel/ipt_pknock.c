@@ -542,6 +542,9 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 
 static int has_secret(unsigned char *payload, int payload_len) {
 
+	if (payload_len == 0)
+		return 0;
+
 	if (strncmp(payload, secret, payload_len) != 0) {
 #if DEBUG
 		printk(KERN_INFO MOD "secret match failed\n");
@@ -590,14 +593,6 @@ static int match(const struct sk_buff *skb,
 
 	spin_lock_bh(&rule_list_lock);
 
-	/* If security is needed and the peer is still knocking ... */
-	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
-		payload = (void *)iph + headers_len;
-		payload_len = skb->len - headers_len;
-		if (!has_secret(payload, payload_len))
-			goto end;
-	}
-	
 	/* 
 	 * Searches a rule from the list depending on info structure options.
 	 */
@@ -616,6 +611,15 @@ static int match(const struct sk_buff *skb,
 	/*
 	 * Sets, adds, removes or checks the peer matching status.
 	 */
+	
+	/* If security is needed and the peer is still knocking ... */
+	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
+		payload = (void *)iph + headers_len;
+		payload_len = skb->len - headers_len;
+		if (!has_secret(payload, payload_len))
+			goto end;
+	}
+	
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if (IS_FIRST_KNOCK(peer, info, port)) {
 			peer = new_peer(iph->saddr, proto);
