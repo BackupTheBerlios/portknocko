@@ -544,7 +544,9 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 	const char *status = NULL;
 
 	if (is_allowed(peer)) {
+#if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
+#endif
 		return 1;
 	}
 
