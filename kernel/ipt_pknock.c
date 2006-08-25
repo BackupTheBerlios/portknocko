@@ -175,11 +175,7 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 
 	rule = (struct ipt_pknock_rule *)data;
 
-/*	if (list_empty(&rule->peer_head[0])) {
-		spin_unlock_bh(&rule_list_lock);
-		return 0;
-	}
-*/	max_time = rule->max_time;
+	max_time = rule->max_time;
 
 	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
 		list_for_each(p, &rule->peer_head[i]) {
