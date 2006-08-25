@@ -1,11 +1,6 @@
 #!/bin/sh
-if [ -z $1 ]; then
-    echo "You must specify <rule_hashsize>"
-    exit 1
-fi
-
 if [ -z $2 ]; then
-    echo "You must specify <peer_hashsize>"
+    echo "usage: ./install <rule_hashsize> <peer_hashsize>"
     exit 1
 fi
 
