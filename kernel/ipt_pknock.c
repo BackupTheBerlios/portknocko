@@ -503,33 +503,6 @@ static inline void remove_peer(struct peer *peer) {
 }
 
 /**
- * is_1st_port_match()
- *
- * If packet port (that enters) is equal to the first port saved in buffer, 
- * it returns 1, if not, it returns 0.
- *
- * @info
- * @port
- * @return: 1 port matched, 0 port didn't match
- */
-static inline int is_1st_port_match(struct ipt_pknock_info *info, u_int16_t port) {
-	return (info->port[0] == port) ? 1 : 0;
-}
-
-/**
- * is_allowed()
- *
- * It checks the peer matching status.
- *
- * @peer
- * @return: 1 allow, 0 otherwise
- */
-static inline int is_allowed(struct peer *peer) {
-	return (peer->status == ST_ALLOWED) ? 1 : 0;
-}
-
-
-/**
  * update_peer()
  *
  * It updates the peer matching status.
@@ -537,33 +510,39 @@ static inline int is_allowed(struct peer *peer) {
  * @peer
  * @info
  * @port
- * @return: 0 success, 1 otherwise
+ * @return: 1 if allowed, 0 otherwise
  */
+
+#define FIRST_KNOCK(peer, info, port) ((peer) == NULL && (((info)->port[0] == (port)) ? 1 : 0))
+#define WRONG_KNOCK(peer, info, port) (((info)->port[(peer)->id_port_knocked-1]) != (port))
+#define LAST_KNOCK(peer, info) ((peer)->id_port_knocked-1 == (info)->count_ports)
+#define ALLOWED(peer) (((peer)->status == ST_ALLOWED) ? 1 : 0)
+
 static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	unsigned long time;
-	const char *status = NULL;
-
-	if (is_allowed(peer)) {
+	
+	if (ALLOWED(peer)) {
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
 #endif
 		return 1;
 	}
-
-	/* 
-	 * Verifies the id port that it should knock. 
-	 */
-	if (info->port[peer->id_port_knocked-1] != port) {
+	
+	if (WRONG_KNOCK(peer, info, port)) {
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
 #endif
-		return 1;
+		return 0;
 	}
+
 	peer->id_port_knocked++;
 	
-	if (peer->id_port_knocked-1 == info->count_ports) {
+	if (LAST_KNOCK(peer, info)) {
 		peer->status = ST_ALLOWED;
-		status = "ALLOWED";
+#if DEBUG
+		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
+#endif
+		return 1;
 	}
 
 	/* 
@@ -585,8 +564,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		peer->timestamp = time;		
 	}
 #if DEBUG
-	printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n", 
-		NIPQUAD(peer->ip), (status==NULL) ? "MATCHING" : status);
+	printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - MATCHING.\n", 
+		NIPQUAD(peer->ip));
 #endif
 	return 0;
 }
@@ -642,14 +621,13 @@ static int match(const struct sk_buff *skb,
 	 * Sets, adds, removes or checks the peer matching status.
 	 */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
-		if (peer == NULL && is_1st_port_match(info, port)) {
+		if (FIRST_KNOCK(peer, info, port)) {
 			peer = new_peer(iph->saddr, proto);
 			add_peer(peer, rule);
+		} 
+		
+		if (peer != NULL) {
 			ret = update_peer(peer, info, port);
-			goto end;
-		} else if (peer != NULL) {
-			update_peer(peer, info, port);
-			ret = is_allowed(peer);
 			goto end;
 		}
 	}

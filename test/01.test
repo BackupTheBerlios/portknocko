@@ -17,6 +17,18 @@ knock "10.10.0.1" "22"
 expect "PASS OK"
 ########################
 
+#### just one port ####
+rule "ONE" "20002" "22"
+expect "ONE,(A)" 
+
+knock "133.10.0.1" "22"
+expect "!PASS OK"
+knock "133.10.0.1" "20002"
+expect "ALLOWED"
+knock "133.10.0.1" "22"
+expect "PASS OK"
+########################
+
 #### typical example with a bad start####
 rule "SSH2" "8080,8081" "2222"
 expect "SSH2,(A)" 
