@@ -1,0 +1,111 @@
+#### loading module ####
+load
+expect "register"
+########################
+
+#### typical example ####
+rule "SSH" "2000,2001" "22"
+expect "SSH,(A)" 
+
+knock "10.10.0.1" "22"
+expect "!PASS OK"
+knock "10.10.0.1" "2000"
+expect "MATCHING"
+knock "10.10.0.1" "2001"
+expect "ALLOWED"
+knock "10.10.0.1" "22"
+expect "PASS OK"
+########################
+
+#### just one port ####
+rule "ONE" "20002" "22"
+expect "ONE,(A)" 
+
+knock "133.10.0.1" "22"
+expect "!PASS OK"
+knock "133.10.0.1" "20002"
+expect "ALLOWED"
+knock "133.10.0.1" "22"
+expect "PASS OK"
+########################
+
+#### typical example with a bad start####
+rule "SSH2" "8080,8081" "2222"
+expect "SSH2,(A)" 
+
+knock "11.10.0.1" "2222"
+expect "!PASS OK"
+knock "11.10.0.1" "8082"
+expect "!MATCHING"
+knock "11.10.0.1" "8080"
+expect "MATCHING"
+knock "11.10.0.1" "8081"
+expect "ALLOWED"
+knock "11.10.0.1" "2222"
+expect "PASS OK"
+########################
+
+#### typical example with 2 peers ####
+rule "HTTP" "2002,2003,2004" "80"
+expect "HTTP,(A)" 
+
+knock "10.10.0.2" "80"
+expect "!PASS OK"
+knock "10.10.0.2" "2002"
+expect "MATCHING"
+knock "10.10.0.2" "2003"
+expect "MATCHING"
+knock "10.10.0.2" "2004"
+expect "ALLOWED"
+knock "10.10.0.3" "2002"
+expect "MATCHING"
+knock "10.10.0.3" "2003"
+expect "MATCHING"
+knock "10.10.0.3" "2004"
+expect "ALLOWED"
+knock "10.10.0.2" "80"
+expect "PASS OK"
+knock "10.10.0.3" "80"
+expect "PASS OK"
+########################
+
+#### big example ####
+rule "BIG" "4000,4001,4002,4003,4004" "80"
+expect "BIG,(A)"
+
+knock "10.10.0.20" "80"
+expect "!PASS OK"
+knock "10.10.0.20" "4000"
+expect "MATCHING"
+knock "10.10.0.20" "4001"
+expect "MATCHING"
+knock "10.10.0.20" "4002"
+expect "MATCHING"
+knock "10.10.0.20" "4003"
+expect "MATCHING"
+knock "10.10.0.20" "4004"
+expect "ALLOWED"
+knock "10.10.0.20" "80"
+expect "PASS OK"
+########################
+
+#### miss one knock ####
+rule "MISS" "9990,9991" "80"
+expect "MISS,(A)" 
+
+knock "10.10.0.3" "9990"
+expect "MATCHING"
+
+knock "10.10.0.3" "9992"
+expect "DIDN'T MATCH"
+
+knock "10.10.0.3" "9991"
+expect "ALLOWED"
+########################
+
+#### unloading module ####
+unload
+expect "unregister"
+########################
+
+# VERIFICAR QUE TODOS LOS PEERS Y REGLAS FUERON BORRADOS!

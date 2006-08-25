@@ -1,0 +1,25 @@
+load
+
+#### typical example ####
+rule "SSH" "2000,2001" "22" "--secure"
+expect "SSH,(A)" 
+
+knock "11.10.0.1" "22" 
+expect "!PASS OK"
+knock "11.10.0.1" "2000"
+expect "!MATCHING"
+knock "11.10.0.1" "2001"
+expect "!MATCHING,!ALLOWED"
+knock "11.10.0.1" "22"
+expect "!PASS OK"
+
+echo "mysecret" > "secret.txt"
+
+knock "11.10.0.1" "2000"
+expect "MATCHING"
+knock "11.10.0.1" "2001"
+expect "ALLOWED"
+knock "11.10.0.1" "22"
+expect "PASS OK"
+
+unload
