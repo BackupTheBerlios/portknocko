@@ -43,10 +43,17 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
+
+/**
+ * pknock_hash()
+ */
 static u32 pknock_hash(const void *key, u32 length, u32 initval, u32 max) {
 	return jhash(key, length, initval) % max;
 }
 
+/**
+ * alloc_hashtable()
+ */
 static struct list_head *alloc_hashtable(int size) {
         struct list_head *hash = NULL;
         unsigned int i;
@@ -144,6 +151,13 @@ static inline const char *status_itoa(enum status status) {
  * read_proc()
  *
  * This function produces the peer matching status data when the file is read.
+ *
+ * @buf
+ * @start
+ * @offset
+ * @count
+ * @eof
+ * @data
  */
 static int read_proc(char *buf, char **start, off_t offset, int count, int *eof, void *data) {
 	int limit = count, len = 0, i;
@@ -278,7 +292,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 	if (!list_empty(&rule_hashtable[hash])) {
 		list_for_each(pos, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
-			/* If the rule exists. */
+			// If the rule exists.
 			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
 				rule->ref_count++;
 #if DEBUG
@@ -289,7 +303,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 			}
 		}
 	}
-	/* If it doesn't exist. */
+	// If it doesn't exist.
 	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in add_rule() function.\n");
 		return 0;
@@ -305,6 +319,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 //	rule->timer.function 	= peer_gc;
 //	add_timer(&rule->timer);
 	
+	//INIT_LIST_HEAD(&rule->peer_head);
 	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
 	
 	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
@@ -319,6 +334,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 	printk(KERN_INFO MOD "(A) rule_name: %s - created.\n", rule->rule_name);
 #endif	
 	return 1;
+	
 }
 
 
@@ -333,7 +349,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	struct peer *peer = NULL;
-	int i;
+	int i, found = 0;
 
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
 	
@@ -341,12 +357,18 @@ static void remove_rule(struct ipt_pknock_info *info) {
 
 	list_for_each(pos, &rule_hashtable[hash]) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
-		/* If the rule exists. */
+		// If the rule exists.
 		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
+			found = 1;
 			rule->ref_count--;
 			break;
 		}
 	}
+
+#if DEBUG
+	if (!found)
+		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
+#endif
 
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
@@ -372,6 +394,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		list_del(&rule->head);
 		kfree(rule);
 	}
+
 }
 
 /**
@@ -455,11 +478,16 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
  * @rule
  */
 static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
-	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
+	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), 
+			ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 #if DEBUG
-//	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
+	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
 #endif				
 	list_add_tail(&peer->head, &rule->peer_head[hash]);
+	
+	peer->timestamp = jiffies/HZ;
+	peer->status = ST_MATCHING;
+	peer->id_port_knocked = 1;
 }
 
 /**
@@ -489,17 +517,17 @@ static inline int is_1st_port_match(struct ipt_pknock_info *info, u_int16_t port
 }
 
 /**
- * set_peer()
+ * is_allowed()
  *
- * It sets the peer matching status after that the 1st port has matched.
+ * It checks the peer matching status.
  *
  * @peer
+ * @return: 1 allow, 0 otherwise
  */
-static inline void set_peer(struct peer *peer) {
-	peer->timestamp = jiffies/HZ;
-	peer->status = ST_MATCHING;
-	peer->id_port_knocked = 1;
+static inline int is_allowed(struct peer *peer) {
+	return (peer->status == ST_ALLOWED) ? 1 : 0;
 }
+
 
 /**
  * update_peer()
@@ -509,28 +537,33 @@ static inline void set_peer(struct peer *peer) {
  * @peer
  * @info
  * @port
- * @return
+ * @return: 0 success, 1 otherwise
  */
 static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	unsigned long time;
 	const char *status = NULL;
+
+	if (is_allowed(peer)) {
+		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
+		return 1;
+	}
+
 	/* 
 	 * Verifies the id port that it should knock. 
 	 */
-	if (info->option & IPT_PKNOCK_SETIP) {
-		if (info->port[peer->id_port_knocked-1] != port) {
+	if (info->port[peer->id_port_knocked-1] != port) {
 #if DEBUG
-			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
+		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
 #endif
-			return 0;
-		}
-		peer->id_port_knocked++;
-		
-		if (peer->id_port_knocked-1 == info->count_ports) {
-			peer->status = ST_ALLOWED;
-			status = "ALLOWED";
-		}
+		return 1;
 	}
+	peer->id_port_knocked++;
+	
+	if (peer->id_port_knocked-1 == info->count_ports) {
+		peer->status = ST_ALLOWED;
+		status = "ALLOWED";
+	}
+
 	/* 
 	 * Controls the max matching time between ports.
 	 */
@@ -545,7 +578,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 				peer->timestamp + info->max_time, time);
 #endif
 			remove_peer(peer);
-			return 1;
+			return 0;
 		}
 		peer->timestamp = time;		
 	}
@@ -553,20 +586,9 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 	printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n", 
 		NIPQUAD(peer->ip), (status==NULL) ? "MATCHING" : status);
 #endif
-	return 1;
+	return 0;
 }
 
-/**
- * is_allowed()
- *
- * It checks the peer matching status.
- *
- * @peer
- * @return: 1 allow, 0 otherwise
- */
-static inline int is_allowed(struct peer *peer) {
-	return (peer->status == ST_ALLOWED) ? 1 : 0;
-}
 
 static int match(const struct sk_buff *skb,
 	      const struct net_device *in,
@@ -595,7 +617,7 @@ static int match(const struct sk_buff *skb,
 	
 	default:
 		printk(KERN_INFO MOD "IP payload protocol is neither tcp nor udp.\n");
-		return 0;
+		goto end;
 	}
 
 	spin_lock_bh(&rule_list_lock);
@@ -604,7 +626,7 @@ static int match(const struct sk_buff *skb,
 	 */
 	if ((rule = search_rule(info)) == NULL) {
 		printk(KERN_INFO MOD "The rule %s doesn't exist.\n", info->rule_name);
-		return 0;
+		goto end;
 	}
 	/*
 	 * Updates the rule timer to execute the garbage collector.
@@ -617,25 +639,17 @@ static int match(const struct sk_buff *skb,
 	/*
 	 * Sets, adds, removes or checks the peer matching status.
 	 */
-	if (info->option & IPT_PKNOCK_SETIP) {
+	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if (peer == NULL && is_1st_port_match(info, port)) {
 			peer = new_peer(iph->saddr, proto);
 			add_peer(peer, rule);
-			set_peer(peer);
 			ret = update_peer(peer, info, port);
 			goto end;
 		} else if (peer != NULL) {
-			ret = update_peer(peer, info, port);
-			goto end;
-		}
-	} else if (info->option & IPT_PKNOCK_CHKIP) {
-		if (peer != NULL) {
+			update_peer(peer, info, port);
 			ret = is_allowed(peer);
-			if (ret)
-				printk(KERN_INFO MOD "(P) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
 			goto end;
 		}
-		printk(KERN_INFO MOD "(P) PASS FAIL.\n");
 	}
 
 end:
@@ -733,3 +747,4 @@ static void __exit fini(void)
 
 module_init(init);
 module_exit(fini);
+

@@ -4,14 +4,11 @@ expect "register"
 ########################
 
 #### typical example ####
-rule_set "SSH" "2000,2001"
+rule "SSH" "2000,2001" "22"
 expect "SSH,(A)" 
 
-rule_check "SSH" "22"
-expect "SSH,(E)"
-
 knock "10.10.0.1" "22"
-expect "PASS FAIL"
+expect "!PASS OK"
 knock "10.10.0.1" "2000"
 expect "MATCHING"
 knock "10.10.0.1" "2001"
@@ -21,16 +18,13 @@ expect "PASS OK"
 ########################
 
 #### typical example with a bad start####
-rule_set "SSH2" "8080,8081"
+rule "SSH2" "8080,8081" "2222"
 expect "SSH2,(A)" 
 
-rule_check "SSH2" "2222"
-expect "SSH2,(E)"
-
 knock "11.10.0.1" "2222"
-expect "PASS FAIL"
+expect "!PASS OK"
 knock "11.10.0.1" "8082"
-expect "PASS FAIL"
+expect "!PASS OK"
 knock "11.10.0.1" "8080"
 expect "MATCHING"
 knock "11.10.0.1" "8081"
@@ -40,14 +34,11 @@ expect "PASS OK"
 ########################
 
 #### typical example with 2 peers ####
-rule_set "HTTP" "2002,2003,2004"
+rule "HTTP" "2002,2003,2004" "80"
 expect "HTTP,(A)" 
 
-rule_check "HTTP" "80"
-expect "HTTP,(E)"
-
 knock "10.10.0.2" "80"
-expect "PASS FAIL"
+expect "!PASS OK"
 knock "10.10.0.2" "2002"
 expect "MATCHING"
 knock "10.10.0.2" "2003"
@@ -64,20 +55,14 @@ knock "10.10.0.2" "80"
 expect "PASS OK"
 knock "10.10.0.3" "80"
 expect "PASS OK"
-# a third peer must fail
-knock "10.10.0.4" "80"
-expect "PASS FAIL"
 ########################
 
 #### big example ####
-rule_set "BIG" "4000,4001,4002,4003,4004"
-expect "BIG,(A)" 
-
-rule_check "BIG" "80"
-expect "BIG,(E)"
+rule "BIG" "4000,4001,4002,4003,4004" "80"
+expect "BIG,(A)"
 
 knock "10.10.0.20" "80"
-expect "PASS FAIL"
+expect "!PASS OK"
 knock "10.10.0.20" "4000"
 expect "MATCHING"
 knock "10.10.0.20" "4001"
@@ -93,11 +78,8 @@ expect "PASS OK"
 ########################
 
 #### miss one knock ####
-rule_set "MISS" "9990,9991"
+rule "MISS" "9990,9991" "80"
 expect "MISS,(A)" 
-
-rule_check "MISS" "80"
-expect "MISS,(E)"
 
 knock "10.10.0.3" "9990"
 expect "MATCHING"
