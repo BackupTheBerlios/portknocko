@@ -2,6 +2,7 @@
 - For Fede. Timer en lugar de jiffies
 - For Lucho. Nuevo modo de enviar el secreto a traves de un hash(IPs, ports, secreto)
 - For Lucho. Comunicacion kernel/user con "netlink"
+- For Lucho. Revisar en las hashtables, el posible uso de hlist.
 - For Anyone. Revisar read_proc() y mostrar la lista de puertos y su estado.
 - For Anyone. Soporte para x_tables y posiblemente para IPV6.
 - DONE by Fede. Poder configurarlo en una sola regla de iptables ;-)

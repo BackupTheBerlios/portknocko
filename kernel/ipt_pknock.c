@@ -43,6 +43,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
+static unsigned char *secret = "mysecret";
 
 /**
  * @key
@@ -476,7 +477,7 @@ static inline void remove_peer(struct peer *peer) {
 #define IS_FIRST_KNOCK(peer, info, port) ((peer) == NULL && (((info)->port[0] == (port)) ? 1 : 0))
 #define IS_WRONG_KNOCK(peer, info, port) (((info)->port[(peer)->id_port_knocked-1]) != (port))
 #define IS_LAST_KNOCK(peer, info) ((peer)->id_port_knocked-1 == (info)->count_ports)
-#define IS_ALLOWED(peer) (((peer)->status == ST_ALLOWED) ? 1 : 0)
+#define IS_ALLOWED(peer) ((peer) && ((peer)->status == ST_ALLOWED) ? 1 : 0)
 
 /**
  * It updates the peer matching status.
@@ -539,6 +540,18 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 }
 
 
+static int has_secret(unsigned char *payload, int payload_len) {
+
+	if (strncmp(payload, secret, payload_len) != 0) {
+#if DEBUG
+		printk(KERN_INFO MOD "secret match failed\n");
+#endif
+		return 0;
+	}
+	return 1;
+}
+
+
 static int match(const struct sk_buff *skb,
 	      const struct net_device *in,
 	      const struct net_device *out,
@@ -555,14 +568,20 @@ static int match(const struct sk_buff *skb,
 	struct udphdr *udph = (void *)iph + ihl;
 	u_int16_t port = 0;
 	u_int8_t proto = 0;
-	int ret=0;
-	
+	int ret=0;	
+	unsigned char *payload;
+	int payload_len;
+	int headers_len;
 	switch ((proto = iph->protocol)) {
 	case IPPROTO_TCP:
-		port = ntohs(tcph->dest); break;
+		port = ntohs(tcph->dest); 
+		headers_len = ihl + sizeof(struct tcphdr);
+		break;
 	
 	case IPPROTO_UDP:
-		port = ntohs(udph->dest); break;
+		port = ntohs(udph->dest);
+		headers_len = ihl + sizeof(struct udphdr);
+		break;
 	
 	default:
 		printk(KERN_INFO MOD "IP payload protocol is neither tcp nor udp.\n");
@@ -570,6 +589,15 @@ static int match(const struct sk_buff *skb,
 	}
 
 	spin_lock_bh(&rule_list_lock);
+
+	/* If security is needed and the peer is still knocking ... */
+	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
+		payload = (void *)iph + headers_len;
+		payload_len = skb->len - headers_len;
+		if (!has_secret(payload, payload_len))
+			goto end;
+	}
+	
 	/* 
 	 * Searches a rule from the list depending on info structure options.
 	 */

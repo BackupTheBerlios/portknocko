@@ -23,6 +23,7 @@ static struct option opts[] = {
 	{ .name = "t",		.has_arg = 1, 	.flag = 0, 	.val = 't' },
 	{ .name = "time",	.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
 	{ .name = "name", 	.has_arg = 1, 	.flag = 0, 	.val = 'n' },
+	{ .name = "secure", 	.has_arg = 0, 	.flag = 0, 	.val = 's' },
 	{ .name = 0 }
 };
 
@@ -31,6 +32,7 @@ static void help(void) {
 		" --knockports port[,port,port,...] 	Matches destination port(s).\n"
 		" --time seconds\n"
 		" --t ...				Time between port match.\n"
+		" [--secure] 				hmac must be in the packets.\n"
 		" --name rule_name			Rule name.\n", IPTABLES_VERSION);
 }
 
@@ -146,6 +148,14 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		*flags |= IPT_PKNOCK_NAME;
 		info->option |= IPT_PKNOCK_NAME;
 		break;
+	
+	case 's': /* --secure */
+		if (*flags & IPT_PKNOCK_SECURE)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't use --secure twice.\n");
+		*flags |= IPT_PKNOCK_SECURE;
+		info->option |= IPT_PKNOCK_SECURE;
+		break;
+
 		
 	default:
 		return 0;
@@ -178,6 +188,7 @@ static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match, 
 	}
 	if (info->option & IPT_PKNOCK_TIME) printf("time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("name %s ", info->rule_name);
+	if (info->option & IPT_PKNOCK_SECURE) printf("secure ");
 }
 
 /*
@@ -197,6 +208,7 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	}
 	if (info->option & IPT_PKNOCK_TIME) printf("--time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("--name %s ", info->rule_name);
+	if (info->option & IPT_PKNOCK_NAME) printf("--secure ");
 }
 
 

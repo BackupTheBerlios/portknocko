@@ -8,4 +8,4 @@ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 dmesg -c 2> /dev/null 1> /dev/null
 
 # what about this?:
-# iptables -A INPUT -p tcp -m state --state NEW -m pknock --knock-ports 2000,2001 --door-port 22 --name SSH -j ACCEPT
+#iptables -A INPUT -m state --state NEW -m pknock --knockports 2000,2001 -p udp --dport 22 --secure --name SSH -j ACCEPT
