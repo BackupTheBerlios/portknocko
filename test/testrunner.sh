@@ -15,6 +15,7 @@ function rule() {
 function expect() {
 	dmesg | grep ipt_pknock | tail -n 1 >> $file
 	echo $1 >> $file
+	echo -n '.'
 }
 
 function knock() {
