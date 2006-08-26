@@ -208,7 +208,7 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	}
 	if (info->option & IPT_PKNOCK_TIME) printf("--time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("--name %s ", info->rule_name);
-	if (info->option & IPT_PKNOCK_NAME) printf("--secure ");
+	if (info->option & IPT_PKNOCK_SECURE) printf("--secure ");
 }
 
 
