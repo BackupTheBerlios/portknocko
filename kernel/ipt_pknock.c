@@ -305,7 +305,6 @@ static int add_rule(struct ipt_pknock_info *info) {
 //	rule->timer.function 	= peer_gc;
 //	add_timer(&rule->timer);
 	
-	//INIT_LIST_HEAD(&rule->peer_head);
 	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
 	
 	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
@@ -348,12 +347,10 @@ static void remove_rule(struct ipt_pknock_info *info) {
 			break;
 		}
 	}
-
 #if DEBUG
 	if (!found)
 		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
 #endif
-
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
 			list_for_each_safe(pos, n, &rule->peer_head[i]) {
@@ -401,7 +398,6 @@ static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
 static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip) {
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
-	
 	int hash;
 
 	ip = ntohl(ip);
@@ -575,6 +571,7 @@ static int match(const struct sk_buff *skb,
 	unsigned char *payload;
 	int payload_len;
 	int headers_len;
+
 	switch ((proto = iph->protocol)) {
 	case IPPROTO_TCP:
 		port = ntohs(tcph->dest); 
