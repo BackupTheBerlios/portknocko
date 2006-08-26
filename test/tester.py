@@ -28,7 +28,7 @@ def testFile(file):
 					failure(x+1, token, content[x], "IS NOT IN")
 
 
-	print str(test_counter) + " tests"
+	print "\n" + str(test_counter) + " tests"
 	print "PASS OK!"
 
 if __name__ == '__main__':
