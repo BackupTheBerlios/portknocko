@@ -544,12 +544,13 @@ static void hexdump(unsigned char *buf, unsigned int len) {
 }
 
 static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) {
-
+	int hashbits = 128;
 	struct scatterlist sg[2];
-        char result[128];
+        char result[hashbits];
         struct crypto_tfm *tfm;
+	int hashbytes = hashbits/8;
 	
-	if (payload_len == 0) {
+	if (payload_len != hashbytes) {
 		return 0;
 	}
 
@@ -560,7 +561,7 @@ static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) 
 		return 0;
 	}
 	
-	memset(result, 0, 128);
+	memset(result, 0, hashbits);
 
 	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
 	sg_set_buf(&sg[1], secret, strlen(secret));
@@ -570,20 +571,19 @@ static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) 
         crypto_digest_final(tfm, result);
 	
 	
-	if (memcmp(result, payload, 32) != 0) { 
+	if (memcmp(result, payload, hashbytes) != 0) { 
 #if DEBUG
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
 		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
-		//memcpy(result, payload, payload_len);
+		//memcpy(result, payload, 128);
 		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
 #endif
 		crypto_free_tfm(tfm);
 		return 0;
 	}
 	
-	crypto_free_tfm(tfm);
-	
+	crypto_free_tfm(tfm);	
 	return 1;
 }
 
