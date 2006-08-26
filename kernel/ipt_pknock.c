@@ -598,9 +598,8 @@ static int match(const struct sk_buff *skb,
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
 	struct iphdr *iph = skb->nh.iph;
-	int ihl = iph->ihl * 4;
-	struct tcphdr *tcph = (void *)iph + ihl;
-	struct udphdr *udph = (void *)iph + ihl;
+	int iphl = iph->ihl * 4;
+	void *transph = (void *)iph + iphl;		/* tranport protocol header */
 	u_int16_t port = 0;
 	u_int8_t proto = 0;
 	int ret=0;	
@@ -610,13 +609,13 @@ static int match(const struct sk_buff *skb,
 
 	switch ((proto = iph->protocol)) {
 	case IPPROTO_TCP:
-		port = ntohs(tcph->dest); 
-		headers_len = ihl + sizeof(struct tcphdr);
+		port = ntohs(((struct tcphdr *)transph)->dest); 
+		headers_len = iphl + sizeof(struct tcphdr);
 		break;
 	
 	case IPPROTO_UDP:
-		port = ntohs(udph->dest);
-		headers_len = ihl + sizeof(struct udphdr);
+		port = ntohs(((struct udphdr *)transph)->dest);
+		headers_len = iphl + sizeof(struct udphdr);
 		break;
 	
 	default:
