@@ -19,7 +19,11 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 16 -E secret.txt --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 16 -E digest.txt --fast 2> /dev/null 1> /dev/null
+}
+
+function set_hmac() {
+	python hmac.py $1 $2 > "digest.txt"
 }
 
 function run() {
@@ -30,7 +34,7 @@ function run() {
 function init() {
 	./init.sh 2> /dev/null 1> /dev/null
 	> $1
-	echo '' > "secret.txt"
+	echo '' > "digest.txt"
 }
 
 if [ -z $1 ]; then 
