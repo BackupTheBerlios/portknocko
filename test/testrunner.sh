@@ -19,7 +19,7 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 8 -E secret.txt --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E secret.txt --fast 2> /dev/null 1> /dev/null
 }
 
 function run() {

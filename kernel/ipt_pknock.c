@@ -19,6 +19,8 @@
 #include <linux/spinlock.h>
 #include <linux/jhash.h>
 #include <linux/random.h>
+#include <linux/crypto.h>
+#include <linux/scatterlist.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
@@ -535,18 +537,53 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 	return 0;
 }
 
+static void hexdump(unsigned char *buf, unsigned int len) {
+	while (len--)
+		printk("%02x", *buf++);
+	printk("\n");
+}
 
-static int has_secret(unsigned char *payload, int payload_len) {
+static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 
-	if (payload_len == 0)
-		return 0;
-
-	if (strncmp(payload, secret, payload_len) != 0) {
-#if DEBUG
-		printk(KERN_INFO MOD "secret match failed\n");
-#endif
+	struct scatterlist sg[2];
+        char result[128];
+        struct crypto_tfm *tfm;
+	
+	if (payload_len == 0) {
 		return 0;
 	}
+
+	tfm = crypto_alloc_tfm("md5", 0);	
+
+        if (tfm == NULL) {
+		printk(KERN_INFO MOD "failed to load transform for md5\n");
+		return 0;
+	}
+	
+	memset(result, 0, 128);
+
+	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
+	sg_set_buf(&sg[1], secret, strlen(secret));
+	
+        crypto_digest_init(tfm);
+        crypto_digest_update(tfm, (void *)&sg[0], 2);
+        crypto_digest_final(tfm, result);
+	
+	
+	if (memcmp(result, payload, 32) != 0) { 
+#if DEBUG
+		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
+		printk(KERN_INFO MOD "secret match failed\n");
+		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
+		//memcpy(result, payload, payload_len);
+		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
+#endif
+		crypto_free_tfm(tfm);
+		return 0;
+	}
+	
+	crypto_free_tfm(tfm);
+	
 	return 1;
 }
 
@@ -613,7 +650,7 @@ static int match(const struct sk_buff *skb,
 	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
-		if (!has_secret(payload, payload_len))
+		if (!has_secret(iph->saddr, payload, payload_len))
 			goto end;
 	}
 	

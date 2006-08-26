@@ -4,7 +4,7 @@ load
 rule "SSH" "2000,2001" "22" "--secure"
 expect "SSH,(A)" 
 
-knock "11.10.0.1" "22" 
+knock "11.10.0.1" "22"  
 expect "!PASS OK"
 knock "11.10.0.1" "2000"
 expect "!MATCHING"
@@ -13,7 +13,7 @@ expect "!MATCHING,!ALLOWED"
 knock "11.10.0.1" "22"
 expect "!PASS OK"
 
-echo "mysecret" > "secret.txt"
+python hmac.py "11.10.0.1" "mysecret" > "secret.txt"
 
 knock "11.10.0.1" "2000"
 expect "MATCHING"
