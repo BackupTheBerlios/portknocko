@@ -45,7 +45,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-static unsigned char *secret = "mysecret";
+static unsigned char *the_secret = "mysecret";
 
 /**
  * @key
@@ -543,8 +543,10 @@ static void hexdump(unsigned char *buf, unsigned int len) {
 	printk("\n");
 }
 
-static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) {
+static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
+	char *algo = "md5";
 	int hashbits = 128;
+
 	struct scatterlist sg[2];
         char result[hashbits];
         struct crypto_tfm *tfm;
@@ -554,17 +556,17 @@ static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) 
 		return 0;
 	}
 
-	tfm = crypto_alloc_tfm("md5", 0);	
+	tfm = crypto_alloc_tfm(algo, 0);	
 
         if (tfm == NULL) {
-		printk(KERN_INFO MOD "failed to load transform for md5\n");
+		printk(KERN_INFO MOD "failed to load transform for %s\n", algo);
 		return 0;
 	}
 	
 	memset(result, 0, hashbits);
 
-	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
-	sg_set_buf(&sg[1], secret, strlen(secret));
+	sg_set_buf(&sg[0], secret, strlen(secret));
+	sg_set_buf(&sg[1], &ipsrc, sizeof(u_int32_t));
 	
         crypto_digest_init(tfm);
         crypto_digest_update(tfm, (void *)&sg[0], 2);
@@ -575,9 +577,6 @@ static int has_secret(u_int32_t ipsrc, unsigned char *payload, int payload_len) 
 #if DEBUG
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
-		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
-		//memcpy(result, payload, 128);
-		//hexdump(result, crypto_tfm_alg_digestsize(tfm));
 #endif
 		crypto_free_tfm(tfm);
 		return 0;
@@ -650,7 +649,7 @@ static int match(const struct sk_buff *skb,
 	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
-		if (!has_secret(iph->saddr, payload, payload_len))
+		if (!has_secret(the_secret, iph->saddr, payload, payload_len))
 			goto end;
 	}
 	
