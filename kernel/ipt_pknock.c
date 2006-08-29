@@ -543,15 +543,28 @@ static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
 	printk("\n");
 }
 
+static void md5_to_hex(char *out, char *md5) {
+	int i;
+ 
+	for (i=0; i<16; i++) {
+		 unsigned char c = md5[i];
+                *out++ = '0' + ((c&0xf0)>>4) + (c>=0xa0)*('a'-'9'-1);
+                *out++ = '0' + (c&0x0f) + ((c&0x0f)>=0x0a)*('a'-'9'-1);
+	}
+	*out = '\0';
+}
+
 static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	char *algo = "md5";
 
+	int md5_hexasize = 32;
+	
 	struct scatterlist sg[2];
         char result[64];
+	char hexresult[md5_hexasize+1];
         struct crypto_tfm *tfm;
-	int hashbytes = 16;
 	
-	if (payload_len != hashbytes) {
+	if (payload_len != md5_hexasize) {
 		return 0;
 	}
 
@@ -571,10 +584,9 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
         crypto_digest_update(tfm, (void *)&sg[0], 2);
         crypto_digest_final(tfm, result);
 
-	//hexdump(result, crypto_tfm_alg_digestsize(tfm));	
-	printk("md5 hash size %d\n", crypto_tfm_alg_digestsize(tfm));
+	md5_to_hex(hexresult, result);
 	
-	if (memcmp(result, payload, crypto_tfm_alg_digestsize(tfm)) != 0) { 
+	if (memcmp(hexresult, payload, md5_hexasize) != 0) { 
 #if DEBUG
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");

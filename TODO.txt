@@ -1,7 +1,6 @@
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Timer en lugar de jiffies
 - For Lucho. Nuevo modo de enviar el secreto a traves de un hash(IPs, ports, secreto). 
-	- El digest enviado debe estar en hexa!
 	- Posibilidad de agregar mas datos al hmac y verificar has_secret().
 	- Posibilidad de usar otro algoritmo (sha256?).
 - For Lucho. Comunicacion kernel/user con "netlink"
