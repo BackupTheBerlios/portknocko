@@ -48,7 +48,6 @@ static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 static char *the_secret = NULL;
 
 static char *algo = "sha256";
-static unsigned int algo_size = 256;
 
 /**
  * @key
@@ -559,26 +558,38 @@ static void crypt_to_hex(char *out, char *md5, int size) {
 
 static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 
-	int hexa_size = algo_size/4;
-	int crypt_size = algo_size/8;
 	
 	struct scatterlist sg[2];
         char result[64];
-	char hexresult[hexa_size+1];
+	char *hexresult;
         struct crypto_tfm *tfm;
+	
+	int hexa_size;
+	int crypt_size;
+	int ret = 1;
+	
+	tfm = crypto_alloc_tfm(algo, 0);	
+        
+	if (tfm == NULL) {
+		printk(KERN_INFO MOD "failed to load transform for %s\n", algo);
+		return 0;
+	}
+	
+	crypt_size = crypto_tfm_alg_digestsize(tfm);
+
+	hexa_size = crypt_size * 2;
 	
 	if (payload_len != hexa_size) {
 		return 0;
 	}
 
-	tfm = crypto_alloc_tfm(algo, 0);	
-
-        if (tfm == NULL) {
-		printk(KERN_INFO MOD "failed to load transform for %s\n", algo);
-		return 0;
+        if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {
+		printk(KERN_ERR MOD "kmalloc() error in has_secret() function.\n");
+		return -EINVAL;
 	}
 	
 	memset(result, 0, 64);
+	memset(hexresult, 0, (sizeof(char) * hexa_size));
 
 	sg_set_buf(&sg[0], secret, strlen(secret));
 	sg_set_buf(&sg[1], &ipsrc, sizeof(u_int32_t));
@@ -594,12 +605,14 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
 #endif
-		crypto_free_tfm(tfm);
-		return 0;
+		ret = 0;
+		goto end;
 	}
-	
+
+end:	
+	kfree(hexresult);
 	crypto_free_tfm(tfm);	
-	return 1;
+	return ret;
 }
 
 
@@ -796,6 +809,8 @@ static void __exit fini(void)
 	printk(KERN_INFO MOD "unregister.\n");
 	remove_proc_entry("ipt_pknock", proc_net);
 	ipt_unregister_match(&ipt_pknock_match);
+	
+	kfree(the_secret);
 }
 
 module_init(init);
