@@ -1,10 +1,9 @@
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Timer en lugar de jiffies
-- For Lucho. Nuevo modo de enviar el secreto a traves de un hash(IPs, ports, secreto). 
-	- Posibilidad de agregar mas datos al hmac.
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Lucho. Revisar en las hashtables, el posible uso de hlist.
 - For Anyone. Revisar read_proc() y mostrar la lista de puertos y su estado.
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
+- DONE by Lucho. Nuevo modo de enviar el secreto a traves de un hash(IP, secreto). 
 - DONE by Fede. Poder configurarlo en una sola regla de iptables ;-)
 - DONE by Lucho. Hash de ipt_pknock_rule y peer_status
