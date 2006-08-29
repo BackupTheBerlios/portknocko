@@ -537,7 +537,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 	return 0;
 }
 
-static void hexdump(unsigned char *buf, unsigned int len) {
+static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
 	while (len--)
 		printk("%02x", *buf++);
 	printk("\n");
@@ -545,12 +545,11 @@ static void hexdump(unsigned char *buf, unsigned int len) {
 
 static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	char *algo = "md5";
-	int hashbits = 128;
 
 	struct scatterlist sg[2];
-        char result[hashbits];
+        char result[64];
         struct crypto_tfm *tfm;
-	int hashbytes = hashbits/8;
+	int hashbytes = 16;
 	
 	if (payload_len != hashbytes) {
 		return 0;
@@ -563,7 +562,7 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 		return 0;
 	}
 	
-	memset(result, 0, hashbits);
+	memset(result, 0, 64);
 
 	sg_set_buf(&sg[0], secret, strlen(secret));
 	sg_set_buf(&sg[1], &ipsrc, sizeof(u_int32_t));
@@ -571,9 +570,11 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
         crypto_digest_init(tfm);
         crypto_digest_update(tfm, (void *)&sg[0], 2);
         crypto_digest_final(tfm, result);
+
+	//hexdump(result, crypto_tfm_alg_digestsize(tfm));	
+	printk("md5 hash size %d\n", crypto_tfm_alg_digestsize(tfm));
 	
-	
-	if (memcmp(result, payload, hashbytes) != 0) { 
+	if (memcmp(result, payload, crypto_tfm_alg_digestsize(tfm)) != 0) { 
 #if DEBUG
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
