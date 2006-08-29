@@ -1,0 +1,18 @@
+shax-py 0.92
+============
+This is a collection of Python modules that implement
+the NIST's draft SHA256, SHA384, and SHA512 standards.
+The interface is the same as the sha module. SWIG
+interface files (.i) are included but are not used due to
+broken distutils support.
+
+To build:
+
+> python setup.py build
+
+To install:
+
+> python setup.py install
+
+- Allan Saddi <allan@saddi.com>
+  http://www.saddi.com/software/

@@ -47,6 +47,9 @@ static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
 static char *the_secret = NULL;
 
+static char *algo = "sha256";
+static unsigned int algo_size = 256;
+
 /**
  * @key
  * @length
@@ -543,10 +546,10 @@ static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
 	printk("\n");
 }
 
-static void md5_to_hex(char *out, char *md5) {
+static void crypt_to_hex(char *out, char *md5, int size) {
 	int i;
  
-	for (i=0; i<16; i++) {
+	for (i=0; i<size; i++) {
 		 unsigned char c = md5[i];
                 *out++ = '0' + ((c&0xf0)>>4) + (c>=0xa0)*('a'-'9'-1);
                 *out++ = '0' + (c&0x0f) + ((c&0x0f)>=0x0a)*('a'-'9'-1);
@@ -555,16 +558,16 @@ static void md5_to_hex(char *out, char *md5) {
 }
 
 static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
-	char *algo = "md5";
 
-	int md5_hexasize = 32;
+	int hexa_size = algo_size/4;
+	int crypt_size = algo_size/8;
 	
 	struct scatterlist sg[2];
         char result[64];
-	char hexresult[md5_hexasize+1];
+	char hexresult[hexa_size+1];
         struct crypto_tfm *tfm;
 	
-	if (payload_len != md5_hexasize) {
+	if (payload_len != hexa_size) {
 		return 0;
 	}
 
@@ -584,9 +587,9 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
         crypto_digest_update(tfm, (void *)&sg[0], 2);
         crypto_digest_final(tfm, result);
 
-	md5_to_hex(hexresult, result);
+	crypt_to_hex(hexresult, result, crypt_size);
 	
-	if (memcmp(hexresult, payload, md5_hexasize) != 0) { 
+	if (memcmp(hexresult, payload, hexa_size) != 0) { 
 #if DEBUG
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");

@@ -23,7 +23,7 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E digest.txt --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 64 -E digest.txt --fast 2> /dev/null 1> /dev/null
 }
 
 function set_hmac() {
