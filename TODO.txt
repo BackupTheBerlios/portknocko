@@ -3,7 +3,6 @@
 - For Lucho. Nuevo modo de enviar el secreto a traves de un hash(IPs, ports, secreto). 
 	- El digest enviado debe estar en hexa!
 	- Posibilidad de agregar mas datos al hmac y verificar has_secret().
-	- Pasar el secreto como parametro al modulo.
 	- Posibilidad de usar otro algoritmo (sha256?).
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Lucho. Revisar en las hashtables, el posible uso de hlist.

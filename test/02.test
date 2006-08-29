@@ -1,6 +1,23 @@
+###### LOAD WITHOUT SECRET ######
 load
 
-#### typical example ####
+rule "SSH" "2000,2001" "22" "--secure"
+expect "SSH,(A)" 
+
+knock "11.10.0.1" "22"  
+expect "The secret has not been initialized"
+knock "11.10.0.1" "2000"
+expect "The secret has not been initialized"
+
+unload
+#################################
+
+
+###### LOAD WITH SECRET! ######
+SECRET="whatasecret"
+
+load $SECRET
+
 rule "SSH" "2000,2001" "22" "--secure"
 expect "SSH,(A)" 
 
@@ -20,15 +37,15 @@ knock "11.10.0.1" "2000"
 expect "!MATCHING"
 
 #bad ipsrc
-set_hmac "mysecret" "12.10.0.1" 
+set_hmac $SECRET "12.10.0.1" 
 
 knock "11.10.0.1" "2000"
 expect "!MATCHING"
 
 # GOOD!
-set_hmac "mysecret" "11.10.0.1" 
+set_hmac $SECRET "11.10.0.1" 
 
-knock "11.10.0.1" "2000"
+knock "11.10.0.1" "2000"SD
 expect "MATCHING"
 knock "11.10.0.1" "2001"
 expect "ALLOWED"
@@ -36,3 +53,4 @@ knock "11.10.0.1" "22"
 expect "PASS OK"
 
 unload
+#################################

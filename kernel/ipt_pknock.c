@@ -45,7 +45,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-static unsigned char *the_secret = "mysecret";
+static char *the_secret = NULL;
 
 /**
  * @key
@@ -646,6 +646,10 @@ static int match(const struct sk_buff *skb,
 	
 	/* If security is needed and the peer is still knocking ... */
 	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
+		if (!the_secret) {
+			printk(KERN_INFO MOD "FAIL: The secret has not been initialized.\n");
+			goto end;
+		}
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
 		if (!has_secret(the_secret, iph->saddr, payload, payload_len))
@@ -735,8 +739,29 @@ static int set_peer_hashsize(const char *val, struct kernel_param *kp) {
 	return 0;
 }	
 
+static int set_secret(const char *buffer, struct kernel_param *kp) {
+	int size = strlen(buffer);
+
+	if (size < 5) {
+		printk(KERN_ERR MOD "secret size too short (min len = 5).\n");
+	        return -EINVAL;
+	}	
+
+        if ((the_secret = kmalloc(sizeof(char) * size, GFP_KERNEL)) == NULL) {
+		printk(KERN_ERR MOD "kmalloc() error in set_secret() function.\n");
+		return -EINVAL;
+	}
+	
+	memset(the_secret, 0, size);
+
+	strcpy(the_secret, buffer);
+
+	return 0;
+}
+
 module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, &ipt_pknock_rule_htable_size, 0600);
 module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, &ipt_pknock_peer_htable_size, 0600);
+module_param_call(secret, set_secret, NULL, NULL, 0600);
 
 
 static int __init init(void) 
