@@ -1,10 +1,12 @@
 import sys
-import sha256
+import hmac
+import md5
 import socket
 
-def hmac(secret, ip):
-	print sha256.new(secret + socket.inet_aton(ip)).hexdigest()
+def gen_hmac(secret, ip):
+	h = hmac.new(secret, digestmod = md5)
+	h.update(socket.inet_aton(ip))
+	print h.hexdigest()
 
 if __name__ == '__main__':
-	hmac(sys.argv[1], sys.argv[2])
-				
+	gen_hmac(sys.argv[1], sys.argv[2])
