@@ -23,11 +23,11 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 64 -E digest.txt --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E digest.txt --fast 2> /dev/null 1> /dev/null
 }
 
 function set_hmac() {
-	python hmac.py $1 $2 > "digest.txt"
+	python gen_hmac.py $1 $2 > "digest.txt"
 }
 
 function run() {
