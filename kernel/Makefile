@@ -1,4 +1,4 @@
-KERNEL_DIR=/usr/src/linux/
+KERNEL_DIR=/usr/src/linux-$(shell uname -r)
 
 TARGET=ipt_pknock.o
 
