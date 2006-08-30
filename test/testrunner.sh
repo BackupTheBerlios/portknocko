@@ -27,7 +27,7 @@ function knock() {
 }
 
 function set_hmac() {
-	python hmac.py $1 $2 > "digest.txt"
+	python gen_hmac.py $1 $2 > "digest.txt"
 }
 
 function run() {
