@@ -47,7 +47,7 @@ static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
 static char *the_secret = NULL;
 
-static char *algo = "md5";
+static char *algo = "sha256";
 
 /**
  * @key
@@ -567,8 +567,6 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 	int hexa_size;
 	int crypt_size;
 	int ret = 1;
-
-	int secret_len = strlen(secret);
 	
 	tfm = crypto_alloc_tfm(algo, 0);	
         
@@ -593,9 +591,12 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 	memset(result, 0, 64);
 	memset(hexresult, 0, (sizeof(char) * hexa_size));
 
-	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
+	sg_set_buf(&sg[0], secret, strlen(secret));
+	sg_set_buf(&sg[1], &ipsrc, sizeof(u_int32_t));
 	
-	crypto_hmac(tfm, secret, &secret_len, &sg[0], 1, result);
+        crypto_digest_init(tfm);
+        crypto_digest_update(tfm, (void *)&sg[0], 2);
+        crypto_digest_final(tfm, result);
 
 	crypt_to_hex(hexresult, result, crypt_size);
 	
