@@ -318,7 +318,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 		return 0;
 	}
 
-	list_add_tail(&rule->head, &rule_hashtable[hash]);
+	list_add(&rule->head, &rule_hashtable[hash]);
 #if DEBUG
 	printk(KERN_INFO MOD "(A) rule_name: %s - created.\n", rule->rule_name);
 #endif	
@@ -457,7 +457,7 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 #if DEBUG
 	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
 #endif				
-	list_add_tail(&peer->head, &rule->peer_head[hash]);
+	list_add(&peer->head, &rule->peer_head[hash]);
 	
 	peer->timestamp = jiffies/HZ;
 	peer->status = ST_MATCHING;
