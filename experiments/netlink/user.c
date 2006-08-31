@@ -21,7 +21,7 @@ int sock_fd;
 
 int main()
 {
-    sock_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_NFLOG);
+    sock_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_TEST);
     
     memset(&src_addr, 0, sizeof(src_addr));
     src_addr.nl_family = AF_NETLINK;

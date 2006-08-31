@@ -224,21 +224,17 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
  * @r: rule
  */
 static void peer_gc(unsigned long r) {
-	printk(KERN_INFO MOD "garbage collector.\n");
-#if 0
+
+	int i;
 	struct ipt_pknock_rule *rule = (struct ipt_pknock_rule *)r;
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
+	
+	//printk(KERN_INFO MOD "garbage collector.\n");
 
-//	Creo que no hace falta esta comprobacio'n, ya que esta fc se ejecuta cuando
-//	el timer expira.
-//	if(timer_pending(&rule->timer) == 0) {
-	if(!timer_pending(&rule->timer)) {
-		if (list_empty(&rule->peer_head[0])) return;
-
-		list_for_each_safe(pos, n, &rule->peer_head[0]) {
+	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {
+		list_for_each_safe(pos, n, &rule->peer_head[i]) {
 			peer = list_entry(pos, struct peer, head);
-
 			if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
 #if DEBUG
 				printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
@@ -249,7 +245,6 @@ static void peer_gc(unsigned long r) {
 			}
 		}
 	}
-#endif
 }
 
 /**

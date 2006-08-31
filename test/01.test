@@ -70,7 +70,7 @@ expect "PASS OK"
 ########################
 
 #### big example ####
-rule "BIG" "4004,4001,4002,4003,4004" "80"
+rule "BIG" "4000,4001,4002,4003,4004" "80"
 expect "BIG,(A)"
 
 knock "10.10.0.20" "80"
@@ -104,8 +104,8 @@ expect "ALLOWED"
 ########################
 
 #### unloading module ####
-unload
-expect "unregister"
+#unload
+#expect "unregister"
 ########################
 
 # VERIFICAR QUE TODOS LOS PEERS Y REGLAS FUERON BORRADOS!

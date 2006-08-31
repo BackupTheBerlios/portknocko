@@ -2,6 +2,7 @@
 - For Fede. Timer en lugar de jiffies
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Anyone. Revisar read_proc() y mostrar la lista de puertos y su estado.
+- For Anyone. Revisar que no queden memory leaks, sobre todo en los hashes de peers y rules
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
 - DONE by Lucho. Revisar en las hashtables, el posible uso de hlist.
 - DONE by Lucho. Nuevo modo de enviar el secreto a traves de un hmac(IP, secreto). 

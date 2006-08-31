@@ -30,7 +30,7 @@ static int netlink_test(void)
     int err;
     u32 pid;
     
-    nl_sk = netlink_kernel_create(NETLINK_NFLOG, 1, nl_data_ready, THIS_MODULE);    
+    nl_sk = netlink_kernel_create(NETLINK_TEST, 1, nl_data_ready, THIS_MODULE);    
 
     if (!nl_sk) {
         printk(KERN_INFO "ERROR iniitializing Netlink Socket\n");

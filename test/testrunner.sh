@@ -13,7 +13,7 @@ function unload() {
 }
 
 function rule() {
-	iptables -A INPUT -m state --state NEW -m pknock $4 --name $1 --knockports $2 -p udp --dport $3 -j ACCEPT 1> /dev/null
+	iptables -A INPUT -m state --state NEW -m pknock $4 --name $1 --time 5 --knockports $2 -p udp --dport $3 -j ACCEPT 1> /dev/null
 }
 
 function expect() {
