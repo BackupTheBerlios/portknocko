@@ -387,7 +387,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", rule->rule_name);
 #endif
 		/* Is a timer pending? */
-		if (!timer_pending(&rule->timer))
+//		if (!timer_pending(&rule->timer))
 			del_timer(&rule->timer);
 
 		list_del(&rule->head);
@@ -401,8 +401,10 @@ static void remove_rule(struct ipt_pknock_info *info) {
  *
  * @rule
  */
-static inline void update_rule_timer(struct ipt_pknock_rule *rule) {	
+static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
+	del_timer(&rule->timer);
 	init_timer(&rule->timer);
+	/* FIXME: jiffies wrap 5 min after boot. */
 	rule->timer.expires 	= jiffies + msecs_to_jiffies(EXPIRATION_TIME);
 	rule->timer.data	= (unsigned long)rule;
 	rule->timer.function 	= peer_gc;
