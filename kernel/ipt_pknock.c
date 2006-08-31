@@ -32,7 +32,7 @@ MODULE_AUTHOR("J. Federico Hernandez, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define EXPIRATION_TIME 30000 /* in msecs */
+#define EXPIRATION_TIME 5000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -188,8 +188,9 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 			proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
 			ip = htonl(peer->ip);
 
-			expiration_time = ((jiffies/HZ) < (peer->timestamp + max_time)) ?
-				((peer->timestamp+max_time)-(jiffies/HZ)) : 0;
+			expiration_time = time_before(jiffies/HZ, peer->timestamp + max_time) ?
+				((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
+
 			len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", NIPQUAD(ip));
 			len += snprintf(buf+len, limit-len, "proto=%s ", proto);
 			len += snprintf(buf+len, limit-len, "status=%s ", status);
@@ -223,13 +224,16 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
  * @r: rule
  */
 static void peer_gc(unsigned long r) {
+	printk(KERN_INFO MOD "garbage collector.\n");
+#if 0
 	struct ipt_pknock_rule *rule = (struct ipt_pknock_rule *)r;
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 
-	printk(KERN_INFO MOD "garbage collector.\n");
-#if 0
-	if(timer_pending(&rule->timer) == 0) {
+//	Creo que no hace falta esta comprobacio'n, ya que esta fc se ejecuta cuando
+//	el timer expira.
+//	if(timer_pending(&rule->timer) == 0) {
+	if(!timer_pending(&rule->timer)) {
 		if (list_empty(&rule->peer_head[0])) return;
 
 		list_for_each_safe(pos, n, &rule->peer_head[0]) {
@@ -382,7 +386,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 #if DEBUG
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", rule->rule_name);
 #endif
-		/* is a timer pending? */
+		/* Is a timer pending? */
 		if (!timer_pending(&rule->timer))
 			del_timer(&rule->timer);
 
@@ -397,9 +401,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
  *
  * @rule
  */
-static inline void set_rule_timer(struct ipt_pknock_rule *rule) {	
-//	rule->timer = jiffies + msecs_to_jiffies(EXPIRTATION_TIME);
-//	add_timer(&rule->timer);
+static inline void update_rule_timer(struct ipt_pknock_rule *rule) {	
 	init_timer(&rule->timer);
 	rule->timer.expires 	= jiffies + msecs_to_jiffies(EXPIRATION_TIME);
 	rule->timer.data	= (unsigned long)rule;
@@ -492,7 +494,11 @@ static inline void remove_peer(struct peer *peer) {
 #define IS_FIRST_KNOCK(peer, info, port) ((peer) == NULL && (((info)->port[0] == (port)) ? 1 : 0))
 #define IS_WRONG_KNOCK(peer, info, port) (((info)->port[(peer)->id_port_knocked-1]) != (port))
 #define IS_LAST_KNOCK(peer, info) ((peer)->id_port_knocked-1 == (info)->count_ports)
-#define IS_ALLOWED(peer) ((peer) && ((peer)->status == ST_ALLOWED) ? 1 : 0)
+
+static inline int is_allowed(struct peer *peer) {
+	return (peer->status == ST_ALLOWED) ? 1 : 0;
+}
+
 
 /**
  * It updates the peer matching status.
@@ -505,7 +511,7 @@ static inline void remove_peer(struct peer *peer) {
 static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	unsigned long time;
 
-	if (IS_ALLOWED(peer)) {
+	if (is_allowed(peer)) {
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
 #endif
@@ -674,7 +680,7 @@ static int match(const struct sk_buff *skb,
 	/*
 	 * Updates the rule timer to execute the garbage collector.
 	 */
-	set_rule_timer(rule);
+	update_rule_timer(rule);
 	/* 
 	 * Gives the peer matching status added to rule depending on ip source.
 	 */
@@ -684,7 +690,7 @@ static int match(const struct sk_buff *skb,
 	 */
 
 	/* If security is needed and the peer is still knocking ... */
-	if ((info->option & IPT_PKNOCK_SECURE) && !IS_ALLOWED(peer)) {
+	if ((info->option & IPT_PKNOCK_SECURE) && !is_allowed(peer)) {
 		if (!the_secret) {
 			printk(KERN_INFO MOD "FAIL: The secret has not been initialized.\n");
 			goto end;
