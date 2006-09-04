@@ -1,5 +1,5 @@
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
-- For Fede. Timer en lugar de jiffies
+- For Anyone. Corregir el problema de los timers que quedan ejecutándose al desregistrar el módulo.
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Anyone. Revisar read_proc() y mostrar la lista de puertos y su estado.
 - For Anyone. Revisar que no queden memory leaks, sobre todo en los hashes de peers y rules
@@ -8,3 +8,4 @@
 - DONE by Lucho. Nuevo modo de enviar el secreto a traves de un hmac(IP, secreto). 
 - DONE by Fede. Poder configurarlo en una sola regla de iptables ;-)
 - DONE by Lucho. Hash de ipt_pknock_rule y peer_status
+- DONE by Fede. Corregir timer y gc
