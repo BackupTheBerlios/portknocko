@@ -488,14 +488,21 @@ static inline void remove_peer(struct peer *peer) {
 	if (peer) kfree(peer);
 }
 
-#define IS_FIRST_KNOCK(peer, info, port) ((peer) == NULL && (((info)->port[0] == (port)) ? 1 : 0))
-#define IS_WRONG_KNOCK(peer, info, port) (((info)->port[(peer)->id_port_knocked-1]) != (port))
-#define IS_LAST_KNOCK(peer, info) ((peer)->id_port_knocked-1 == (info)->count_ports)
+static inline int is_first_knock(struct peer *peer, struct ip_pknock_info *info, u_int16_t port) {
+	return (peer == NULL && info->port[0] == port) ? 1 : 0;
+}
+
+static inline int is_wrong_knock(struct peer *peer, struct ip_pknock_info *info, u_int16_t port) {
+	return info->port[peer->id_port_knocked-1] != port;
+}
+
+static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info) {
+	return peer->id_port_knocked-1 == info->count_ports;
+}
 
 static inline int is_allowed(struct peer *peer) {
 	return (peer->status == ST_ALLOWED) ? 1 : 0;
 }
-
 
 /**
  * It updates the peer matching status.
@@ -515,7 +522,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		return 1;
 	}
 
-	if (IS_WRONG_KNOCK(peer, info, port)) {
+	if (is_wrong_knock(peer, info, port)) {
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
 #endif
@@ -524,7 +531,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 
 	peer->id_port_knocked++;
 
-	if (IS_LAST_KNOCK(peer, info)) {
+	if (is_last_knock(peer, info)) {
 		peer->status = ST_ALLOWED;
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
@@ -532,9 +539,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		return 0;
 	}
 
-	/* 
-	 * Controls the max matching time between ports.
-	 */
+	/* Controls the max matching time between ports. */
 	if (info->option & IPT_PKNOCK_TIME) {
 		time = jiffies/HZ;
 		/* Returns true if the time a is after time b. */
@@ -667,24 +672,17 @@ static int match(const struct sk_buff *skb,
 
 	spin_lock_bh(&rule_list_lock);
 
-	/* 
-	 * Searches a rule from the list depending on info structure options.
-	 */
+	/* Searches a rule from the list depending on info structure options. */
 	if ((rule = search_rule(info)) == NULL) {
 		printk(KERN_INFO MOD "The rule %s doesn't exist.\n", info->rule_name);
 		goto end;
 	}
-	/*
-	 * Updates the rule timer to execute the garbage collector.
-	 */
+	
+	/* Updates the rule timer to execute the garbage collector. */
 	update_rule_timer(rule);
-	/* 
-	 * Gives the peer matching status added to rule depending on ip source.
-	 */
+	
+	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
-	/*
-	 * Sets, adds, removes or checks the peer matching status.
-	 */
 
 	/* If security is needed and the peer is still knocking ... */
 	if ((info->option & IPT_PKNOCK_SECURE) && !is_allowed(peer)) {
@@ -697,9 +695,10 @@ static int match(const struct sk_buff *skb,
 		if (!has_secret(the_secret, iph->saddr, payload, payload_len))
 			goto end;
 	}
-
+	
+	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
-		if (IS_FIRST_KNOCK(peer, info, port)) {
+		if (is_first_knock(peer, info, port)) {
 			peer = new_peer(iph->saddr, proto);
 			add_peer(peer, rule);
 		} 
