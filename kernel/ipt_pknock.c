@@ -1,8 +1,8 @@
 /*
  * Kernel module to implement port knocking matching support.
  * 
- * (C) 2006 J. Federico Hernandez <fede.hernandez@gmail.com>
- * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
+ * (C) 2006 J. Federico Hernandez Scarso <fede.hernandez@gmail.com>
+ * (C) 2006 Luis A. Floreani <luis.floreani@gmail.com>
  *
  * $Id$
  *
@@ -28,7 +28,7 @@
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
 #include "ipt_pknock.h"
 
-MODULE_AUTHOR("J. Federico Hernandez, Luis A. Floreani");
+MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
@@ -488,11 +488,11 @@ static inline void remove_peer(struct peer *peer) {
 	if (peer) kfree(peer);
 }
 
-static inline int is_first_knock(struct peer *peer, struct ip_pknock_info *info, u_int16_t port) {
+static inline int is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	return (peer == NULL && info->port[0] == port) ? 1 : 0;
 }
 
-static inline int is_wrong_knock(struct peer *peer, struct ip_pknock_info *info, u_int16_t port) {
+static inline int is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	return info->port[peer->id_port_knocked-1] != port;
 }
 
