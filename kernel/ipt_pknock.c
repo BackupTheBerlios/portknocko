@@ -309,12 +309,6 @@ static int add_rule(struct ipt_pknock_info *info) {
 	strncpy(rule->rule_name, info->rule_name, info->rule_name_len);
 	rule->ref_count	= 1;
 	rule->max_time 	= info->max_time;
-	/* Sets the garbage collector timer. */
-	init_timer(&rule->timer);
-	rule->timer.expires 	= 0;
-	rule->timer.data	= (unsigned long)rule;
-	rule->timer.function 	= peer_gc;
-	add_timer(&rule->timer);
 
 	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
 
@@ -381,9 +375,8 @@ static void remove_rule(struct ipt_pknock_info *info) {
 #if DEBUG
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", rule->rule_name);
 #endif
-		/* Is a timer pending? */
-//		if (!timer_pending(&rule->timer))
-			del_timer(&rule->timer);
+//		del_timer_sync(&rule->timer);
+		del_timer(&rule->timer);
 
 		list_del(&rule->head);
 		kfree(rule);
@@ -397,12 +390,13 @@ static void remove_rule(struct ipt_pknock_info *info) {
  * @rule
  */
 static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
-	del_timer(&rule->timer);
+	del_timer(&rule->timer); /* Deactivates the timer. */
+
 	init_timer(&rule->timer);
-	/* FIXME: jiffies wrap 5 min after boot. */
 	rule->timer.expires 	= jiffies + msecs_to_jiffies(EXPIRATION_TIME);
 	rule->timer.data	= (unsigned long)rule;
 	rule->timer.function 	= peer_gc;
+
 	add_timer(&rule->timer);
 }
 
