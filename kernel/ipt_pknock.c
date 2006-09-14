@@ -32,7 +32,7 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define EXPIRATION_TIME 5000 /* in msecs */
+#define EXPIRATION_TIME 10000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -353,10 +353,13 @@ static void remove_rule(struct ipt_pknock_info *info) {
 			break;
 		}
 	}
+	
+	if (!found) {
 #if DEBUG
-	if (!found)
 		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
 #endif
+		return;
+	}
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
 			list_for_each_safe(pos, n, &rule->peer_head[i]) {
@@ -673,7 +676,7 @@ static int match(const struct sk_buff *skb,
 	}
 	
 	/* Updates the rule timer to execute the garbage collector. */
-	//update_rule_timer(rule);
+	update_rule_timer(rule);
 	
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
