@@ -45,7 +45,7 @@ expect "!MATCHING"
 # GOOD!
 set_hmac $SECRET "11.10.0.1" 
 
-knock "11.10.0.1" "2000"SD
+knock "11.10.0.1" "2000"
 expect "MATCHING"
 knock "11.10.0.1" "2001"
 expect "ALLOWED"

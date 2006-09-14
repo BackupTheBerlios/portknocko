@@ -495,7 +495,7 @@ static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
 }
 
 static inline int is_allowed(struct peer *peer) {
-	return (peer->status == ST_ALLOWED) ? 1 : 0;
+	return (peer && peer->status == ST_ALLOWED) ? 1 : 0;
 }
 
 /**
@@ -673,7 +673,7 @@ static int match(const struct sk_buff *skb,
 	}
 	
 	/* Updates the rule timer to execute the garbage collector. */
-	update_rule_timer(rule);
+	//update_rule_timer(rule);
 	
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
