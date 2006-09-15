@@ -89,20 +89,6 @@ knock "10.10.0.20" "80"
 expect "PASS OK"
 ########################
 
-#### miss one knock ####
-rule "MISS" "9990,9991" "80"
-expect "MISS,(A)" 
-
-knock "10.10.0.3" "9990"
-expect "MATCHING"
-
-knock "10.10.0.3" "9992"
-expect "DIDN'T MATCH"
-
-knock "10.10.0.3" "9991"
-expect "ALLOWED"
-########################
-
 #### unloading module ####
 unload
 expect "unregister"

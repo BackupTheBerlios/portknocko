@@ -16,7 +16,7 @@ unload
 ###### LOAD WITH SECRET! ######
 SECRET="whatasecret"
 
-load $SECRET
+load secret=$SECRET
 
 rule "SSH" "2000,2001" "22" "--secure"
 expect "SSH,(A)" 

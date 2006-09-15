@@ -4,7 +4,7 @@ function load() {
 	if  [ -z $1 ]; then
 		insmod ../kernel/ipt_pknock.ko
 	else
-		insmod ../kernel/ipt_pknock.ko secret=$1
+		insmod ../kernel/ipt_pknock.ko $1
 	fi
 }
 

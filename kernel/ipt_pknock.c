@@ -540,6 +540,10 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
 #endif
+		if ((info->option & IPT_PKNOCK_STRICT)) {
+			// peer must start the sequence from scratch
+			peer->id_port_knocked = 1;
+		}
 		return 0;
 	}
 

@@ -24,6 +24,7 @@ static struct option opts[] = {
 	{ .name = "time",	.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
 	{ .name = "name", 	.has_arg = 1, 	.flag = 0, 	.val = 'n' },
 	{ .name = "secure", 	.has_arg = 0, 	.flag = 0, 	.val = 's' },
+	{ .name = "strict", 	.has_arg = 0, 	.flag = 0, 	.val = 'x' },
 	{ .name = 0 }
 };
 
@@ -33,6 +34,7 @@ static void help(void) {
 		" --time seconds\n"
 		" --t ...				Time between port match.\n"
 		" [--secure] 				hmac must be in the packets.\n"
+		" [--strict] 				knocks sequence must be exact.\n"
 		" --name rule_name			Rule name.\n", IPTABLES_VERSION);
 }
 
@@ -155,6 +157,13 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		*flags |= IPT_PKNOCK_SECURE;
 		info->option |= IPT_PKNOCK_SECURE;
 		break;
+	
+	case 'x': /* --strict */
+		if (*flags & IPT_PKNOCK_STRICT)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't use --strict twice.\n");
+		*flags |= IPT_PKNOCK_STRICT;
+		info->option |= IPT_PKNOCK_STRICT;
+		break;
 
 		
 	default:
@@ -209,6 +218,7 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	if (info->option & IPT_PKNOCK_TIME) printf("--time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("--name %s ", info->rule_name);
 	if (info->option & IPT_PKNOCK_SECURE) printf("--secure ");
+	if (info->option & IPT_PKNOCK_STRICT) printf("--strict ");
 }
 
 
