@@ -1,3 +1,6 @@
+TODO:
+-----
+
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
@@ -8,3 +11,13 @@
 - estudiar las otras posibles maneras de autenticar.
 - time expiration que se renueve en cada match.
 - ver que tipos de datos se deben usar, por ej u32 o u_int32_t.
+
+
+DONE:
+-----
+
+- timer problem fixed.
+- --strict option added so the peer must match the exact sequence without any miss
+- some memory leaks fixed
+
+
