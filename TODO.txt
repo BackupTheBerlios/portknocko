@@ -1,8 +1,6 @@
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- pasar las macros a funciones.
-- corregir el problema de los timers que quedan ejecuta'ndose al desregistrar el mo'dulo.
 - revisar read_proc() y mostrar la lista de puertos y su estado.
 - revisar que no queden memory leaks, sobre todo en los hashes de peers y rules
 - --strict para que la secuencia de puertos no permita fallar.
@@ -11,4 +9,4 @@
 - --pnock-proto udp/tcp -> protocolo de los 'knocks', diferente al protocolo del puerto protegido.
 - estudiar las otras posibles maneras de autenticar.
 - time expiration que se renueve en cada match.
-- ver que' tipos de datos se deben usar, por ej u32 o u_int32_t.
+- ver que tipos de datos se deben usar, por ej u32 o u_int32_t.
