@@ -569,7 +569,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
 #endif
 		if ((info->option & IPT_PKNOCK_STRICT)) {
-			// peer must start the sequence from scratch
+			/* Peer must start the sequence from scratch. */
 			peer->id_port_knocked = 1;
 		}
 		return 0;
@@ -582,7 +582,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
 #endif
-		// send a msg to userspace saying the peer knocked all the sequence correcty!
+		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
 		send_to_userspace_nl(info);
 
 		return 0;
@@ -791,9 +791,8 @@ static int checkentry(const char *tablename,
 static void destroy(void *matchinfo, unsigned int matchinfosize) 
 {
 	struct ipt_pknock_info *info = (void *)matchinfo;
-	/* 
-	 * Removes a rule only if it exits and ref_count is equal to 0.
-	 */
+
+	/* Removes a rule only if it exits and ref_count is equal to 0. */
 	remove_rule(info);
 }
 
