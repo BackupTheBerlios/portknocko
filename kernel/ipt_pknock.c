@@ -607,6 +607,9 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 	int ret = 1;
 
 	int secret_len = strlen(secret);
+	
+	if (payload_len == 0)
+		return 0;
 
 	tfm = crypto_alloc_tfm(algo, 0);	
 
@@ -705,10 +708,16 @@ static int match(const struct sk_buff *skb,
 
 	/* If security is needed and the peer is still knocking ... */
 	if ((info->option & IPT_PKNOCK_SECURE) && !is_allowed(peer)) {
+		if (iph->protocol != IPPROTO_UDP) {
+			printk(KERN_INFO MOD "FAIL: proto must be UDP when --secure.\n");
+			goto end;
+		}
+
 		if (!the_secret) {
 			printk(KERN_INFO MOD "FAIL: The secret has not been initialized.\n");
 			goto end;
 		}
+
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
 		if (!has_secret(the_secret, iph->saddr, payload, payload_len))
@@ -841,7 +850,9 @@ static void __exit fini(void)
 	remove_proc_entry("ipt_pknock", proc_net);
 	ipt_unregister_match(&ipt_pknock_match);
 
-	kfree(the_secret);
+	if (the_secret)
+		kfree(the_secret);
+	
 	kfree(rule_hashtable);
 }
 
