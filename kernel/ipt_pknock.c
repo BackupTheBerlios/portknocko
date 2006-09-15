@@ -23,6 +23,7 @@
 #include <linux/scatterlist.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/connector.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
@@ -36,6 +37,8 @@ MODULE_LICENSE("GPL");
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
+
+#define NL_MULTICAST_GROUP 1
 
 static u32 ipt_pknock_hash_rnd;
 
@@ -517,6 +520,32 @@ static inline int is_allowed(struct peer *peer) {
 	return (peer && peer->status == ST_ALLOWED) ? 1 : 0;
 }
 
+
+/**
+ * Sends a message to user space through netlink sockets
+ */
+void send_to_userspace_nl(struct ipt_pknock_info *info) {
+	struct cn_msg *m;
+    	struct cb_id cn_test_id = { 0x123, 0x345 };
+    	char data[64];
+    
+    	m = kmalloc(sizeof(*m) + sizeof(data), GFP_ATOMIC);
+    	if (m) {
+        	memset(m, 0, sizeof(*m) + sizeof(data));
+        
+	        memcpy(&m->id, &cn_test_id, sizeof(m->id));
+        	m->seq = 0;
+	        m->len = sizeof(data);
+	        m->len = scnprintf(data, sizeof(data), info->rule_name) + 1;
+        
+	        memcpy(m + 1, data, m->len);
+        
+	        cn_netlink_send(m, NL_MULTICAST_GROUP, gfp_any());
+        
+		kfree(m);
+	} 
+}
+
 /**
  * It updates the peer matching status.
  *
@@ -553,6 +582,9 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
 #endif
+		// send a msg to userspace saying the peer knocked all the sequence correcty!
+		send_to_userspace_nl(info);
+
 		return 0;
 	}
 
