@@ -5,7 +5,6 @@ TODO:
 - For Lucho. Comunicacion kernel/user con "netlink"
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
 - revisar read_proc() y mostrar la lista de puertos y su estado.
-- pasar el password en la regla.
 - en la comunicacion con el usuario (netlink) enviar el nombre de la regla para identificarla.
 
 - BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
@@ -19,6 +18,7 @@ TODO:
 DONE:
 -----
 
+- pasar el password en la regla de iptables.
 - timer problem fixed.
 - --strict option added so the peer must match the exact sequence without any miss
 - some memory leaks fixed

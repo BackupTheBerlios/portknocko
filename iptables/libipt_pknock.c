@@ -23,7 +23,7 @@ static struct option opts[] = {
 	{ .name = "t",		.has_arg = 1, 	.flag = 0, 	.val = 't' },
 	{ .name = "time",	.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
 	{ .name = "name", 	.has_arg = 1, 	.flag = 0, 	.val = 'n' },
-	{ .name = "secure", 	.has_arg = 0, 	.flag = 0, 	.val = 's' },
+	{ .name = "secure", 	.has_arg = 1, 	.flag = 0, 	.val = 's' },
 	{ .name = "strict", 	.has_arg = 0, 	.flag = 0, 	.val = 'x' },
 	{ .name = 0 }
 };
@@ -154,6 +154,10 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 	case 's': /* --secure */
 		if (*flags & IPT_PKNOCK_SECURE)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --secure twice.\n");
+
+		strncpy(info->password, optarg, IPT_PKNOCK_MAX_BUF_LEN);	
+		info->password_len = strlen(info->password);
+
 		*flags |= IPT_PKNOCK_SECURE;
 		info->option |= IPT_PKNOCK_SECURE;
 		break;

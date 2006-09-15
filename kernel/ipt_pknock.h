@@ -28,6 +28,8 @@
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */
 	int		rule_name_len;
+	char		password[IPT_PKNOCK_MAX_BUF_LEN]; /* password */
+	int		password_len;
 	u_int8_t 	count_ports;			/* number of ports */
 	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS];	/* port[,port,port,...] */
 	unsigned long 	max_time;			/* max matching time between ports */

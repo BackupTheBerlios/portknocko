@@ -7,6 +7,6 @@ fi
 
 scripts/init.sh
 
-insmod ../kernel/ipt_pknock.ko secret=$1
+insmod ../kernel/ipt_pknock.ko
 		
-iptables -A INPUT -m state --state NEW -m pknock --secure --name SSH --time 5 --knockports 2000 -p udp --dport 22 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m pknock --secure $1 --name SSH --time 5 --knockports 2000 -p udp --dport 22 -j ACCEPT

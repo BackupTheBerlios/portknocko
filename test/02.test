@@ -1,24 +1,9 @@
-###### LOAD WITHOUT SECRET ######
-load
-
-rule "SSH" "2000,2001" "22" "--secure"
-expect "SSH,(A)" 
-
-knock "11.10.0.1" "22"  
-expect "The secret has not been initialized"
-knock "11.10.0.1" "2000"
-expect "The secret has not been initialized"
-
-unload
-#################################
-
-
 ###### LOAD WITH SECRET! ######
 SECRET="whatasecret"
 
-load secret=$SECRET
+load
 
-rule "SSH" "2000,2001" "22" "--secure"
+rule "SSH" "2000,2001" "22" "--secure $SECRET"
 expect "SSH,(A)" 
 
 knock "11.10.0.1" "22"  

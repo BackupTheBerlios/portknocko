@@ -47,8 +47,6 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-static char *the_secret = NULL;
-
 static char *algo = "md5";
 
 /**
@@ -596,7 +594,7 @@ static void crypt_to_hex(char *out, char *md5, int size) {
 	}
 }
 
-static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
+static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	struct scatterlist sg[2];
 	char result[64];
 	char *hexresult;
@@ -606,8 +604,6 @@ static int has_secret(unsigned char *secret, u_int32_t ipsrc, unsigned char *pay
 	int crypt_size;
 	int ret = 1;
 
-	int secret_len = strlen(secret);
-	
 	if (payload_len == 0)
 		return 0;
 
@@ -713,14 +709,9 @@ static int match(const struct sk_buff *skb,
 			goto end;
 		}
 
-		if (!the_secret) {
-			printk(KERN_INFO MOD "FAIL: The secret has not been initialized.\n");
-			goto end;
-		}
-
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
-		if (!has_secret(the_secret, iph->saddr, payload, payload_len))
+		if (!has_secret(info->password, info->password_len, iph->saddr, payload, payload_len))
 			goto end;
 	}
 	
@@ -808,30 +799,8 @@ static int set_peer_hashsize(const char *val, struct kernel_param *kp) {
 	return 0;
 }	
 
-static int set_secret(const char *buffer, struct kernel_param *kp) {
-	int size = strlen(buffer);
-
-	if (size < 5) {
-		printk(KERN_ERR MOD "secret size too short (min len = 5).\n");
-		return -EINVAL;
-	}	
-
-	if ((the_secret = kmalloc(sizeof(char) * size, GFP_KERNEL)) == NULL) {
-		printk(KERN_ERR MOD "kmalloc() error in set_secret() function.\n");
-		return -EINVAL;
-	}
-
-	memset(the_secret, 0, size);
-
-	strcpy(the_secret, buffer);
-
-	return 0;
-}
-
 module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, &ipt_pknock_rule_htable_size, 0600);
 module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, &ipt_pknock_peer_htable_size, 0600);
-module_param_call(secret, set_secret, NULL, NULL, 0600);
-
 
 static int __init init(void) 
 {
@@ -850,9 +819,6 @@ static void __exit fini(void)
 	remove_proc_entry("ipt_pknock", proc_net);
 	ipt_unregister_match(&ipt_pknock_match);
 
-	if (the_secret)
-		kfree(the_secret);
-	
 	kfree(rule_hashtable);
 }
 
