@@ -3,7 +3,6 @@
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
 - revisar read_proc() y mostrar la lista de puertos y su estado.
 - revisar que no queden memory leaks, sobre todo en los hashes de peers y rules
-- --strict para que la secuencia de puertos no permita fallar.
 - pasar el password en la regla.
 - en la comunicacion con el usuario (netlink) enviar el nombre de la regla para identificarla.
 - --pnock-proto udp/tcp -> protocolo de los 'knocks', diferente al protocolo del puerto protegido.
