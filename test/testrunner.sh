@@ -9,7 +9,7 @@ function load() {
 }
 
 function unload() {
-	./reset.sh
+	scripts/reset.sh
 }
 
 function rule() {
@@ -23,11 +23,11 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E digest.txt --fast 2> /dev/null 1> /dev/null
+	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E cache/digest.txt --fast 2> /dev/null 1> /dev/null
 }
 
 function set_hmac() {
-	python gen_hmac.py $1 $2 > "digest.txt"
+	python py/gen_hmac.py $1 $2 > "cache/digest.txt"
 }
 
 function run() {
@@ -36,9 +36,9 @@ function run() {
 }
 
 function init() {
-	./init.sh 2> /dev/null 1> /dev/null
+	scripts/init.sh 2> /dev/null 1> /dev/null
 	> $1
-	echo '' > "digest.txt"
+	echo '' > "cache/digest.txt"
 }
 
 if [ -z $1 ]; then 
@@ -48,10 +48,10 @@ fi
 
 testsuite=$1
 
-file="result.txt"
+file="cache/result.txt"
 
 init $file
 
 run $testsuite
 
-python tester.py $file
+python py/tester.py $file
