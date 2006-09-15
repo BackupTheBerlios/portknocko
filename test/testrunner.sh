@@ -23,11 +23,11 @@ function expect() {
 }
 
 function knock() {
-	hping localhost -a $1 -p $2 -c 1 -S -2 -q -d 32 -E cache/digest.txt --fast 2> /dev/null 1> /dev/null
+	scripts/knocker.sh $1 $2
 }
 
 function set_hmac() {
-	python py/gen_hmac.py $1 $2 > "cache/digest.txt"
+	scripts/build_digest.sh $1 $2
 }
 
 function run() {
