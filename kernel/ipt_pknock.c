@@ -399,6 +399,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		del_timer(&rule->timer);
 
 		list_del(&rule->head);
+		kfree(rule->peer_head);
 		kfree(rule);
 	}
 
@@ -841,6 +842,7 @@ static void __exit fini(void)
 	ipt_unregister_match(&ipt_pknock_match);
 
 	kfree(the_secret);
+	kfree(rule_hashtable);
 }
 
 module_init(init);
