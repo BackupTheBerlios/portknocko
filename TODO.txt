@@ -7,7 +7,6 @@ TODO:
 - refinar el msg enviado al userspace.
 - BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
 	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
-
 - estudiar las otras posibles maneras de autenticar.
 - time expiration que se renueve en cada match.
 - ver que tipos de datos se deben usar, por ej u32 o u_int32_t.
@@ -21,5 +20,5 @@ DONE:
 - By Lucho & Fender. Timer problem fixed.
 - By Lucho. --strict option added so the peer must match the exact sequence without any miss
 - By Lucho. some memory leaks fixed
-
-
+- By Fender. Portknocking en una regla.
+- By Fender. Macros de funcion a funciones inline.
