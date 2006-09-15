@@ -42,7 +42,7 @@ function init() {
 }
 
 if [ -z $1 ]; then 
-    echo "usage: ./testrunner.sh <testfile>"
+    echo "usage: $0 <testfile>"
     exit 1
 fi
 
