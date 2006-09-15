@@ -255,9 +255,9 @@ static void peer_gc(unsigned long r) {
  * @return: 0 success, 1 failure
  */
 static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule) {
-	if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
-		return 1;
 	if (info->rule_name_len != rule->rule_name_len)
+		return 1;
+	if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
 		return 1;
 
 	return 0;
