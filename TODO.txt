@@ -7,7 +7,10 @@ TODO:
 - revisar read_proc() y mostrar la lista de puertos y su estado.
 - pasar el password en la regla.
 - en la comunicacion con el usuario (netlink) enviar el nombre de la regla para identificarla.
-- --pnock-proto udp/tcp -> protocolo de los 'knocks', diferente al protocolo del puerto protegido.
+
+- BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
+	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
+
 - estudiar las otras posibles maneras de autenticar.
 - time expiration que se renueve en cada match.
 - ver que tipos de datos se deben usar, por ej u32 o u_int32_t.
