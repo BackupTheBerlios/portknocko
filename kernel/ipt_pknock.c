@@ -84,7 +84,6 @@ static struct list_head *alloc_hashtable(int size) {
 	return hash;
 }
 
-
 #if DEBUG
 /**
  * @iph
@@ -101,40 +100,6 @@ static inline void print_ip_packet(struct iphdr *iph) {
 			iph->ttl, iph->protocol, ntohl(iph->check),
 			NIPQUAD(iph->saddr), 
 			NIPQUAD(iph->daddr));
-}
-
-/**
- * @info
- */
-static inline void print_options(struct ipt_pknock_info *info) {
-	int i;
-
-	printk(KERN_INFO MOD "pknock options from kernel:\n"
-			"count_ports: %d\ntime: %ld\noption: %d\n", 
-			info->count_ports, info->max_time, info->option);
-
-	for (i=0; i<info->count_ports; i++)
-		printk(KERN_INFO MOD "port[%d]: %d\n", i, info->port[i]);
-}
-
-/**
- * @info
- */
-static inline void print_list_peer(struct ipt_pknock_rule *rule) {
-	struct list_head *pos = NULL;
-	struct peer *peer = NULL;
-	u_int32_t ip;
-
-	if (list_empty(&rule->peer_head[0])) return;
-
-	printk(KERN_INFO MOD "(*) %s list peer matching status:\n", rule->rule_name);
-
-	list_for_each(pos, &rule->peer_head[0]) {
-		peer = list_entry(pos, struct peer, head);
-		ip = htonl(peer->ip);
-		printk(KERN_INFO MOD "(*) peer: %u.%u.%u.%u - tstamp: %ld\n", 
-				NIPQUAD(ip), peer->timestamp);
-	}
 }
 #endif
 
@@ -225,14 +190,11 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
  * @r: rule
  */
 static void peer_gc(unsigned long r) {
-
 	int i;
 	struct ipt_pknock_rule *rule = (struct ipt_pknock_rule *)r;
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	
-	//printk(KERN_INFO MOD "garbage collector.\n");
-
 	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {
 		list_for_each_safe(pos, n, &rule->peer_head[i]) {
 			peer = list_entry(pos, struct peer, head);
@@ -437,9 +399,7 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 	ip = ntohl(ip);
 
 	hash = pknock_hash(&ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
-#if DEBUG
-	//	printk(KERN_DEBUG MOD "get_peer() -> hash %d \n", hash);
-#endif				
+
 	if (list_empty(&rule->peer_head[hash])) return NULL;
 
 	list_for_each_safe(pos, n, &rule->peer_head[hash]) {
