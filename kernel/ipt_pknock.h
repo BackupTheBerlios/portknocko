@@ -53,6 +53,7 @@ struct peer {
 struct ipt_pknock_rule {
 	struct list_head 	head;
 	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	int			rule_name_len;
 	unsigned int		ref_count;
 	struct timer_list 	timer;		/* garbage collector timer */
 	struct list_head 	*peer_head;

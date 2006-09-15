@@ -248,6 +248,22 @@ static void peer_gc(unsigned long r) {
 }
 
 /**
+ * Compara que las reglas sean iguales en nombre y longitud
+ * 
+ * @info
+ * @rule
+ * @return: 0 success, 1 failure
+ */
+static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule) {
+	if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
+		return 1;
+	if (info->rule_name_len != rule->rule_name_len)
+		return 1;
+
+	return 0;
+}
+
+/**
  * Si la regla existe en la lista, devuelve un puntero a la regla.
  *
  * @info
@@ -264,7 +280,7 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
 		list_for_each_safe(pos, n, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
 
-			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0)
+			if (rulecmp(info, rule) == 0)
 				return rule;
 		}		
 	}
@@ -289,7 +305,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 		list_for_each(pos, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
 			/* If the rule exists. */
-			if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
+			if (rulecmp(info, rule) == 0) {
 				rule->ref_count++;
 #if DEBUG
 				printk(KERN_DEBUG MOD "add_rule() (E) rule found: %s - ref_count: %d\n", 
@@ -307,6 +323,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 
 	INIT_LIST_HEAD(&rule->head);
 	strncpy(rule->rule_name, info->rule_name, info->rule_name_len);
+	rule->rule_name_len = info->rule_name_len;
 	rule->ref_count	= 1;
 	rule->max_time 	= info->max_time;
 
@@ -347,7 +364,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	list_for_each(pos, &rule_hashtable[hash]) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
 		/* If the rule exists. */
-		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) == 0) {
+		if (rulecmp(info, rule) == 0) {
 			found = 1;
 			rule->ref_count--;
 			break;
