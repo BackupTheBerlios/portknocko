@@ -24,3 +24,9 @@ DONE:
 - By Fender. Macros de funcion a funciones inline.
 - By Lucho. auth with hmac, --secure option
 - By Lucho. hash tables for peers and rules.
+- By Fender. Entrada en /proc/net/ipt_pknock para ver, por regla, el estado de los peers.
+- By Fender. Imlementacion de un garbage collector para eliminar estados de peers automaticamente.
+- By Fender. Tiempo max permitido para golpear cada puerto especificado.
+- By Fender. Implementacion de listas a traves de la linux/list.h.
+- By Fender. Implementacion de portknocking como una extension de netfilter y
+  su correspondiente modulo iptables para espacio de usuario.
