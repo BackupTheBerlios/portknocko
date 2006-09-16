@@ -20,11 +20,11 @@ function expect() {
 }
 
 function knock() {
-	scripts/knocker.sh $1 $2
+	scripts/knocker.sh $1 $2 $digest_file
 }
 
 function set_hmac() {
-	scripts/build_digest.sh $1 $2
+	scripts/build_digest.sh $1 $2 $digest_file
 }
 
 function init() {
