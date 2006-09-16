@@ -22,3 +22,5 @@ DONE:
 - By Lucho. some memory leaks fixed
 - By Fender. Portknocking en una regla.
 - By Fender. Macros de funcion a funciones inline.
+- By Lucho. auth with hmac, --secure option
+- By Lucho. hash tables for peers and rules.

@@ -1,7 +1,7 @@
 #!/bin/sh
-if [ -z $3 ]; then
-    echo "usage: ./install <rule_hashsize> <peer_hashsize> <the_secret>" 
+if [ -z $2 ]; then
+    echo "usage: ./install <rule_hashsize> <peer_hashsize>" 
     exit 1
 fi
 
-make && make install && depmod -ae && insmod ./ipt_pknock.ko rule_hashsize=$1 peer_hashsize=$2 secret=$3
+make && make install && depmod -ae && insmod ./ipt_pknock.ko rule_hashsize=$1 peer_hashsize=$2

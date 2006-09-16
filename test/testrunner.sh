@@ -1,11 +1,8 @@
 #!/bin/bash
 
 function load() {
-	if  [ -z $1 ]; then
-		insmod ../kernel/ipt_pknock.ko
-	else
-		insmod ../kernel/ipt_pknock.ko $1
-	fi
+	modprobe cn
+	insmod ../kernel/ipt_pknock.ko
 }
 
 function unload() {

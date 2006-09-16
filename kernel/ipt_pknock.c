@@ -53,6 +53,8 @@ static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 static char *algo = "md5";
 
 /**
+ * Calculates a value from 0 to max from a hash of the arguments.
+ * 
  * @key
  * @length
  * @initval
@@ -64,6 +66,8 @@ static u32 pknock_hash(const void *key, u32 length, u32 initval, u32 max) {
 }
 
 /**
+ * Alloc a hashtable with n buckets.
+ * 
  * @size
  * return: hash
  */
@@ -211,7 +215,7 @@ static void peer_gc(unsigned long r) {
 }
 
 /**
- * Compara que las reglas sean iguales en nombre y longitud
+ * Compares length and name equality for the rules.
  * 
  * @info
  * @rule
@@ -227,7 +231,7 @@ static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *
 }
 
 /**
- * Si la regla existe en la lista, devuelve un puntero a la regla.
+ * Search the rule and returns a pointer if it exists.
  *
  * @info
  * @return: rule or NULL
@@ -482,7 +486,9 @@ static inline int is_allowed(struct peer *peer) {
 
 
 /**
- * Sends a message to user space through netlink sockets
+ * Sends a message to user space through netlink sockets.
+ * 
+ * @info
  */
 void send_to_userspace_nl(struct ipt_pknock_info *info) {
 	struct cn_msg *m;
@@ -571,21 +577,44 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 	return 0;
 }
 
+/**
+ * Prints any sequence of characters as hexadecimal.
+ *
+ * @buf
+ * @len
+ */
 static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
 	while (len--)
 		printk("%02x", *buf++);
 	printk("\n");
 }
 
-static void crypt_to_hex(char *out, char *md5, int size) {
+/**
+ * Transforms a sequence of characters to hexadecimal.
+ *
+ * @out: the hexadecimal result
+ * @crypt: the original sequence
+ * @size
+ */
+static void crypt_to_hex(char *out, char *crypt, int size) {
 	int i;
 	for (i=0; i < size; i++) {
-		unsigned char c = md5[i];
+		unsigned char c = crypt[i];
 		*out++ = '0' + ((c&0xf0)>>4) + (c>=0xa0)*('a'-'9'-1);
 		*out++ = '0' + (c&0x0f) + ((c&0x0f)>=0x0a)*('a'-'9'-1);
 	}
 }
 
+
+/**
+ * Checks that the payload has the hmac(secret+ipsrc).
+ *
+ * @secret
+ * @secret_len
+ * @ipsrc
+ * @payload
+ * @payload_len
+ */
 static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	struct scatterlist sg[2];
 	char result[64];

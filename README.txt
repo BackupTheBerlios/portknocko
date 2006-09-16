@@ -16,6 +16,9 @@ make install
 
 depmod -Ae
 
+note: if you use: "insmod ./ipt_pknock.ko", first you should do "modprobe cn" to load the netlink connector.
+
+
 iptables -P INPUT DROP
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -m state --state NEW -m pknock --knockports 2000,2001 --time 10 --name SSH -p tcp --dport 22 -j ACCEPT
