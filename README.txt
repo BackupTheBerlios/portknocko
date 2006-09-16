@@ -31,7 +31,7 @@ telnet yourserver 2001
 ssh user@yourserver
 
 
-how to run the tests:
+how to run the tests: (be careful, it will erase your loaded iptables rules)
 ---------------------
 
 cd test/
