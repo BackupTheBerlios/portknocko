@@ -24,6 +24,7 @@
 #define IPT_PKNOCK_MAX_BUF_LEN 	256
 
 #define DEBUG 1
+#define NETLINK_MSG 1
 
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */

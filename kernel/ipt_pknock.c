@@ -23,11 +23,14 @@
 #include <linux/scatterlist.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
-#include <linux/connector.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
 #include "ipt_pknock.h"
+
+#if NETLINK_MSG
+#include <linux/connector.h>
+#endif
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
@@ -490,7 +493,8 @@ static inline int is_allowed(struct peer *peer) {
  * 
  * @info
  */
-void send_to_userspace_nl(struct ipt_pknock_info *info) {
+#if NETLINK_MSG
+void msg_to_userspace_nl(struct ipt_pknock_info *info) {
 	struct cn_msg *m;
     	struct cb_id cn_test_id = { 0x123, 0x345 };
     	char data[64];
@@ -511,6 +515,7 @@ void send_to_userspace_nl(struct ipt_pknock_info *info) {
 		kfree(m);
 	} 
 }
+#endif
 
 /**
  * It updates the peer matching status.
@@ -548,8 +553,11 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
 #endif
+
+#if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
-		send_to_userspace_nl(info);
+		msg_to_userspace_nl(info);
+#endif
 
 		return 0;
 	}
