@@ -416,6 +416,16 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 	return NULL;
 }
 
+
+/**
+ * Reset the knock sequence status of the peer.
+ * 
+ * @peer
+ */
+static inline void reset_knock_status(struct peer *peer) {
+	peer->id_port_knocked = 1;
+}
+
 /**
  * It creates a new peer matching status.
  *
@@ -437,10 +447,12 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 	peer->proto 	= proto;
 	peer->status 	= ST_INIT;
 	peer->timestamp = jiffies/HZ;
-	peer->id_port_knocked = 0;
+	reset_knock_status(peer);
 
 	return peer;
 }
+
+
 
 /**
  * It adds a new peer matching status to the list.
@@ -458,7 +470,6 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 
 	peer->timestamp = jiffies/HZ;
 	peer->status = ST_MATCHING;
-	peer->id_port_knocked = 1;
 }
 
 /**
@@ -541,7 +552,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 #endif
 		if ((info->option & IPT_PKNOCK_STRICT)) {
 			/* Peer must start the sequence from scratch. */
-			peer->id_port_knocked = 1;
+			reset_knock_status(peer);
 		}
 		return 0;
 	}
