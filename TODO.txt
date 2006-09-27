@@ -3,15 +3,15 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- refinar el msg enviado al userspace.
+- For Lucho. Refinar el msg enviado al userspace.
 - BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
 	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
-- ver que tipos de datos se deben usar, por ej u32 o u_int32_t.
 
 
 DONE:
 -----
 
+- By Lucho. u32 y u_int32_t terminan siendo typedef del mismo dato de 32 bits. Usaremos u_int32_t.
 - Useless. revisar read_proc() y mostrar la lista de puertos y su estado.
 - By Lucho. Comunicacion kernel/user con "netlink"
 - By Lucho. Pasar el password en la regla de iptables.

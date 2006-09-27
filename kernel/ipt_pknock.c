@@ -43,7 +43,7 @@ MODULE_LICENSE("GPL");
 
 #define NL_MULTICAST_GROUP 1
 
-static u32 ipt_pknock_hash_rnd;
+static u_int32_t ipt_pknock_hash_rnd;
 
 static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
 static unsigned int ipt_pknock_peer_htable_size = DEFAULT_PEER_HASH_SIZE;
@@ -64,7 +64,7 @@ static char *algo = "md5";
  * @max
  * @return: ?
  */
-static u32 pknock_hash(const void *key, u32 length, u32 initval, u32 max) {
+static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initval, u_int32_t max) {
 	return jhash(key, length, initval) % max;
 }
 
@@ -786,7 +786,7 @@ static int checkentry(const char *tablename,
 
 	if (!rule_hashtable) {
 		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
-		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (u32));
+		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (u_int32_t));
 	}
 
 	if (!add_rule(info)) {
