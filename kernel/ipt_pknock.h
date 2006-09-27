@@ -20,8 +20,9 @@
 #define IPT_PKNOCK_STRICT  	0x0010
 
 
-#define IPT_PKNOCK_MAX_PORTS 	15
-#define IPT_PKNOCK_MAX_BUF_LEN 	256
+#define IPT_PKNOCK_MAX_PORTS 		15
+#define IPT_PKNOCK_MAX_BUF_LEN 		256
+#define IPT_PKNOCK_MAX_PASSWD_LEN 	32
 
 #define DEBUG 1
 #define NETLINK_MSG 1
@@ -29,7 +30,7 @@
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */
 	int		rule_name_len;
-	char		password[IPT_PKNOCK_MAX_BUF_LEN]; /* password */
+	char		password[IPT_PKNOCK_MAX_PASSWD_LEN]; /* password */
 	int		password_len;
 	u_int8_t 	count_ports;			/* number of ports */
 	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS];	/* port[,port,port,...] */

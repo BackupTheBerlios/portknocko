@@ -142,6 +142,7 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if (*flags & IPT_PKNOCK_NAME)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --name twice.\n");
 	
+		memset(info->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN);
 		strncpy(info->rule_name, optarg, IPT_PKNOCK_MAX_BUF_LEN);		
 		info->rule_name_len = strlen(info->rule_name);
 #if DEBUG
@@ -155,7 +156,8 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if (*flags & IPT_PKNOCK_SECURE)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --secure twice.\n");
 
-		strncpy(info->password, optarg, IPT_PKNOCK_MAX_BUF_LEN);	
+		memset(info->password, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
+		strncpy(info->password, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);	
 		info->password_len = strlen(info->password);
 
 		*flags |= IPT_PKNOCK_SECURE;
