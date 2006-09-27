@@ -505,21 +505,23 @@ static inline int is_allowed(struct peer *peer) {
  * @info
  */
 #if NETLINK_MSG
-void msg_to_userspace_nl(struct ipt_pknock_info *info) {
+void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) {
 	struct cn_msg *m;
     	struct cb_id cn_test_id = { 0x123, 0x345 };
-    	char data[64];
+	struct ipt_pknock_nl_msg nlmsg;
     
-    	m = kmalloc(sizeof(*m) + sizeof(data), GFP_ATOMIC);
+    	m = kmalloc(sizeof(*m) + sizeof(nlmsg), GFP_ATOMIC);
     	if (m) {
-        	memset(m, 0, sizeof(*m) + sizeof(data));
-        
+        	memset(m, 0, sizeof(*m) + sizeof(nlmsg));
 	        memcpy(&m->id, &cn_test_id, sizeof(m->id));
-        	m->seq = 0;
-	        m->len = sizeof(data);
-	        m->len = scnprintf(data, sizeof(data), info->rule_name) + 1;
-        
-	        memcpy(m + 1, data, m->len);
+
+        	m->seq = 0;		
+		m->len = sizeof(nlmsg);
+
+		nlmsg.peer_ip = peer->ip;
+		scnprintf(nlmsg.rule_name, info->rule_name_len + 1, info->rule_name);
+		
+	        memcpy(m + 1, (char *)&nlmsg, m->len);
         
 	        cn_netlink_send(m, NL_MULTICAST_GROUP, gfp_any());
         
@@ -567,7 +569,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 
 #if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
-		msg_to_userspace_nl(info);
+		msg_to_userspace_nl(info, peer);
 #endif
 
 		return 0;

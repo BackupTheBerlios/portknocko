@@ -24,7 +24,7 @@
 #define IPT_PKNOCK_MAX_BUF_LEN 	256
 
 #define DEBUG 1
-#define NETLINK_MSG 0
+#define NETLINK_MSG 1
 
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */
@@ -36,6 +36,12 @@ struct ipt_pknock_info {
 	unsigned long 	max_time;			/* max matching time between ports */
 	u_int8_t 	option;	/* --time, --knock-port */
 };
+
+struct ipt_pknock_nl_msg {
+	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	u_int32_t 		peer_ip;
+};
+
 
 enum status {ST_INIT=1, ST_MATCHING, ST_ALLOWED};
 

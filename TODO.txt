@@ -3,7 +3,8 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- For Lucho. Refinar el msg enviado al userspace.
+- For Lucho. Consultar a jjo sobre el msg enviado al userspace.
+- For Anyone. Revisar si realmente es necesario guardar rule_name_len.
 - BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
 	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
 
@@ -11,6 +12,7 @@ TODO:
 DONE:
 -----
 
+- By Lucho. Se envia al userspace una estructura que contiene rule_name + peer_ip
 - By Lucho. u32 y u_int32_t terminan siendo typedef del mismo dato de 32 bits. Usaremos u_int32_t.
 - Useless. revisar read_proc() y mostrar la lista de puertos y su estado.
 - By Lucho. Comunicacion kernel/user con "netlink"

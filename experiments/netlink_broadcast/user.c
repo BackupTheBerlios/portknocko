@@ -7,7 +7,7 @@
 #include <linux/netlink.h>
 #include <linux/connector.h>
 
-#define MAX_PAYLOAD 64
+#include "../../kernel/ipt_pknock.h"
 
 #define GROUP 1
 
@@ -16,7 +16,8 @@ struct msghdr msg;
 int sock_fd;
 
 unsigned char *buf = NULL;
-unsigned char *payload = NULL;
+
+struct ipt_pknock_nl_msg *nlmsg;
 
 int main() {
     socklen_t addrlen;
@@ -24,7 +25,9 @@ int main() {
     int group = GROUP; 
     struct cn_msg *cnmsg;
     
-    int i;
+    int i, buf_size;
+   
+    char *ip;
     
     sock_fd = socket(PF_NETLINK, SOCK_DGRAM, NETLINK_CONNECTOR);
     
@@ -50,8 +53,9 @@ int main() {
     dest_addr.nl_family = AF_NETLINK;
     dest_addr.nl_pid = 0;
     dest_addr.nl_groups = group;
-    
-    buf = (unsigned char *) malloc(MAX_PAYLOAD);
+   
+    buf_size = sizeof(struct ipt_pknock_nl_msg) + sizeof(struct cn_msg) + sizeof(struct nlmsghdr); 
+    buf = (unsigned char *) malloc(buf_size);
     
     if (!buf) {
     	perror("malloc()");
@@ -62,22 +66,25 @@ int main() {
     
     while(1) {
         
-        memset(buf, 0, MAX_PAYLOAD);
+        memset(buf, 0, buf_size);
         
-        status = recvfrom(sock_fd, buf, MAX_PAYLOAD, 0, (struct sockaddr *)&dest_addr, &addrlen);
+        status = recvfrom(sock_fd, buf, buf_size, 0, (struct sockaddr *)&dest_addr, &addrlen);
         
         if (status <= 0) {
             perror("recvfrom()");
             return 1;
         }
         
-        payload = buf + sizeof(struct cn_msg) + sizeof(struct nlmsghdr);
-        
-        printf("payload received from kernel: %s\n", payload);
+	nlmsg = (struct ipt_pknock_nl_msg *) (buf + sizeof(struct cn_msg) + sizeof(struct nlmsghdr));
+
+	ip = (char *)inet_ntoa((struct in_addr *) htonl(nlmsg->peer_ip));	
+        printf("rule_name: %s - ip %s\n", nlmsg->rule_name, ip);
         
     }
     
     close(sock_fd);
     
+    free(buf);
+
     return 0;
 }    
