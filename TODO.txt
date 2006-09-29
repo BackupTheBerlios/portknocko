@@ -13,6 +13,7 @@ TODO:
 DONE:
 -----
 
+- By Fender. Nuevo parametro 'gc_expir_time' para setear el tiempo de expiracion del garbage collector.
 - By Lucho. Se envia al userspace una estructura que contiene rule_name + peer_ip
 - By Lucho. u32 y u_int32_t terminan siendo typedef del mismo dato de 32 bits. Usaremos u_int32_t.
 - Useless. revisar read_proc() y mostrar la lista de puertos y su estado.
