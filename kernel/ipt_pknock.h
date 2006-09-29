@@ -24,6 +24,7 @@
 #define IPT_PKNOCK_MAX_BUF_LEN 		256
 #define IPT_PKNOCK_MAX_PASSWD_LEN 	32
 
+
 #define DEBUG 1
 #define NETLINK_MSG 1
 
@@ -35,7 +36,7 @@ struct ipt_pknock_info {
 	u_int8_t 	count_ports;			/* number of ports */
 	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS];	/* port[,port,port,...] */
 	unsigned long 	max_time;			/* max matching time between ports */
-	u_int8_t 	option;	/* --time, --knock-port */
+	u_int8_t 	option;				/* --time, --knock-port, ... */
 };
 
 struct ipt_pknock_nl_msg {
