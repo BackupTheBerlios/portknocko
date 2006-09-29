@@ -36,7 +36,7 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define EXPIRATION_TIME 10000 /* in msecs */
+#define GC_EXPIRATION_TIME 10000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -47,6 +47,8 @@ static u_int32_t ipt_pknock_hash_rnd;
 
 static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
 static unsigned int ipt_pknock_peer_htable_size = DEFAULT_PEER_HASH_SIZE;
+
+static unsigned int ipt_pknock_gc_expir_time 	= GC_EXPIRATION_TIME;
 
 static struct list_head *rule_hashtable = NULL;
 
@@ -114,6 +116,7 @@ static inline void print_ip_packet(struct iphdr *iph) {
  * This function converts the status from integer to string.
  *
  * @status
+ * @return: status
  */
 static inline const char *status_itoa(enum status status) {
 	switch (status) {
@@ -262,7 +265,7 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
  * It adds a rule to list only if it doesn't exist.
  *
  * @info
- * @return: 1 success, 0 otherwise
+ * @return: 1 success, 0 failure
  */
 static int add_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
@@ -347,6 +350,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 #endif
 		return;
 	}
+	
 	if (rule != NULL && rule->ref_count == 0) {
 		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
 			list_for_each_safe(pos, n, &rule->peer_head[i]) {
@@ -384,7 +388,7 @@ static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
 	del_timer(&rule->timer); /* Deactivates the timer. */
 
 	init_timer(&rule->timer);
-	rule->timer.expires 	= jiffies + msecs_to_jiffies(EXPIRATION_TIME);
+	rule->timer.expires 	= jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
 	rule->timer.data	= (unsigned long)rule;
 	rule->timer.function 	= peer_gc;
 
@@ -815,12 +819,11 @@ static struct ipt_match ipt_pknock_match = {
 };
 
 static int set_rule_hashsize(const char *val, struct kernel_param *kp) {
-	int hashsize;
+	unsigned int hashsize;
 
 	hashsize = simple_strtol(val, NULL, 0);
 
-	if (!hashsize)
-		return -EINVAL;
+	if (!hashsize) return -EINVAL;
 
 	ipt_pknock_rule_htable_size = hashsize;
 
@@ -828,22 +831,34 @@ static int set_rule_hashsize(const char *val, struct kernel_param *kp) {
 }
 
 static int set_peer_hashsize(const char *val, struct kernel_param *kp) {
-	int hashsize;
+	unsigned int hashsize;
 
 	hashsize = simple_strtol(val, NULL, 0);
 
-	if (!hashsize)
-		return -EINVAL;
+	if (!hashsize) return -EINVAL;
 
 	ipt_pknock_peer_htable_size = hashsize;
 
 	return 0;
 }	
 
+static int set_gc_expir_time(const char *val, struct kernel_param *kp) {
+	unsigned int gc_expir_time;
+
+	gc_expir_time = simple_strtol(val, NULL, 0);
+
+	if (!gc_expir_time) return -EINVAL;
+
+	ipt_pknock_gc_expir_time = gc_expir_time;
+		
+	return 0;
+}	
+
 module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, &ipt_pknock_rule_htable_size, 0600);
 module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, &ipt_pknock_peer_htable_size, 0600);
+module_param_call(gc_expir_time, set_gc_expir_time, param_get_uint, &ipt_pknock_gc_expir_time, 0600); 
 
-static int __init init(void) 
+static int __init ipt_pknock_init(void) 
 {
 	printk(KERN_INFO MOD "register.\n");
 
@@ -854,7 +869,7 @@ static int __init init(void)
 	return ipt_register_match(&ipt_pknock_match);
 }
 
-static void __exit fini(void)
+static void __exit ipt_pknock_fini(void)
 {
 	printk(KERN_INFO MOD "unregister.\n");
 	remove_proc_entry("ipt_pknock", proc_net);
@@ -863,5 +878,5 @@ static void __exit fini(void)
 	kfree(rule_hashtable);
 }
 
-module_init(init);
-module_exit(fini);
+module_init(ipt_pknock_init);
+module_exit(ipt_pknock_fini);
