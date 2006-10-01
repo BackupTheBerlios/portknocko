@@ -21,9 +21,9 @@
 
 
 #define IPT_PKNOCK_MAX_PORTS 		15
-#define IPT_PKNOCK_MAX_BUF_LEN 		256
+#define IPT_PKNOCK_MAX_BUF_LEN 		8
 #define IPT_PKNOCK_MAX_PASSWD_LEN 	32
-
+#define IPT_PKNOCK_MAX_BUF_KER_LEN 	256
 
 #define DEBUG 1
 #define NETLINK_MSG 1
@@ -64,7 +64,7 @@ struct peer {
 
 struct ipt_pknock_rule {
 	struct list_head 	head;
-	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	char			rule_name[IPT_PKNOCK_MAX_BUF_KER_LEN];
 	int			rule_name_len;
 	unsigned int		ref_count;
 	struct timer_list 	timer;		/* garbage collector timer */
