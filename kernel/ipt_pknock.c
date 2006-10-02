@@ -303,6 +303,10 @@ static int add_rule(struct ipt_pknock_info *info) {
 
 	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
 
+	init_timer(&rule->timer);
+	rule->timer.function 	= peer_gc;
+	rule->timer.data	= (unsigned long)rule;
+
 	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
 					proc_net_ipt_pknock, read_proc, rule))) {
 		printk(KERN_ERR MOD "create_proc_entry() error in add_rule() function.\n");
@@ -370,7 +374,9 @@ static void remove_rule(struct ipt_pknock_info *info) {
 #if DEBUG
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", rule->rule_name);
 #endif
-		//del_timer(&rule->timer);
+		if (timer_pending(&rule->timer)) {
+			del_timer(&rule->timer);
+		}
 
 		list_del(&rule->head);
 		kfree(rule->peer_head);
@@ -385,13 +391,10 @@ static void remove_rule(struct ipt_pknock_info *info) {
  * @rule
  */
 static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
-	del_timer(&rule->timer); /* Deactivates the timer. */
-
-	init_timer(&rule->timer);
-	rule->timer.expires 	= jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
-	rule->timer.data	= (unsigned long)rule;
-	rule->timer.function 	= peer_gc;
-
+	if (timer_pending(&rule->timer)) {
+		del_timer(&rule->timer);
+	}
+	rule->timer.expires = jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
 	add_timer(&rule->timer);
 }
 
@@ -743,7 +746,7 @@ static int match(const struct sk_buff *skb,
 	}
 	
 	/* Updates the rule timer to execute the garbage collector. */
-	//update_rule_timer(rule);
+	update_rule_timer(rule);
 	
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);

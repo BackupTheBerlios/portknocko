@@ -9,4 +9,4 @@ scripts/init.sh
 
 insmod ../kernel/ipt_pknock.ko
 		
-iptables -A INPUT -m state --state NEW -m pknock --secure $1 --name SSH --time 5 --knockports 2000 -p udp --dport 22 -j ACCEPT
+iptables -A INPUT -m state --state NEW -m pknock --name SSH --time 10 --knockports 2000,2001,2002,2003 -p tcp --dport 22 -j ACCEPT
