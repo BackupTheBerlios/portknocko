@@ -43,7 +43,7 @@ MODULE_LICENSE("GPL");
 
 #define NL_MULTICAST_GROUP 1
 
-#define hashtable_for_each(pos, n, head, size, i) \
+#define hashtable_for_each_safe(pos, n, head, size, i) \
 	for ((i) = 0; (i) < (size); (i)++) \
 		list_for_each_safe((pos), (n), (&head[(i)]))
 
@@ -159,7 +159,7 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 
 	max_time = rule->max_time;
 
-	hashtable_for_each(p, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+	hashtable_for_each_safe(p, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(p, struct peer, head);
 
 		status = status_itoa(peer->status);
@@ -206,7 +206,7 @@ static void peer_gc(unsigned long r) {
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	
-	hashtable_for_each(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
 		if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
 #if DEBUG
@@ -356,7 +356,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	}
 
 	if (rule != NULL && rule->ref_count == 0) {
-		hashtable_for_each(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+		hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 			peer = list_entry(pos, struct peer, head);
 			if (peer != NULL) {
 #if DEBUG	
