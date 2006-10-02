@@ -43,6 +43,10 @@ MODULE_LICENSE("GPL");
 
 #define NL_MULTICAST_GROUP 1
 
+#define hashtable_for_each(pos, n, head, size, i) \
+	for ((i) = 0; (i) < (size); (i)++) \
+		list_for_each_safe((pos), (n), (&head[(i)]))
+
 static u_int32_t ipt_pknock_hash_rnd;
 
 static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
@@ -142,7 +146,7 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 	off_t pos = 0, begin = 0;
 	u_int32_t ip;
 	const char *status = NULL, *proto = NULL;
-	struct list_head *p = NULL;
+	struct list_head *p = NULL, *n = NULL;
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
 	unsigned long expiration_time = 0, max_time = 0;
@@ -155,34 +159,31 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 
 	max_time = rule->max_time;
 
-	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
-		list_for_each(p, &rule->peer_head[i]) {
-			peer = list_entry(p, struct peer, head);
+	hashtable_for_each(p, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+		peer = list_entry(p, struct peer, head);
 
-			status = status_itoa(peer->status);
+		status = status_itoa(peer->status);
 
-			proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
-			ip = htonl(peer->ip);
+		proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
+		ip = htonl(peer->ip);
 
-			expiration_time = time_before(jiffies/HZ, peer->timestamp + max_time) ?
-				((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
+		expiration_time = time_before(jiffies/HZ, peer->timestamp + max_time) ?
+			((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
 
-			len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", NIPQUAD(ip));
-			len += snprintf(buf+len, limit-len, "proto=%s ", proto);
-			len += snprintf(buf+len, limit-len, "status=%s ", status);
-			len += snprintf(buf+len, limit-len, "expiration_time=%ld ", 
-					expiration_time);
-			len += snprintf(buf+len, limit-len, "next_port_id=%d ",
-					peer->id_port_knocked-1);
-			len += snprintf(buf+len, limit-len, "\n");
+		len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", NIPQUAD(ip));
+		len += snprintf(buf+len, limit-len, "proto=%s ", proto);
+		len += snprintf(buf+len, limit-len, "status=%s ", status);
+		len += snprintf(buf+len, limit-len, "expiration_time=%ld ", 
+				expiration_time);
+		len += snprintf(buf+len, limit-len, "next_port_id=%d ",
+				peer->id_port_knocked-1);
+		len += snprintf(buf+len, limit-len, "\n");
 
-			limit -= len;
+		limit -= len;
 
-			pos = begin + len;
-			if(pos < offset) { len = 0; begin = pos; }
-			if(pos > offset + count) { len = 0; break; }
-		}
-
+		pos = begin + len;
+		if(pos < offset) { len = 0; begin = pos; }
+		if(pos > offset + count) { len = 0; break; }
 	}
 
 	*start = buf + (offset - begin);
@@ -205,17 +206,15 @@ static void peer_gc(unsigned long r) {
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	
-	for (i = 0; i < ipt_pknock_peer_htable_size; i++) {
-		list_for_each_safe(pos, n, &rule->peer_head[i]) {
-			peer = list_entry(pos, struct peer, head);
-			if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
+	hashtable_for_each(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+		peer = list_entry(pos, struct peer, head);
+		if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
 #if DEBUG
-				printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
-						NIPQUAD(peer->ip));
+			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
+					NIPQUAD(peer->ip));
 #endif		
-				list_del(pos);
-				kfree(peer);
-			}
+			list_del(pos);
+			kfree(peer);
 		}
 	}
 }
@@ -269,13 +268,13 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
  */
 static int add_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
-	struct list_head *pos = NULL;
+	struct list_head *pos = NULL, *n = NULL;
 
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, 
 				ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
 
 	if (!list_empty(&rule_hashtable[hash])) {
-		list_for_each(pos, &rule_hashtable[hash]) {
+		list_for_each_safe(pos, n, &rule_hashtable[hash]) {
 			rule = list_entry(pos, struct ipt_pknock_rule, head);
 			/* If the rule exists. */
 			if (rulecmp(info, rule) == 0) {
@@ -339,7 +338,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 
 	if (list_empty(&rule_hashtable[hash])) return;
 
-	list_for_each(pos, &rule_hashtable[hash]) {
+	list_for_each_safe(pos, n, &rule_hashtable[hash]) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
 		/* If the rule exists. */
 		if (rulecmp(info, rule) == 0) {
@@ -355,19 +354,17 @@ static void remove_rule(struct ipt_pknock_info *info) {
 #endif
 		return;
 	}
-	
+
 	if (rule != NULL && rule->ref_count == 0) {
-		for (i = 0; i < ipt_pknock_peer_htable_size; i++) {		
-			list_for_each_safe(pos, n, &rule->peer_head[i]) {
-				peer = list_entry(pos, struct peer, head);
-				if (peer != NULL) {
+		hashtable_for_each(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
+			peer = list_entry(pos, struct peer, head);
+			if (peer != NULL) {
 #if DEBUG	
-					printk(KERN_INFO MOD "(D) peer deleted: %u.%u.%u.%u\n", 
-							NIPQUAD(peer->ip));
+				printk(KERN_INFO MOD "(D) peer deleted: %u.%u.%u.%u\n", 
+						NIPQUAD(peer->ip));
 #endif				
-					list_del(pos);
-					kfree(peer);
-				}
+				list_del(pos);
+				kfree(peer);
 			}
 		}
 		if (rule->status_proc) remove_proc_entry(info->rule_name, proc_net_ipt_pknock);

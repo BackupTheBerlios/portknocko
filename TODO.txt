@@ -12,6 +12,7 @@ TODO:
 DONE:
 -----
 
+- By Lucho. Agregada macro hashtable_for_each()
 - By Lucho. Bug fixed al setear el buffer de la regla a menos de 256 (y hacia explotar los timers).
 - By Fender. Nuevo parametro 'gc_expir_time' para setear el tiempo de expiracion del garbage collector.
 - By Lucho. Se envia al userspace una estructura que contiene rule_name + peer_ip
