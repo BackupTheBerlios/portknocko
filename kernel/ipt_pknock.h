@@ -13,11 +13,12 @@
 
 #define MOD "ipt_pknock: "
 
-#define IPT_PKNOCK_KNOCKPORT 	0x0001
-#define IPT_PKNOCK_TIME  	0x0002
-#define IPT_PKNOCK_NAME  	0x0004
-#define IPT_PKNOCK_SECURE  	0x0008
-#define IPT_PKNOCK_STRICT  	0x0010
+#define IPT_PKNOCK_KNOCKPORT 	0x01
+#define IPT_PKNOCK_TIME  	0x02
+#define IPT_PKNOCK_NAME  	0x04
+#define IPT_PKNOCK_SECURE  	0x08
+#define IPT_PKNOCK_STRICT  	0x10
+#define IPT_PKNOCK_CHECK  	0x20
 
 
 #define IPT_PKNOCK_MAX_PORTS 		15

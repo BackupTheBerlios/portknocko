@@ -279,9 +279,14 @@ static int add_rule(struct ipt_pknock_info *info) {
 			/* If the rule exists. */
 			if (rulecmp(info, rule) == 0) {
 				rule->ref_count++;
+				
+				if (info->option & IPT_PKNOCK_CHECK) {
+					printk(KERN_DEBUG MOD "add_rule() (AC) rule found: %s - ref_count: %d\n", rule->rule_name, rule->ref_count);
+				 
+					 return 1;
+				 }
 #if DEBUG
-				printk(KERN_DEBUG MOD "add_rule() (E) rule found: %s - ref_count: %d\n", 
-						rule->rule_name, rule->ref_count);
+				printk(KERN_DEBUG MOD "add_rule() (E) rule found: %s - ref_count: %d\n", rule->rule_name, rule->ref_count);
 #endif				
 				return 1;
 			}
@@ -747,6 +752,16 @@ static int match(const struct sk_buff *skb,
 	
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
+
+	if ((info->option & IPT_PKNOCK_CHECK)) {
+		ret = is_allowed(peer);
+#if DEBUG
+		if (ret) {
+			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK CHECKED.\n", NIPQUAD(peer->ip));
+		}
+#endif
+		goto end;
+	}
 
 	/* If security is needed and the peer is still knocking ... */
 	if ((info->option & IPT_PKNOCK_SECURE) && !is_allowed(peer)) {

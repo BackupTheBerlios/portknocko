@@ -1,0 +1,25 @@
+load
+
+##########################
+rule_set "MYRULE" "9990,9991"
+expect "MYRULE,(A)"
+
+rule_check "MYRULE" "22"
+expect "MYRULE,(AC)"
+
+knock_udp "10.11.12.13" "22"
+expect "!PASS OK"
+knock_tcp "10.11.12.13" "22"
+expect "!PASS OK"
+
+knock_udp "10.11.12.13" "9990"
+expect "MATCHING"
+
+knock_udp "10.11.12.13" "9991"
+expect "ALLOWED"
+
+knock_tcp "10.11.12.13" "22"
+expect "PASS OK CHECKED"
+##########################
+
+unload

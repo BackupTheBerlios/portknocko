@@ -3,13 +3,12 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- PROBLEM: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
-	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
-
+- For Anyone. Documentar en README y en doc/ los != escenarios de como usar el modulo.
 
 DONE:
 -----
 
+- By Fender & Lucho. Posibilidad de knockear con udp por ejemplo y habilitar el trafico tcp. Para esto se utilizan 2 reglas de iptables.
 - By Lucho. Agregada macro hashtable_for_each()
 - By Lucho. Bug fixed al setear el buffer de la regla a menos de 256 (y hacia explotar los timers).
 - By Fender. Nuevo parametro 'gc_expir_time' para setear el tiempo de expiracion del garbage collector.

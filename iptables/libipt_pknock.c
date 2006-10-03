@@ -25,6 +25,7 @@ static struct option opts[] = {
 	{ .name = "name", 	.has_arg = 1, 	.flag = 0, 	.val = 'n' },
 	{ .name = "secure", 	.has_arg = 1, 	.flag = 0, 	.val = 's' },
 	{ .name = "strict", 	.has_arg = 0, 	.flag = 0, 	.val = 'x' },
+	{ .name = "checkip", 	.has_arg = 0, 	.flag = 0, 	.val = 'c' },
 	{ .name = 0 }
 };
 
@@ -164,6 +165,13 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		info->option |= IPT_PKNOCK_SECURE;
 		break;
 	
+	case 'c': /* --checkip */
+		if (*flags & IPT_PKNOCK_CHECK)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't use --checkip twice.\n");
+		*flags |= IPT_PKNOCK_CHECK;
+		info->option |= IPT_PKNOCK_CHECK;
+		break;
+
 	case 'x': /* --strict */
 		if (*flags & IPT_PKNOCK_STRICT)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --strict twice.\n");
@@ -225,6 +233,7 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	if (info->option & IPT_PKNOCK_NAME) printf("--name %s ", info->rule_name);
 	if (info->option & IPT_PKNOCK_SECURE) printf("--secure ");
 	if (info->option & IPT_PKNOCK_STRICT) printf("--strict ");
+	if (info->option & IPT_PKNOCK_CHECK) printf("--checkip ");
 }
 
 
