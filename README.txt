@@ -65,10 +65,27 @@ $ util/knock.sh <IP src> <PORT dst> <secret>
 e.g: util/knock.sh 127.0.0.1 2000 your_secret
 
 
+COMUNICATION WITH THE USERSPACE:
+--------------------------------
+
+In other port knocking implementations, there is a server that periodically looks up the firewall logs for a correct sequence of port knocks. When it is found, the server usually set a new iptable rule. 
+
+A great possibility would be if the server just listens and receives a msg when something interesting happens. If this would be possible, surely it must simplify the architecture of the server and make it more efficient.
+
+Thanks to netlink sockets, a message from this kernel module is sent to the userspace each time a peer match a knock sequence.
+So for example you could have a server listening in the userspace and when someone matches the sequence, the server receives a msg allowing you to do whatever you want. e.g: you could start a webserver, add the peer to a whilelist, etc. everything in a smooth and efficient way.
+
+step by step:
+
+1) edit ipt_pknock.h and set #define NETLINK_MSG 1
+2) compile and load the module
+3) load the server. There is a minimal userspace implementation in experiments/netlink_broadcast that prints a msg each time someone matches the sequence.
+
+
 TESTS: (be careful, it will erase your loaded iptables rules)
 ------
 
-if you are a developer you want to run these while you refactor the code.
+* if you are a developer you want to run these while you refactor the code *
 
 cd test/
 ./testrunner.sh all.test
