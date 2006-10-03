@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>kmalloc()/kfree()
+    include/linux/slab.h</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Common Routines"
+HREF="c140.html"><LINK
+REL="PREVIOUS"
+TITLE="
+    copy_[to/from]_user()
+    /
+    get_user()
+    /
+    put_user()
+    include/asm/uaccess.h
+   "
+HREF="x158.html"><LINK
+REL="NEXT"
+TITLE="current
+    include/asm/current.h"
+HREF="x220.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x158.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 6. Common Routines</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x220.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="routines-kmalloc"
+>6.3. <CODE
+CLASS="function"
+>kmalloc()</CODE
+>/<CODE
+CLASS="function"
+>kfree()</CODE
+>
+    <TT
+CLASS="filename"
+>include/linux/slab.h</TT
+></A
+></H1
+><P
+>&#13;    <SPAN
+CLASS="emphasis"
+><I
+CLASS="emphasis"
+>[MAY SLEEP: SEE BELOW]</I
+></SPAN
+>
+   </P
+><P
+>&#13;    These routines are used to dynamically request pointer-aligned
+    chunks of memory, like malloc and free do in userspace, but
+    <CODE
+CLASS="function"
+>kmalloc()</CODE
+> takes an extra flag word.
+    Important values:
+   </P
+><P
+></P
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+><CODE
+CLASS="constant"
+>&#13;       GFP_KERNEL
+      </CODE
+></DT
+><DD
+><P
+>&#13;       May sleep and swap to free memory. Only allowed in user
+       context, but is the most reliable way to allocate memory.
+      </P
+></DD
+><DT
+><CODE
+CLASS="constant"
+>&#13;       GFP_ATOMIC
+      </CODE
+></DT
+><DD
+><P
+>&#13;       Don't sleep. Less reliable than <CODE
+CLASS="constant"
+>GFP_KERNEL</CODE
+>,
+       but may be called from interrupt context. You should
+       <SPAN
+CLASS="emphasis"
+><I
+CLASS="emphasis"
+>really</I
+></SPAN
+> have a good out-of-memory
+       error-handling strategy.
+      </P
+></DD
+><DT
+><CODE
+CLASS="constant"
+>&#13;       GFP_DMA
+      </CODE
+></DT
+><DD
+><P
+>&#13;       Allocate ISA DMA lower than 16MB. If you don't know what that
+       is you don't need it.  Very unreliable.
+      </P
+></DD
+></DL
+></DIV
+><P
+>&#13;    If you see a <SPAN
+CLASS="errorname"
+>sleeping function called from invalid
+    context</SPAN
+> warning message, then maybe you called a
+    sleeping allocation function from interrupt context without
+    <CODE
+CLASS="constant"
+>GFP_ATOMIC</CODE
+>.  You should really fix that.
+    Run, don't walk.
+   </P
+><P
+>&#13;    If you are allocating at least <CODE
+CLASS="constant"
+>PAGE_SIZE</CODE
+>
+    (<TT
+CLASS="filename"
+>include/asm/page.h</TT
+>) bytes,
+    consider using <CODE
+CLASS="function"
+>__get_free_pages()</CODE
+>
+
+    (<TT
+CLASS="filename"
+>include/linux/mm.h</TT
+>).  It
+    takes an order argument (0 for page sized, 1 for double page, 2
+    for four pages etc.) and the same memory priority flag word as
+    above.
+   </P
+><P
+>&#13;    If you are allocating more than a page worth of bytes you can use
+    <CODE
+CLASS="function"
+>vmalloc()</CODE
+>.  It'll allocate virtual memory in
+    the kernel map.  This block is not contiguous in physical memory,
+    but the <ACRONYM
+CLASS="acronym"
+>MMU</ACRONYM
+> makes it look like it is for you
+    (so it'll only look contiguous to the CPUs, not to external device
+    drivers).  If you really need large physically contiguous memory
+    for some weird device, you have a problem: it is poorly supported
+    in Linux because after some time memory fragmentation in a running
+    kernel makes it hard.  The best way is to allocate the block early
+    in the boot process via the <CODE
+CLASS="function"
+>alloc_bootmem()</CODE
+>
+    routine.
+   </P
+><P
+>&#13;    Before inventing your own cache of often-used objects consider
+    using a slab cache in
+    <TT
+CLASS="filename"
+>include/linux/slab.h</TT
+>
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x158.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x220.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><CODE
+CLASS="function"
+>copy_[to/from]_user()</CODE
+>
+    /
+    <CODE
+CLASS="function"
+>get_user()</CODE
+>
+    /
+    <CODE
+CLASS="function"
+>put_user()</CODE
+>
+    <TT
+CLASS="filename"
+>include/asm/uaccess.h</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c140.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><CODE
+CLASS="function"
+>current</CODE
+>
+    <TT
+CLASS="filename"
+>include/asm/current.h</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

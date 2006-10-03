@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Common Problems</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Protecting The Objects Themselves"
+HREF="x378.html"><LINK
+REL="NEXT"
+TITLE="Preventing Deadlock"
+HREF="x443.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x378.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x443.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="common-problems"
+></A
+>Chapter 7. Common Problems</H1
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="deadlock"
+>7.1. Deadlock: Simple and Advanced</A
+></H1
+><P
+>&#13;      There is a coding bug where a piece of code tries to grab a
+      spinlock twice: it will spin forever, waiting for the lock to
+      be released (spinlocks, rwlocks and semaphores are not
+      recursive in Linux).  This is trivial to diagnose: not a
+      stay-up-five-nights-talk-to-fluffy-code-bunnies kind of
+      problem.
+    </P
+><P
+>&#13;      For a slightly more complex case, imagine you have a region
+      shared by a softirq and user context.  If you use a
+      <CODE
+CLASS="function"
+>spin_lock()</CODE
+> call to protect it, it is 
+      possible that the user context will be interrupted by the softirq
+      while it holds the lock, and the softirq will then spin
+      forever trying to get the same lock.
+    </P
+><P
+>&#13;      Both of these are called deadlock, and as shown above, it can
+      occur even with a single CPU (although not on UP compiles,
+      since spinlocks vanish on kernel compiles with 
+      <CODE
+CLASS="symbol"
+>CONFIG_SMP</CODE
+>=n. You'll still get data corruption 
+      in the second example).
+    </P
+><P
+>&#13;      This complete lockup is easy to diagnose: on SMP boxes the
+      watchdog timer or compiling with <CODE
+CLASS="symbol"
+>DEBUG_SPINLOCKS</CODE
+> set
+      (<TT
+CLASS="filename"
+>include/linux/spinlock.h</TT
+>) will show this up 
+      immediately when it happens.
+    </P
+><P
+>&#13;      A more complex problem is the so-called 'deadly embrace',
+      involving two or more locks.  Say you have a hash table: each
+      entry in the table is a spinlock, and a chain of hashed
+      objects.  Inside a softirq handler, you sometimes want to
+      alter an object from one place in the hash to another: you
+      grab the spinlock of the old hash chain and the spinlock of
+      the new hash chain, and delete the object from the old one,
+      and insert it in the new one.
+    </P
+><P
+>&#13;      There are two problems here.  First, if your code ever
+      tries to move the object to the same chain, it will deadlock
+      with itself as it tries to lock it twice.  Secondly, if the
+      same softirq on another CPU is trying to move another object
+      in the reverse direction, the following could happen:
+    </P
+><DIV
+CLASS="table"
+><A
+NAME="AEN428"
+></A
+><P
+><B
+>Table 7-1. Consequences</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>CPU 1</TH
+><TH
+>CPU 2</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>Grab lock A -&#62; OK</TD
+><TD
+>Grab lock B -&#62; OK</TD
+></TR
+><TR
+><TD
+>Grab lock B -&#62; spin</TD
+><TD
+>Grab lock A -&#62; spin</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>&#13;      The two CPUs will spin forever, waiting for the other to give up
+      their lock.  It will look, smell, and feel like a crash.
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x378.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x443.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Protecting The Objects Themselves</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Preventing Deadlock</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

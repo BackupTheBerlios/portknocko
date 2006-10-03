@@ -1,0 +1,269 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Common Routines</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Recipes for Deadlock"
+HREF="c124.html"><LINK
+REL="NEXT"
+TITLE="
+    copy_[to/from]_user()
+    /
+    get_user()
+    /
+    put_user()
+    include/asm/uaccess.h
+   "
+HREF="x158.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c124.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x158.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="common-routines"
+></A
+>Chapter 6. Common Routines</H1
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="routines-printk"
+>6.1. <CODE
+CLASS="function"
+>printk()</CODE
+>
+    <TT
+CLASS="filename"
+>include/linux/kernel.h</TT
+></A
+></H1
+><P
+>&#13;    <CODE
+CLASS="function"
+>printk()</CODE
+> feeds kernel messages to the
+    console, dmesg, and the syslog daemon.  It is useful for debugging
+    and reporting errors, and can be used inside interrupt context,
+    but use with caution: a machine which has its console flooded with
+    printk messages is unusable.  It uses a format string mostly
+    compatible with ANSI C printf, and C string concatenation to give
+    it a first "priority" argument:
+   </P
+><PRE
+CLASS="programlisting"
+>&#13;printk(KERN_INFO "i = %u\n", i);
+   </PRE
+><P
+>&#13;    See <TT
+CLASS="filename"
+>include/linux/kernel.h</TT
+>;
+    for other KERN_ values; these are interpreted by syslog as the
+    level.  Special case: for printing an IP address use
+   </P
+><PRE
+CLASS="programlisting"
+>&#13;__u32 ipaddress;
+printk(KERN_INFO "my ip: %d.%d.%d.%d\n", NIPQUAD(ipaddress));
+   </PRE
+><P
+>&#13;    <CODE
+CLASS="function"
+>printk()</CODE
+> internally uses a 1K buffer and does
+    not catch overruns.  Make sure that will be enough.
+   </P
+><DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;     You will know when you are a real kernel hacker
+     when you start typoing printf as printk in your user programs :)
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
+CLASS="note"
+><P
+></P
+><TABLE
+CLASS="note"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/note.gif"
+HSPACE="5"
+ALT="Note"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;     Another sidenote: the original Unix Version 6 sources had a
+     comment on top of its printf function: "Printf should not be
+     used for chit-chat".  You should follow that advice.
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c124.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x158.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Recipes for Deadlock</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><CODE
+CLASS="function"
+>copy_[to/from]_user()</CODE
+>
+    /
+    <CODE
+CLASS="function"
+>get_user()</CODE
+>
+    /
+    <CODE
+CLASS="function"
+>put_user()</CODE
+>
+    <TT
+CLASS="filename"
+>include/asm/uaccess.h</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

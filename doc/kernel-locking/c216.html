@@ -1,0 +1,491 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Cheat Sheet For Locking</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Locking Between Two Hard IRQ Handlers"
+HREF="x212.html"><LINK
+REL="NEXT"
+TITLE="Common Examples"
+HREF="c328.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x212.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c328.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="cheatsheet"
+></A
+>Chapter 5. Cheat Sheet For Locking</H1
+><P
+>&#13;     Pete Zaitcev gives the following summary:
+   </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;          If you are in a process context (any syscall) and want to
+	lock other process out, use a semaphore.  You can take a semaphore
+	and sleep (<CODE
+CLASS="function"
+>copy_from_user*(</CODE
+> or
+	<CODE
+CLASS="function"
+>kmalloc(x,GFP_KERNEL)</CODE
+>).
+      </P
+></LI
+><LI
+><P
+>&#13;	Otherwise (== data can be touched in an interrupt), use
+	<CODE
+CLASS="function"
+>spin_lock_irqsave()</CODE
+> and
+	<CODE
+CLASS="function"
+>spin_unlock_irqrestore()</CODE
+>.
+	</P
+></LI
+><LI
+><P
+>&#13;	Avoid holding spinlock for more than 5 lines of code and
+	across any function call (except accessors like
+	<CODE
+CLASS="function"
+>readb</CODE
+>).
+	</P
+></LI
+></UL
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="minimum-lock-reqirements"
+>5.1. Table of Minimum Requirements</A
+></H1
+><P
+> The following table lists the <SPAN
+CLASS="emphasis"
+><I
+CLASS="emphasis"
+>minimum</I
+></SPAN
+>
+	locking requirements between various contexts.  In some cases,
+	the same context can only be running on one CPU at a time, so
+	no locking is required for that context (eg. a particular
+	thread can only run on one CPU at a time, but if it needs
+	shares data with another thread, locking is required).
+   </P
+><P
+>&#13;	Remember the advice above: you can always use
+	<CODE
+CLASS="function"
+>spin_lock_irqsave()</CODE
+>, which is a superset
+	of all other spinlock primitives.
+   </P
+><DIV
+CLASS="table"
+><A
+NAME="AEN237"
+></A
+><P
+><B
+>Table 5-1. Table of Locking Requirements</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL><COL><COL><COL><COL><COL><COL><TBODY
+><TR
+><TD
+>&nbsp;</TD
+><TD
+>IRQ Handler A</TD
+><TD
+>IRQ Handler B</TD
+><TD
+>Softirq A</TD
+><TD
+>Softirq B</TD
+><TD
+>Tasklet A</TD
+><TD
+>Tasklet B</TD
+><TD
+>Timer A</TD
+><TD
+>Timer B</TD
+><TD
+>User Context A</TD
+><TD
+>User Context B</TD
+></TR
+><TR
+><TD
+>IRQ Handler A</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>IRQ Handler B</TD
+><TD
+>spin_lock_irqsave</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Softirq A</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Softirq B</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Tasklet A</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Tasklet B</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Timer A</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>Timer B</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>spin_lock</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>User Context A</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>None</TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>User Context B</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_irq</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>spin_lock_bh</TD
+><TD
+>down_interruptible</TD
+><TD
+>None</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x212.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c328.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Locking Between Two Hard IRQ Handlers</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Common Examples</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

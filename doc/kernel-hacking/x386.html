@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>EXPORT_SYMBOL_GPL()
+    include/linux/module.h</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Symbols"
+HREF="c377.html"><LINK
+REL="PREVIOUS"
+TITLE="Symbols"
+HREF="c377.html"><LINK
+REL="NEXT"
+TITLE="Routines and Conventions"
+HREF="c394.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c377.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 9. Symbols</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c394.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="sym-exportsymbols-gpl"
+>9.2. <CODE
+CLASS="function"
+>EXPORT_SYMBOL_GPL()</CODE
+>
+    <TT
+CLASS="filename"
+>include/linux/module.h</TT
+></A
+></H1
+><P
+>&#13;    Similar to <CODE
+CLASS="function"
+>EXPORT_SYMBOL()</CODE
+> except that the
+    symbols exported by <CODE
+CLASS="function"
+>EXPORT_SYMBOL_GPL()</CODE
+> can
+    only be seen by modules with a
+    <CODE
+CLASS="function"
+>MODULE_LICENSE()</CODE
+> that specifies a GPL
+    compatible license.  It implies that the function is considered
+    an internal implementation issue, and not really an interface.
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c377.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c394.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Symbols</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c377.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Routines and Conventions</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

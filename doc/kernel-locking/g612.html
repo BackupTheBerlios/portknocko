@@ -1,0 +1,332 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Glossary</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Thanks"
+HREF="c607.html"></HEAD
+><BODY
+CLASS="glossary"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c607.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="GLOSSARY"
+><H1
+><A
+NAME="glossary"
+></A
+>Glossary</H1
+><DL
+><DT
+><A
+NAME="gloss-preemption"
+></A
+><B
+>preemption</B
+></DT
+><DD
+><P
+>&#13;        Prior to 2.5, or when <CODE
+CLASS="symbol"
+>CONFIG_PREEMPT</CODE
+> is
+        unset, processes in user context inside the kernel would not
+        preempt each other (ie. you had that CPU until you have it up,
+        except for interrupts).  With the addition of
+        <CODE
+CLASS="symbol"
+>CONFIG_PREEMPT</CODE
+> in 2.5.4, this changed: when
+        in user context, higher priority tasks can "cut in": spinlocks
+        were changed to disable preemption, even on UP.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-bh"
+></A
+><B
+>bh</B
+></DT
+><DD
+><P
+>&#13;        Bottom Half: for historical reasons, functions with
+        '_bh' in them often now refer to any software interrupt, e.g.
+        <CODE
+CLASS="function"
+>spin_lock_bh()</CODE
+> blocks any software interrupt 
+        on the current CPU.  Bottom halves are deprecated, and will 
+        eventually be replaced by tasklets.  Only one bottom half will be 
+        running at any time.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-hwinterrupt"
+></A
+><B
+>Hardware Interrupt / Hardware IRQ</B
+></DT
+><DD
+><P
+>&#13;       Hardware interrupt request.  <CODE
+CLASS="function"
+>in_irq()</CODE
+> returns 
+       <SPAN
+CLASS="returnvalue"
+>true</SPAN
+> in a hardware interrupt handler.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-interruptcontext"
+></A
+><B
+>Interrupt Context</B
+></DT
+><DD
+><P
+>&#13;       Not user context: processing a hardware irq or software irq.
+       Indicated by the <CODE
+CLASS="function"
+>in_interrupt()</CODE
+> macro 
+       returning <SPAN
+CLASS="returnvalue"
+>true</SPAN
+>.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-smp"
+></A
+><B
+><ACRONYM
+CLASS="acronym"
+>SMP</ACRONYM
+></B
+></DT
+><DD
+><P
+>&#13;       Symmetric Multi-Processor: kernels compiled for multiple-CPU
+       machines.  (CONFIG_SMP=y).
+     </P
+></DD
+><DT
+><A
+NAME="gloss-softirq"
+></A
+><B
+>Software Interrupt / softirq</B
+></DT
+><DD
+><P
+>&#13;       Software interrupt handler.  <CODE
+CLASS="function"
+>in_irq()</CODE
+> returns
+       <SPAN
+CLASS="returnvalue"
+>false</SPAN
+>; <CODE
+CLASS="function"
+>in_softirq()</CODE
+>
+       returns <SPAN
+CLASS="returnvalue"
+>true</SPAN
+>.  Tasklets and softirqs
+	both fall into the category of 'software interrupts'.
+     </P
+><P
+>&#13;       Strictly speaking a softirq is one of up to 32 enumerated software
+       interrupts which can run on multiple CPUs at once.
+       Sometimes used to refer to tasklets as
+       well (ie. all software interrupts).
+     </P
+></DD
+><DT
+><A
+NAME="gloss-tasklet"
+></A
+><B
+>tasklet</B
+></DT
+><DD
+><P
+>&#13;       A dynamically-registrable software interrupt,
+       which is guaranteed to only run on one CPU at a time.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-timers"
+></A
+><B
+>timer</B
+></DT
+><DD
+><P
+>&#13;       A dynamically-registrable software interrupt, which is run at
+       (or close to) a given time.  When running, it is just like a
+       tasklet (in fact, they are called from the TIMER_SOFTIRQ).
+     </P
+></DD
+><DT
+><A
+NAME="gloss-up"
+></A
+><B
+><ACRONYM
+CLASS="acronym"
+>UP</ACRONYM
+></B
+></DT
+><DD
+><P
+>&#13;       Uni-Processor: Non-SMP.  (CONFIG_SMP=n).
+     </P
+></DD
+><DT
+><A
+NAME="gloss-usercontext"
+></A
+><B
+>User Context</B
+></DT
+><DD
+><P
+>&#13;       The kernel executing on behalf of a particular process (ie. a
+       system call or trap) or kernel thread.  You can tell which
+       process with the <CODE
+CLASS="symbol"
+>current</CODE
+> macro.)  Not to
+       be confused with userspace.  Can be interrupted by software or
+       hardware interrupts.
+     </P
+></DD
+><DT
+><A
+NAME="gloss-userspace"
+></A
+><B
+>Userspace</B
+></DT
+><DD
+><P
+>&#13;       A process executing its own code outside the kernel.
+     </P
+></DD
+></DL
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c607.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Thanks</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

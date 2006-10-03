@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Hardware Interrupts (Hard IRQs)</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="The Players"
+HREF="c25.html"><LINK
+REL="PREVIOUS"
+TITLE="The Players"
+HREF="c25.html"><LINK
+REL="NEXT"
+TITLE="Software Interrupt Context: Softirqs and Tasklets"
+HREF="x63.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c25.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 2. The Players</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x63.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="basics-hardirqs"
+>2.2. Hardware Interrupts (Hard IRQs)</A
+></H1
+><P
+>&#13;    Timer ticks, <SPAN
+CLASS="hardware"
+>network cards</SPAN
+> and 
+    <SPAN
+CLASS="hardware"
+>keyboard</SPAN
+> are examples of real
+    hardware which produce interrupts at any time.  The kernel runs
+    interrupt handlers, which services the hardware.  The kernel
+    guarantees that this handler is never re-entered: if the same
+    interrupt arrives, it is queued (or dropped).  Because it
+    disables interrupts, this handler has to be fast: frequently it
+    simply acknowledges the interrupt, marks a 'software interrupt'
+    for execution and exits.
+   </P
+><P
+>&#13;    You can tell you are in a hardware interrupt, because 
+    <CODE
+CLASS="function"
+>in_irq()</CODE
+> returns <SPAN
+CLASS="returnvalue"
+>true</SPAN
+>.  
+   </P
+><DIV
+CLASS="caution"
+><P
+></P
+><TABLE
+CLASS="caution"
+WIDTH="100%"
+BORDER="0"
+><TR
+><TD
+WIDTH="25"
+ALIGN="CENTER"
+VALIGN="TOP"
+><IMG
+SRC="../images/caution.gif"
+HSPACE="5"
+ALT="Caution"></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>&#13;     Beware that this will return a false positive if interrupts are disabled 
+     (see below).
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c25.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x63.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>The Players</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c25.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Software Interrupt Context: Softirqs and Tasklets</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

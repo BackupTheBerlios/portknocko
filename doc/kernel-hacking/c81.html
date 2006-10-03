@@ -1,0 +1,202 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Some Basic Rules</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Software Interrupt Context: Softirqs and Tasklets"
+HREF="x63.html"><LINK
+REL="NEXT"
+TITLE="ioctls: Not writing a new system call"
+HREF="c105.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x63.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c105.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="basic-rules"
+></A
+>Chapter 3. Some Basic Rules</H1
+><P
+></P
+><DIV
+CLASS="variablelist"
+><DL
+><DT
+>No memory protection</DT
+><DD
+><P
+>&#13;      If you corrupt memory, whether in user context or
+      interrupt context, the whole machine will crash.  Are you
+      sure you can't do what you want in userspace?
+     </P
+></DD
+><DT
+>No floating point or <ACRONYM
+CLASS="acronym"
+>MMX</ACRONYM
+></DT
+><DD
+><P
+>&#13;      The <ACRONYM
+CLASS="acronym"
+>FPU</ACRONYM
+> context is not saved; even in user
+      context the <ACRONYM
+CLASS="acronym"
+>FPU</ACRONYM
+> state probably won't
+      correspond with the current process: you would mess with some
+      user process' <ACRONYM
+CLASS="acronym"
+>FPU</ACRONYM
+> state.  If you really want
+      to do this, you would have to explicitly save/restore the full
+      <ACRONYM
+CLASS="acronym"
+>FPU</ACRONYM
+> state (and avoid context switches).  It
+      is generally a bad idea; use fixed point arithmetic first.
+     </P
+></DD
+><DT
+>A rigid stack limit</DT
+><DD
+><P
+>&#13;      Depending on configuration options the kernel stack is about 3K to 6K for most 32-bit architectures: it's
+      about 14K on most 64-bit archs, and often shared with interrupts
+      so you can't use it all.  Avoid deep recursion and huge local
+      arrays on the stack (allocate them dynamically instead).
+     </P
+></DD
+><DT
+>The Linux kernel is portable</DT
+><DD
+><P
+>&#13;      Let's keep it that way.  Your code should be 64-bit clean,
+      and endian-independent.  You should also minimize CPU
+      specific stuff, e.g. inline assembly should be cleanly
+      encapsulated and minimized to ease porting.  Generally it
+      should be restricted to the architecture-dependent part of
+      the kernel tree.
+     </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x63.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c105.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Software Interrupt Context: Softirqs and Tasklets</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>ioctls: Not writing a new system call</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

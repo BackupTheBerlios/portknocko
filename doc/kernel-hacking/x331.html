@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Queuing</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Wait Queues
+   include/linux/wait.h
+  "
+HREF="c317.html"><LINK
+REL="PREVIOUS"
+TITLE="Wait Queues
+   include/linux/wait.h
+  "
+HREF="c317.html"><LINK
+REL="NEXT"
+TITLE="Waking Up Queued Tasks"
+HREF="x345.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c317.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. Wait Queues
+   <TT
+CLASS="filename"
+>include/linux/wait.h</TT
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x345.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="queue-waitqueue"
+>7.2. Queuing</A
+></H1
+><P
+>&#13;    Placing yourself in the waitqueue is fairly complex, because you
+    must put yourself in the queue before checking the condition.
+    There is a macro to do this:
+    <CODE
+CLASS="function"
+>wait_event_interruptible()</CODE
+>
+
+    <TT
+CLASS="filename"
+>include/linux/wait.h</TT
+> The
+    first argument is the wait queue head, and the second is an
+    expression which is evaluated; the macro returns
+    <SPAN
+CLASS="returnvalue"
+>0</SPAN
+> when this expression is true, or
+    <SPAN
+CLASS="returnvalue"
+>-ERESTARTSYS</SPAN
+> if a signal is received.
+    The <CODE
+CLASS="function"
+>wait_event()</CODE
+> version ignores signals.
+   </P
+><P
+>&#13;   Do not use the <CODE
+CLASS="function"
+>sleep_on()</CODE
+> function family -
+   it is very easy to accidentally introduce races; almost certainly
+   one of the <CODE
+CLASS="function"
+>wait_event()</CODE
+> family will do, or a
+   loop around <CODE
+CLASS="function"
+>schedule_timeout()</CODE
+>. If you choose
+   to loop around <CODE
+CLASS="function"
+>schedule_timeout()</CODE
+> remember
+   you must set the task state (with 
+   <CODE
+CLASS="function"
+>set_current_state()</CODE
+>) on each iteration to avoid
+   busy-looping.
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c317.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x345.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Wait Queues
+   <TT
+CLASS="filename"
+>include/linux/wait.h</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c317.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Waking Up Queued Tasks</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

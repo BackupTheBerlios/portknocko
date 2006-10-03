@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Preventing Deadlock</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Common Problems"
+HREF="c414.html"><LINK
+REL="PREVIOUS"
+TITLE="Common Problems"
+HREF="c414.html"><LINK
+REL="NEXT"
+TITLE="Racing Timers: A Kernel Pastime"
+HREF="x452.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c414.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. Common Problems</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x452.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="techs-deadlock-prevent"
+>7.2. Preventing Deadlock</A
+></H1
+><P
+>&#13;       Textbooks will tell you that if you always lock in the same
+       order, you will never get this kind of deadlock.  Practice
+       will tell you that this approach doesn't scale: when I
+       create a new lock, I don't understand enough of the kernel
+       to figure out where in the 5000 lock hierarchy it will fit.
+     </P
+><P
+>&#13;       The best locks are encapsulated: they never get exposed in
+       headers, and are never held around calls to non-trivial
+       functions outside the same file.  You can read through this
+       code and see that it will never deadlock, because it never
+       tries to grab another lock while it has that one.  People
+       using your code don't even need to know you are using a
+       lock.
+     </P
+><P
+>&#13;       A classic problem here is when you provide callbacks or
+       hooks: if you call these with the lock held, you risk simple
+       deadlock, or a deadly embrace (who knows what the callback
+       will do?).  Remember, the other programmers are out to get
+       you, so don't do this.
+     </P
+><DIV
+CLASS="sect2"
+><H2
+CLASS="sect2"
+><A
+NAME="techs-deadlock-overprevent"
+>7.2.1. Overzealous Prevention Of Deadlocks</A
+></H2
+><P
+>&#13;       Deadlocks are problematic, but not as bad as data
+       corruption.  Code which grabs a read lock, searches a list,
+       fails to find what it wants, drops the read lock, grabs a
+       write lock and inserts the object has a race condition.
+     </P
+><P
+>&#13;       If you don't see why, please stay the fuck away from my code.
+     </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c414.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x452.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Common Problems</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c414.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Racing Timers: A Kernel Pastime</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

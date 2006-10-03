@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Locking Only In User Context</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Locking in the Linux Kernel"
+HREF="c93.html"><LINK
+REL="PREVIOUS"
+TITLE="Locks and Uniprocessor Kernels"
+HREF="x111.html"><LINK
+REL="NEXT"
+TITLE="Locking Between User Context and Softirqs"
+HREF="x139.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x111.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 3. Locking in the Linux Kernel</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x139.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="usercontextlocking"
+>3.3. Locking Only In User Context</A
+></H1
+><P
+>&#13;       If you have a data structure which is only ever accessed from
+       user context, then you can use a simple semaphore
+       (<TT
+CLASS="filename"
+>linux/asm/semaphore.h</TT
+>) to protect it.  This 
+       is the most trivial case: you initialize the semaphore to the number 
+       of resources available (usually 1), and call
+       <CODE
+CLASS="function"
+>down_interruptible()</CODE
+> to grab the semaphore, and 
+       <CODE
+CLASS="function"
+>up()</CODE
+> to release it.  There is also a 
+       <CODE
+CLASS="function"
+>down()</CODE
+>, which should be avoided, because it 
+       will not return if a signal is received.
+     </P
+><P
+>&#13;       Example: <TT
+CLASS="filename"
+>linux/net/core/netfilter.c</TT
+> allows 
+       registration of new <CODE
+CLASS="function"
+>setsockopt()</CODE
+> and 
+       <CODE
+CLASS="function"
+>getsockopt()</CODE
+> calls, with
+       <CODE
+CLASS="function"
+>nf_register_sockopt()</CODE
+>.  Registration and 
+       de-registration are only done on module load and unload (and boot 
+       time, where there is no concurrency), and the list of registrations 
+       is only consulted for an unknown <CODE
+CLASS="function"
+>setsockopt()</CODE
+>
+       or <CODE
+CLASS="function"
+>getsockopt()</CODE
+> system call.  The 
+       <CODE
+CLASS="varname"
+>nf_sockopt_mutex</CODE
+> is perfect to protect this,
+       especially since the setsockopt and getsockopt calls may well
+       sleep.
+     </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x111.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x139.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Locks and Uniprocessor Kernels</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c93.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Locking Between User Context and Softirqs</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

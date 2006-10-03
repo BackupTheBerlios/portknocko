@@ -1,0 +1,447 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Unreliable Guide To Locking</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="NEXT"
+TITLE="Introduction"
+HREF="c20.html"></HEAD
+><BODY
+CLASS="book"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="BOOK"
+><A
+NAME="LKLockingGuide"
+></A
+><DIV
+CLASS="TITLEPAGE"
+><H1
+CLASS="title"
+><A
+NAME="AEN2"
+>Unreliable Guide To Locking</A
+></H1
+><H3
+CLASS="author"
+><A
+NAME="AEN5"
+></A
+>Rusty Russell</H3
+><DIV
+CLASS="affiliation"
+><DIV
+CLASS="address"
+><P
+CLASS="address"
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<CODE
+CLASS="email"
+>&#60;<A
+HREF="mailto:rusty@rustcorp.com.au"
+>rusty@rustcorp.com.au</A
+>&#62;</CODE
+><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</P
+></DIV
+></DIV
+><P
+CLASS="copyright"
+>Copyright &copy; 2003 Rusty Russell</P
+><DIV
+CLASS="legalnotice"
+><P
+></P
+><A
+NAME="AEN14"
+></A
+><P
+>&#13;     This documentation is free software; you can redistribute
+     it and/or modify it under the terms of the GNU General Public
+     License as published by the Free Software Foundation; either
+     version 2 of the License, or (at your option) any later
+     version.
+   </P
+><P
+>&#13;     This program is distributed in the hope that it will be
+     useful, but WITHOUT ANY WARRANTY; without even the implied
+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     See the GNU General Public License for more details.
+   </P
+><P
+>&#13;     You should have received a copy of the GNU General Public
+     License along with this program; if not, write to the Free
+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+     MA 02111-1307 USA
+   </P
+><P
+>&#13;     For more details see the file COPYING in the source
+     distribution of Linux.
+   </P
+><P
+></P
+></DIV
+><HR></DIV
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+>1. <A
+HREF="c20.html"
+>Introduction</A
+></DT
+><DT
+>2. <A
+HREF="c27.html"
+>The Problem With Concurrency</A
+></DT
+><DD
+><DL
+><DT
+>2.1. <A
+HREF="c27.html#race-condition"
+>Race Conditions and Critical Regions</A
+></DT
+></DL
+></DD
+><DT
+>3. <A
+HREF="c93.html"
+>Locking in the Linux Kernel</A
+></DT
+><DD
+><DL
+><DT
+>3.1. <A
+HREF="c93.html#lock-intro"
+>Two Main Types of Kernel Locks: Spinlocks and Semaphores</A
+></DT
+><DT
+>3.2. <A
+HREF="x111.html"
+>Locks and Uniprocessor Kernels</A
+></DT
+><DT
+>3.3. <A
+HREF="x124.html"
+>Locking Only In User Context</A
+></DT
+><DT
+>3.4. <A
+HREF="x139.html"
+>Locking Between User Context and Softirqs</A
+></DT
+><DT
+>3.5. <A
+HREF="x155.html"
+>Locking Between User Context and Tasklets</A
+></DT
+><DT
+>3.6. <A
+HREF="x159.html"
+>Locking Between User Context and Timers</A
+></DT
+><DT
+>3.7. <A
+HREF="x163.html"
+>Locking Between Tasklets/Timers</A
+></DT
+><DD
+><DL
+><DT
+>3.7.1. <A
+HREF="x163.html#lock-tasklets-same"
+>The Same Tasklet/Timer</A
+></DT
+><DT
+>3.7.2. <A
+HREF="x163.html#lock-tasklets-different"
+>Different Tasklets/Timers</A
+></DT
+></DL
+></DD
+><DT
+>3.8. <A
+HREF="x175.html"
+>Locking Between Softirqs</A
+></DT
+><DD
+><DL
+><DT
+>3.8.1. <A
+HREF="x175.html#lock-softirqs-same"
+>The Same Softirq</A
+></DT
+><DT
+>3.8.2. <A
+HREF="x175.html#lock-softirqs-different"
+>Different Softirqs</A
+></DT
+></DL
+></DD
+></DL
+></DD
+><DT
+>4. <A
+HREF="c190.html"
+>Hard IRQ Context</A
+></DT
+><DD
+><DL
+><DT
+>4.1. <A
+HREF="c190.html#hardirq-softirq"
+>Locking Between Hard IRQ and Softirqs/Tasklets</A
+></DT
+><DT
+>4.2. <A
+HREF="x212.html"
+>Locking Between Two Hard IRQ Handlers</A
+></DT
+></DL
+></DD
+><DT
+>5. <A
+HREF="c216.html"
+>Cheat Sheet For Locking</A
+></DT
+><DD
+><DL
+><DT
+>5.1. <A
+HREF="c216.html#minimum-lock-reqirements"
+>Table of Minimum Requirements</A
+></DT
+></DL
+></DD
+><DT
+>6. <A
+HREF="c328.html"
+>Common Examples</A
+></DT
+><DD
+><DL
+><DT
+>6.1. <A
+HREF="c328.html#examples-usercontext"
+>All In User Context</A
+></DT
+><DT
+>6.2. <A
+HREF="x338.html"
+>Accessing From Interrupt Context</A
+></DT
+><DT
+>6.3. <A
+HREF="x354.html"
+>Exposing Objects Outside This File</A
+></DT
+><DD
+><DL
+><DT
+>6.3.1. <A
+HREF="x354.html#examples-refcnt-atomic"
+>Using Atomic Operations For The Reference Count</A
+></DT
+></DL
+></DD
+><DT
+>6.4. <A
+HREF="x378.html"
+>Protecting The Objects Themselves</A
+></DT
+></DL
+></DD
+><DT
+>7. <A
+HREF="c414.html"
+>Common Problems</A
+></DT
+><DD
+><DL
+><DT
+>7.1. <A
+HREF="c414.html#deadlock"
+>Deadlock: Simple and Advanced</A
+></DT
+><DT
+>7.2. <A
+HREF="x443.html"
+>Preventing Deadlock</A
+></DT
+><DD
+><DL
+><DT
+>7.2.1. <A
+HREF="x443.html#techs-deadlock-overprevent"
+>Overzealous Prevention Of Deadlocks</A
+></DT
+></DL
+></DD
+><DT
+>7.3. <A
+HREF="x452.html"
+>Racing Timers: A Kernel Pastime</A
+></DT
+></DL
+></DD
+><DT
+>8. <A
+HREF="c469.html"
+>Locking Speed</A
+></DT
+><DD
+><DL
+><DT
+>8.1. <A
+HREF="c469.html#efficiency-rwlocks"
+>Read/Write Lock Variants</A
+></DT
+><DT
+>8.2. <A
+HREF="x484.html"
+>Avoiding Locks: Read Copy Update</A
+></DT
+><DT
+>8.3. <A
+HREF="x530.html"
+>Per-CPU Data</A
+></DT
+><DT
+>8.4. <A
+HREF="x543.html"
+>Data Which Mostly Used By An IRQ Handler</A
+></DT
+></DL
+></DD
+><DT
+>9. <A
+HREF="c551.html"
+>What Functions Are Safe To Call From Interrupts?</A
+></DT
+><DD
+><DL
+><DT
+>9.1. <A
+HREF="c551.html#sleeping"
+>Some Functions Which Sleep</A
+></DT
+><DT
+>9.2. <A
+HREF="x584.html"
+>Some Functions Which Don't Sleep</A
+></DT
+></DL
+></DD
+><DT
+>10. <A
+HREF="c598.html"
+>Further reading</A
+></DT
+><DT
+>11. <A
+HREF="c607.html"
+>Thanks</A
+></DT
+><DT
+><A
+HREF="g612.html"
+>Glossary</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="LOT"
+><DL
+CLASS="LOT"
+><DT
+><B
+>List of Tables</B
+></DT
+><DT
+>2-1. <A
+HREF="c27.html#AEN33"
+>Expected Results</A
+></DT
+><DT
+>2-2. <A
+HREF="c27.html#AEN60"
+>Possible Results</A
+></DT
+><DT
+>5-1. <A
+HREF="c216.html#AEN237"
+>Table of Locking Requirements</A
+></DT
+><DT
+>7-1. <A
+HREF="c414.html#AEN428"
+>Consequences</A
+></DT
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c20.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Introduction</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

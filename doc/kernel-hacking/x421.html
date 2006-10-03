@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>GNU Extensions</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Routines and Conventions"
+HREF="c394.html"><LINK
+REL="PREVIOUS"
+TITLE="Initializing structure members"
+HREF="x416.html"><LINK
+REL="NEXT"
+TITLE="C++"
+HREF="x448.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x416.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 10. Routines and Conventions</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x448.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="conventions-gnu-extns"
+>10.5. GNU Extensions</A
+></H1
+><P
+>&#13;    GNU Extensions are explicitly allowed in the Linux kernel.
+    Note that some of the more complex ones are not very well
+    supported, due to lack of general use, but the following are
+    considered standard (see the GCC info page section "C
+    Extensions" for more details - Yes, really the info page, the
+    man page is only a short summary of the stuff in info).
+   </P
+><P
+></P
+><UL
+><LI
+><P
+>&#13;      Inline functions
+     </P
+></LI
+><LI
+><P
+>&#13;      Statement expressions (ie. the ({ and }) constructs).
+     </P
+></LI
+><LI
+><P
+>&#13;      Declaring attributes of a function / variable / type
+      (__attribute__)
+     </P
+></LI
+><LI
+><P
+>&#13;      typeof
+     </P
+></LI
+><LI
+><P
+>&#13;      Zero length arrays
+     </P
+></LI
+><LI
+><P
+>&#13;      Macro varargs
+     </P
+></LI
+><LI
+><P
+>&#13;      Arithmetic on void pointers
+     </P
+></LI
+><LI
+><P
+>&#13;      Non-Constant initializers
+     </P
+></LI
+><LI
+><P
+>&#13;      Assembler Instructions (not outside arch/ and include/asm/)
+     </P
+></LI
+><LI
+><P
+>&#13;      Function names as strings (__FUNCTION__).
+     </P
+></LI
+><LI
+><P
+>&#13;      __builtin_constant_p()
+     </P
+></LI
+></UL
+><P
+>&#13;    Be wary when using long long in the kernel, the code gcc generates for
+    it is horrible and worse: division and multiplication does not work
+    on i386 because the GCC runtime functions for it are missing from
+    the kernel environment.
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x416.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x448.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Initializing structure members</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c394.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>C++</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

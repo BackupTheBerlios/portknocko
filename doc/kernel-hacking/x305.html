@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+> try_module_get()/module_put()
+    include/linux/module.h</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Common Routines"
+HREF="c140.html"><LINK
+REL="PREVIOUS"
+TITLE=" module_exit()
+    include/linux/init.h "
+HREF="x299.html"><LINK
+REL="NEXT"
+TITLE="Wait Queues
+   include/linux/wait.h
+  "
+HREF="c317.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x299.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 6. Common Routines</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c317.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="routines-module-use-counters"
+>6.13. <CODE
+CLASS="function"
+>try_module_get()</CODE
+>/<CODE
+CLASS="function"
+>module_put()</CODE
+>
+    <TT
+CLASS="filename"
+>include/linux/module.h</TT
+></A
+></H1
+><P
+>&#13;    These manipulate the module usage count, to protect against
+    removal (a module also can't be removed if another module uses one
+    of its exported symbols: see below).  Before calling into module
+    code, you should call <CODE
+CLASS="function"
+>try_module_get()</CODE
+> on
+    that module: if it fails, then the module is being removed and you
+    should act as if it wasn't there.  Otherwise, you can safely enter
+    the module, and call <CODE
+CLASS="function"
+>module_put()</CODE
+> when you're
+    finished.
+   </P
+><P
+>&#13;   Most registerable structures have an
+   <CODE
+CLASS="structfield"
+>owner</CODE
+> field, such as in the
+   <CODE
+CLASS="structname"
+>file_operations</CODE
+> structure. Set this field
+   to the macro <CODE
+CLASS="symbol"
+>THIS_MODULE</CODE
+>.
+   </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x299.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c317.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><CODE
+CLASS="function"
+>module_exit()</CODE
+>
+    <TT
+CLASS="filename"
+>include/linux/init.h</TT
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c140.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Wait Queues
+   <TT
+CLASS="filename"
+>include/linux/wait.h</TT
+></TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

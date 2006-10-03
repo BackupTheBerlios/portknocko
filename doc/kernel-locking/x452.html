@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Racing Timers: A Kernel Pastime</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Common Problems"
+HREF="c414.html"><LINK
+REL="PREVIOUS"
+TITLE="Preventing Deadlock"
+HREF="x443.html"><LINK
+REL="NEXT"
+TITLE="Locking Speed"
+HREF="c469.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x443.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 7. Common Problems</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c469.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="racing-timers"
+>7.3. Racing Timers: A Kernel Pastime</A
+></H1
+><P
+>&#13;      Timers can produce their own special problems with races.
+      Consider a collection of objects (list, hash, etc) where each
+      object has a timer which is due to destroy it.
+    </P
+><P
+>&#13;      If you want to destroy the entire collection (say on module
+      removal), you might do the following:
+    </P
+><PRE
+CLASS="programlisting"
+>&#13;        /* THIS CODE BAD BAD BAD BAD: IF IT WAS ANY WORSE IT WOULD USE
+           HUNGARIAN NOTATION */
+        spin_lock_bh(&#38;list_lock);
+
+        while (list) {
+                struct foo *next = list-&#62;next;
+                del_timer(&#38;list-&#62;timer);
+                kfree(list);
+                list = next;
+        }
+
+        spin_unlock_bh(&#38;list_lock);
+    </PRE
+><P
+>&#13;      Sooner or later, this will crash on SMP, because a timer can
+      have just gone off before the <CODE
+CLASS="function"
+>spin_lock_bh()</CODE
+>,
+      and it will only get the lock after we
+      <CODE
+CLASS="function"
+>spin_unlock_bh()</CODE
+>, and then try to free
+      the element (which has already been freed!).
+    </P
+><P
+>&#13;      This can be avoided by checking the result of
+      <CODE
+CLASS="function"
+>del_timer()</CODE
+>: if it returns
+      <SPAN
+CLASS="returnvalue"
+>1</SPAN
+>, the timer has been deleted.
+      If <SPAN
+CLASS="returnvalue"
+>0</SPAN
+>, it means (in this
+      case) that it is currently running, so we can do:
+    </P
+><PRE
+CLASS="programlisting"
+>&#13;        retry:
+                spin_lock_bh(&#38;list_lock);
+
+                while (list) {
+                        struct foo *next = list-&#62;next;
+                        if (!del_timer(&#38;list-&#62;timer)) {
+                                /* Give timer a chance to delete this */
+                                spin_unlock_bh(&#38;list_lock);
+                                goto retry;
+                        }
+                        kfree(list);
+                        list = next;
+                }
+
+                spin_unlock_bh(&#38;list_lock);
+    </PRE
+><P
+>&#13;      Another common problem is deleting timers which restart
+      themselves (by calling <CODE
+CLASS="function"
+>add_timer()</CODE
+> at the end
+      of their timer function).  Because this is a fairly common case
+      which is prone to races, you should use <CODE
+CLASS="function"
+>del_timer_sync()</CODE
+>
+      (<TT
+CLASS="filename"
+>include/linux/timer.h</TT
+>)
+      to handle this case.  It returns the number of times the timer
+      had to be deleted before we finally stopped it from adding itself back
+      in.
+    </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x443.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c469.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Preventing Deadlock</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c414.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Locking Speed</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

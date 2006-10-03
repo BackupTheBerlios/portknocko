@@ -1,0 +1,435 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Avoiding Locks: Read Copy Update</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Locking Speed"
+HREF="c469.html"><LINK
+REL="PREVIOUS"
+TITLE="Locking Speed"
+HREF="c469.html"><LINK
+REL="NEXT"
+TITLE="Per-CPU Data"
+HREF="x530.html"></HEAD
+><BODY
+CLASS="sect1"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c469.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 8. Locking Speed</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x530.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="efficiency-read-copy-update"
+>8.2. Avoiding Locks: Read Copy Update</A
+></H1
+><P
+>&#13;      There is a special method of read/write locking called Read Copy
+      Update.  Using RCU, the readers can avoid taking a lock
+      altogether: as we expect our cache to be read more often than
+      updated (otherwise the cache is a waste of time), it is a
+      candidate for this optimization.
+    </P
+><P
+>&#13;      How do we get rid of read locks?  Getting rid of read locks
+      means that writers may be changing the list underneath the
+      readers.  That is actually quite simple: we can read a linked
+      list while an element is being added if the writer adds the
+      element very carefully.  For example, adding
+      <CODE
+CLASS="symbol"
+>new</CODE
+> to a single linked list called
+      <CODE
+CLASS="symbol"
+>list</CODE
+>:
+    </P
+><PRE
+CLASS="programlisting"
+>&#13;        new-&#62;next = list-&#62;next;
+        wmb();
+        list-&#62;next = new;
+    </PRE
+><P
+>&#13;      The <CODE
+CLASS="function"
+>wmb()</CODE
+> is a write memory barrier.  It
+      ensures that the first operation (setting the new element's
+      <CODE
+CLASS="symbol"
+>next</CODE
+> pointer) is complete and will be seen by
+      all CPUs, before the second operation is (putting the new
+      element into the list).  This is important, since modern
+      compilers and modern CPUs can both reorder instructions unless
+      told otherwise: we want a reader to either not see the new
+      element at all, or see the new element with the
+      <CODE
+CLASS="symbol"
+>next</CODE
+> pointer correctly pointing at the rest of
+      the list.
+    </P
+><P
+>&#13;      Fortunately, there is a function to do this for standard
+      <CODE
+CLASS="structname"
+>struct list_head</CODE
+> lists:
+      <CODE
+CLASS="function"
+>list_add_rcu()</CODE
+>
+      (<TT
+CLASS="filename"
+>include/linux/list.h</TT
+>).
+    </P
+><P
+>&#13;      Removing an element from the list is even simpler: we replace
+      the pointer to the old element with a pointer to its successor,
+      and readers will either see it, or skip over it.
+    </P
+><PRE
+CLASS="programlisting"
+>&#13;        list-&#62;next = old-&#62;next;
+    </PRE
+><P
+>&#13;      There is <CODE
+CLASS="function"
+>list_del_rcu()</CODE
+>
+      (<TT
+CLASS="filename"
+>include/linux/list.h</TT
+>) which does this (the
+      normal version poisons the old object, which we don't want).
+    </P
+><P
+>&#13;      The reader must also be careful: some CPUs can look through the
+      <CODE
+CLASS="symbol"
+>next</CODE
+> pointer to start reading the contents of
+      the next element early, but don't realize that the pre-fetched
+      contents is wrong when the <CODE
+CLASS="symbol"
+>next</CODE
+> pointer changes
+      underneath them.  Once again, there is a
+      <CODE
+CLASS="function"
+>list_for_each_entry_rcu()</CODE
+>
+      (<TT
+CLASS="filename"
+>include/linux/list.h</TT
+>) to help you.  Of
+      course, writers can just use
+      <CODE
+CLASS="function"
+>list_for_each_entry()</CODE
+>, since there cannot
+      be two simultaneous writers.
+    </P
+><P
+>&#13;      Our final dilemma is this: when can we actually destroy the
+      removed element?  Remember, a reader might be stepping through
+      this element in the list right now: it we free this element and
+      the <CODE
+CLASS="symbol"
+>next</CODE
+> pointer changes, the reader will jump
+      off into garbage and crash.  We need to wait until we know that
+      all the readers who were traversing the list when we deleted the
+      element are finished.  We use <CODE
+CLASS="function"
+>call_rcu()</CODE
+> to
+      register a callback which will actually destroy the object once
+      the readers are finished.
+    </P
+><P
+>&#13;      But how does Read Copy Update know when the readers are
+      finished?  The method is this: firstly, the readers always
+      traverse the list inside
+      <CODE
+CLASS="function"
+>rcu_read_lock()</CODE
+>/<CODE
+CLASS="function"
+>rcu_read_unlock()</CODE
+>
+      pairs: these simply disable preemption so the reader won't go to
+      sleep while reading the list.
+    </P
+><P
+>&#13;      RCU then waits until every other CPU has slept at least once:
+      since readers cannot sleep, we know that any readers which were
+      traversing the list during the deletion are finished, and the
+      callback is triggered.  The real Read Copy Update code is a
+      little more optimized than this, but this is the fundamental
+      idea.
+    </P
+><PRE
+CLASS="programlisting"
+>&#13;--- cache.c.perobjectlock	2003-12-11 17:15:03.000000000 +1100
++++ cache.c.rcupdate	2003-12-11 17:55:14.000000000 +1100
+@@ -1,15 +1,18 @@
+ #include &#60;linux/list.h&#62;
+ #include &#60;linux/slab.h&#62;
+ #include &#60;linux/string.h&#62;
++#include &#60;linux/rcupdate.h&#62;
+ #include &#60;asm/semaphore.h&#62;
+ #include &#60;asm/errno.h&#62;
+
+ struct object
+ {
+-        /* These two protected by cache_lock. */
++        /* This is protected by RCU */
+         struct list_head list;
+         int popularity;
+
++        struct rcu_head rcu;
++
+         atomic_t refcnt;
+
+         /* Doesn't change once created. */
+@@ -40,7 +43,7 @@
+ {
+         struct object *i;
+
+-        list_for_each_entry(i, &#38;cache, list) {
++        list_for_each_entry_rcu(i, &#38;cache, list) {
+                 if (i-&#62;id == id) {
+                         i-&#62;popularity++;
+                         return i;
+@@ -49,19 +52,25 @@
+         return NULL;
+ }
+
++/* Final discard done once we know no readers are looking. */
++static void cache_delete_rcu(void *arg)
++{
++        object_put(arg);
++}
++
+ /* Must be holding cache_lock */
+ static void __cache_delete(struct object *obj)
+ {
+         BUG_ON(!obj);
+-        list_del(&#38;obj-&#62;list);
+-        object_put(obj);
++        list_del_rcu(&#38;obj-&#62;list);
+         cache_num--;
++        call_rcu(&#38;obj-&#62;rcu, cache_delete_rcu, obj);
+ }
+
+ /* Must be holding cache_lock */
+ static void __cache_add(struct object *obj)
+ {
+-        list_add(&#38;obj-&#62;list, &#38;cache);
++        list_add_rcu(&#38;obj-&#62;list, &#38;cache);
+         if (++cache_num &#62; MAX_CACHE_SIZE) {
+                 struct object *i, *outcast = NULL;
+                 list_for_each_entry(i, &#38;cache, list) {
+@@ -85,6 +94,7 @@
+         obj-&#62;popularity = 0;
+         atomic_set(&#38;obj-&#62;refcnt, 1); /* The cache holds a reference */
+         spin_lock_init(&#38;obj-&#62;lock);
++        INIT_RCU_HEAD(&#38;obj-&#62;rcu);
+
+         spin_lock_irqsave(&#38;cache_lock, flags);
+         __cache_add(obj);
+@@ -104,12 +114,11 @@
+ struct object *cache_find(int id)
+ {
+         struct object *obj;
+-        unsigned long flags;
+
+-        spin_lock_irqsave(&#38;cache_lock, flags);
++        rcu_read_lock();
+         obj = __cache_find(id);
+         if (obj)
+                 object_get(obj);
+-        spin_unlock_irqrestore(&#38;cache_lock, flags);
++        rcu_read_unlock();
+         return obj;
+ }
+</PRE
+><P
+>&#13;Note that the reader will alter the
+<CODE
+CLASS="structfield"
+>popularity</CODE
+> member in
+<CODE
+CLASS="function"
+>__cache_find()</CODE
+>, and now it doesn't hold a lock.
+One solution would be to make it an <SPAN
+CLASS="type"
+>atomic_t</SPAN
+>, but for
+this usage, we don't really care about races: an approximate result is
+good enough, so I didn't change it.
+</P
+><P
+>&#13;The result is that <CODE
+CLASS="function"
+>cache_find()</CODE
+> requires no
+synchronization with any other functions, so is almost as fast on SMP
+as it would be on UP.
+</P
+><P
+>&#13;There is a furthur optimization possible here: remember our original
+cache code, where there were no reference counts and the caller simply
+held the lock whenever using the object?  This is still possible: if
+you hold the lock, noone can delete the object, so you don't need to
+get and put the reference count.
+</P
+><P
+>&#13;Now, because the 'read lock' in RCU is simply disabling preemption, a
+caller which always has preemption disabled between calling
+<CODE
+CLASS="function"
+>cache_find()</CODE
+> and
+<CODE
+CLASS="function"
+>object_put()</CODE
+> does not need to actually get and
+put the reference count: we could expose
+<CODE
+CLASS="function"
+>__cache_find()</CODE
+> by making it non-static, and
+such callers could simply call that.
+</P
+><P
+>&#13;The benefit here is that the reference count is not written to: the
+object is not altered in any way, which is much faster on SMP
+machines due to caching.
+</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c469.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x530.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Locking Speed</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="c469.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Per-CPU Data</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

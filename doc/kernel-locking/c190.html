@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>Hard IRQ Context</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Locking"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Locking Between Softirqs"
+HREF="x175.html"><LINK
+REL="NEXT"
+TITLE="Locking Between Two Hard IRQ Handlers"
+HREF="x212.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Locking</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="x175.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="x212.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="hardirq-context"
+></A
+>Chapter 4. Hard IRQ Context</H1
+><P
+>&#13;     Hardware interrupts usually communicate with a
+     tasklet or softirq.  Frequently this involves putting work in a
+     queue, which the softirq will take out.
+   </P
+><DIV
+CLASS="sect1"
+><H1
+CLASS="sect1"
+><A
+NAME="hardirq-softirq"
+>4.1. Locking Between Hard IRQ and Softirqs/Tasklets</A
+></H1
+><P
+>&#13;      If a hardware irq handler shares data with a softirq, you have
+      two concerns.  Firstly, the softirq processing can be
+      interrupted by a hardware interrupt, and secondly, the
+      critical region could be entered by a hardware interrupt on
+      another CPU.  This is where <CODE
+CLASS="function"
+>spin_lock_irq()</CODE
+> is 
+      used.  It is defined to disable interrupts on that cpu, then grab 
+      the lock. <CODE
+CLASS="function"
+>spin_unlock_irq()</CODE
+> does the reverse.
+    </P
+><P
+>&#13;      The irq handler does not to use
+      <CODE
+CLASS="function"
+>spin_lock_irq()</CODE
+>, because the softirq cannot
+      run while the irq handler is running: it can use
+      <CODE
+CLASS="function"
+>spin_lock()</CODE
+>, which is slightly faster.  The
+      only exception would be if a different hardware irq handler uses
+      the same lock: <CODE
+CLASS="function"
+>spin_lock_irq()</CODE
+> will stop
+      that from interrupting us.
+    </P
+><P
+>&#13;      This works perfectly for UP as well: the spin lock vanishes,
+      and this macro simply becomes <CODE
+CLASS="function"
+>local_irq_disable()</CODE
+>
+      (<TT
+CLASS="filename"
+>include/asm/smp.h</TT
+>), which
+      protects you from the softirq/tasklet/BH being run.
+    </P
+><P
+>&#13;      <CODE
+CLASS="function"
+>spin_lock_irqsave()</CODE
+> 
+      (<TT
+CLASS="filename"
+>include/linux/spinlock.h</TT
+>) is a variant
+      which saves whether interrupts were on or off in a flags word,
+      which is passed to <CODE
+CLASS="function"
+>spin_unlock_irqrestore()</CODE
+>.  This
+      means that the same code can be used inside an hard irq handler (where
+      interrupts are already off) and in softirqs (where the irq
+      disabling is required).
+    </P
+><P
+>&#13;      Note that softirqs (and hence tasklets and timers) are run on
+      return from hardware interrupts, so
+      <CODE
+CLASS="function"
+>spin_lock_irq()</CODE
+> also stops these.  In that
+      sense, <CODE
+CLASS="function"
+>spin_lock_irqsave()</CODE
+> is the most
+      general and powerful locking function.
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="x175.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="x212.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Locking Between Softirqs</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Locking Between Two Hard IRQ Handlers</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

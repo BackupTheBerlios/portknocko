@@ -1,0 +1,218 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN""http://www.w3.org/TR/html4/loose.dtd">
+<HTML
+><HEAD
+><TITLE
+>ioctls: Not writing a new system call</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
+REL="HOME"
+TITLE="Unreliable Guide To Hacking The Linux Kernel"
+HREF="index.html"><LINK
+REL="PREVIOUS"
+TITLE="Some Basic Rules"
+HREF="c81.html"><LINK
+REL="NEXT"
+TITLE="Recipes for Deadlock"
+HREF="c124.html"></HEAD
+><BODY
+CLASS="chapter"
+BGCOLOR="#FFFFFF"
+TEXT="#000000"
+LINK="#0000FF"
+VLINK="#840084"
+ALINK="#0000FF"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>Unreliable Guide To Hacking The Linux Kernel</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="c81.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="c124.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="chapter"
+><H1
+><A
+NAME="ioctls"
+></A
+>Chapter 4. ioctls: Not writing a new system call</H1
+><P
+>&#13;   A system call generally looks like this
+  </P
+><PRE
+CLASS="programlisting"
+>&#13;asmlinkage long sys_mycall(int arg)
+{
+        return 0; 
+}
+  </PRE
+><P
+>&#13;   First, in most cases you don't want to create a new system call.
+   You create a character device and implement an appropriate ioctl
+   for it.  This is much more flexible than system calls, doesn't have
+   to be entered in every architecture's
+   <TT
+CLASS="filename"
+>include/asm/unistd.h</TT
+> and
+   <TT
+CLASS="filename"
+>arch/kernel/entry.S</TT
+> file, and is much more
+   likely to be accepted by Linus.
+  </P
+><P
+>&#13;   If all your routine does is read or write some parameter, consider
+   implementing a <CODE
+CLASS="function"
+>sysfs</CODE
+> interface instead.
+  </P
+><P
+>&#13;   Inside the ioctl you're in user context to a process.  When a
+   error occurs you return a negated errno (see
+   <TT
+CLASS="filename"
+>include/linux/errno.h</TT
+>),
+   otherwise you return <SPAN
+CLASS="returnvalue"
+>0</SPAN
+>.
+  </P
+><P
+>&#13;   After you slept you should check if a signal occurred: the
+   Unix/Linux way of handling signals is to temporarily exit the
+   system call with the <CODE
+CLASS="constant"
+>-ERESTARTSYS</CODE
+> error.  The
+   system call entry code will switch back to user context, process
+   the signal handler and then your system call will be restarted
+   (unless the user disabled that).  So you should be prepared to
+   process the restart, e.g. if you're in the middle of manipulating
+   some data structure.
+  </P
+><PRE
+CLASS="programlisting"
+>&#13;if (signal_pending()) 
+        return -ERESTARTSYS;
+  </PRE
+><P
+>&#13;   If you're doing longer computations: first think userspace. If you
+   <SPAN
+CLASS="emphasis"
+><I
+CLASS="emphasis"
+>really</I
+></SPAN
+> want to do it in kernel you should
+   regularly check if you need to give up the CPU (remember there is
+   cooperative multitasking per CPU).  Idiom:
+  </P
+><PRE
+CLASS="programlisting"
+>&#13;cond_resched(); /* Will sleep */ 
+  </PRE
+><P
+>&#13;   A short note on interface design: the UNIX system call motto is
+   "Provide mechanism not policy".
+  </P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="c81.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="c124.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Some Basic Rules</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+>&nbsp;</TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Recipes for Deadlock</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
