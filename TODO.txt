@@ -3,7 +3,6 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- For Anyone. Documentar en README y en doc/ los != escenarios de como usar el modulo.
 
 DONE:
 -----
