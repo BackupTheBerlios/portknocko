@@ -3,9 +3,7 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- For Lucho. Consultar a jjo sobre el msg enviado al userspace.
-- For Anyone. Revisar si realmente es necesario guardar rule_name_len.
-- BUG: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
+- PROBLEM: si hago iptables ... -m pknock ... -p tcp --dport 22 -j ACCEPT,
 	y envio paquetes UDP, no se esta llamando a match() de nuestro modulo.
 
 
