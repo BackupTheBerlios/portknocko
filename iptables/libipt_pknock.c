@@ -26,6 +26,7 @@ static struct option opts[] = {
 	{ .name = "secure", 	.has_arg = 1, 	.flag = 0, 	.val = 's' },
 	{ .name = "strict", 	.has_arg = 0, 	.flag = 0, 	.val = 'x' },
 	{ .name = "checkip", 	.has_arg = 0, 	.flag = 0, 	.val = 'c' },
+	{ .name = "chkip", 	.has_arg = 0, 	.flag = 0, 	.val = 'c' }, /* synonym */
 	{ .name = 0 }
 };
 
@@ -34,9 +35,12 @@ static void help(void) {
 		" --knockports port[,port,port,...] 	Matches destination port(s).\n"
 		" --time seconds\n"
 		" --t ...				Time between port match.\n"
-		" [--secure] 				hmac must be in the packets.\n"
-		" [--strict] 				knocks sequence must be exact.\n"
-		" --name rule_name			Rule name.\n", IPTABLES_VERSION);
+		" --secure 				hmac must be in the packets.\n"
+		" --strict				knocks sequence must be exact.\n"
+		" --name rule_name			Rule name.\n"
+		" --checkip				Matches if the source ip is in the list.\n"
+		" --chkip\n",
+		IPTABLES_VERSION);
 }
 
 /*
@@ -113,13 +117,14 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 	struct ipt_pknock_info *info = (struct ipt_pknock_info *) (*match)->data;
 	int ret=0;
 
-/*** VERIFICAR en cada opción el inverso (!). */
-	
 	switch (c) {
-	case 'k': /* --knockports */
+	case 'k': /* --knockports */	
 		if (*flags & IPT_PKNOCK_KNOCKPORT)
 			exit_error(PARAMETER_PROBLEM, MOD "Cant't use --knockports twice.\n");
-		
+	
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+	
 		if ((ret = parse_ports(optarg, info->port, &(info->count_ports))) != 0) 
 			EXIT_ERR_REPORT(ret);
 #if DEBUG
@@ -132,7 +137,10 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 	case 't': /* --time */
 		if (*flags & IPT_PKNOCK_TIME)
 			exit_error(PARAMETER_PROBLEM, MOD "Cant't use --time twice.\n");
-		
+	
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+	
 		info->max_time = atoi(optarg);	
 		
 		*flags |= IPT_PKNOCK_TIME;
@@ -143,6 +151,9 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if (*flags & IPT_PKNOCK_NAME)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --name twice.\n");
 	
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+
 		memset(info->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN);
 		strncpy(info->rule_name, optarg, IPT_PKNOCK_MAX_BUF_LEN);		
 		info->rule_name_len = strlen(info->rule_name);
@@ -157,6 +168,9 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if (*flags & IPT_PKNOCK_SECURE)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --secure twice.\n");
 
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+
 		memset(info->password, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
 		strncpy(info->password, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);	
 		info->password_len = strlen(info->password);
@@ -168,6 +182,10 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 	case 'c': /* --checkip */
 		if (*flags & IPT_PKNOCK_CHECK)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --checkip twice.\n");
+
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+
 		*flags |= IPT_PKNOCK_CHECK;
 		info->option |= IPT_PKNOCK_CHECK;
 		break;
@@ -175,10 +193,13 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 	case 'x': /* --strict */
 		if (*flags & IPT_PKNOCK_STRICT)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --strict twice.\n");
+
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+
 		*flags |= IPT_PKNOCK_STRICT;
 		info->option |= IPT_PKNOCK_STRICT;
 		break;
-
 		
 	default:
 		return 0;
