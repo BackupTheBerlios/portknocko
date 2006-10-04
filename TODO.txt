@@ -1,12 +1,13 @@
 TODO:
 -----
 
-- For Fede. Validar parametros en espacio de kernel y usuario (invert flag '!' en los parametros ?)
+- For Fede. Validar parametros en espacio de kernel.
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
 
 DONE:
 -----
 
+- By Fender. Funcion parse() de libipt_pknock.c completa.
 - By Fender & Lucho. Posibilidad de knockear con udp por ejemplo y habilitar el trafico tcp. Para esto se utilizan 2 reglas de iptables.
 - By Lucho. Agregada macro hashtable_for_each()
 - By Lucho. Bug fixed al setear el buffer de la regla a menos de 256 (y hacia explotar los timers).
