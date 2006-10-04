@@ -36,7 +36,7 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define GC_EXPIRATION_TIME 10000 /* in msecs */
+#define GC_EXPIRATION_TIME 30000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -858,13 +858,13 @@ static int set_peer_hashsize(const char *val, struct kernel_param *kp) {
 }	
 
 static int set_gc_expir_time(const char *val, struct kernel_param *kp) {
-	unsigned int gc_expir_time;
+	unsigned int gc_expir_time;	/* in seconds */
 
 	gc_expir_time = simple_strtol(val, NULL, 0);
 
 	if (!gc_expir_time) return -EINVAL;
 
-	ipt_pknock_gc_expir_time = gc_expir_time;
+	ipt_pknock_gc_expir_time = gc_expir_time * 1000;
 		
 	return 0;
 }	
