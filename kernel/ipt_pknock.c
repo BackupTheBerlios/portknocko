@@ -68,7 +68,7 @@ static char *algo = "md5";
  * @length
  * @initval
  * @max
- * @return: ?
+ * @return: a 32 bits index
  */
 static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initval, u_int32_t max) {
 	return jhash(key, length, initval) % max;
@@ -491,18 +491,39 @@ static inline void remove_peer(struct peer *peer) {
 	if (peer) kfree(peer);
 }
 
+/**
+ * @peer
+ * @info
+ * @port
+ * @return: 1 success, 0 failure
+ */
 static inline int is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	return (peer == NULL && info->port[0] == port) ? 1 : 0;
 }
 
+/**
+ * @peer
+ * @info
+ * @port
+ * @return: 1 success, 0 failure
+ */
 static inline int is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
 	return info->port[peer->id_port_knocked-1] != port;
 }
 
+/**
+ * @peer
+ * @info
+ * @return: 1 success, 0 failure
+ */
 static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info) {
 	return peer->id_port_knocked-1 == info->count_ports;
 }
 
+/**
+ * @peer
+ * @return: 1 success, 0 failure
+ */
 static inline int is_allowed(struct peer *peer) {
 	return (peer && peer->status == ST_ALLOWED) ? 1 : 0;
 }
@@ -512,9 +533,10 @@ static inline int is_allowed(struct peer *peer) {
  * Sends a message to user space through netlink sockets.
  * 
  * @info
+ * @peer
  */
 #if NETLINK_MSG
-void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) {
+static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) {
 	struct cn_msg *m;
     	struct cb_id cn_test_id = { 0x123, 0x345 };
 	struct ipt_pknock_nl_msg nlmsg;
@@ -644,6 +666,7 @@ static void crypt_to_hex(char *out, char *crypt, int size) {
  * @ipsrc
  * @payload
  * @payload_len
+ * @return: 1 success, 0 failure 
  */
 static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	struct scatterlist sg[2];
