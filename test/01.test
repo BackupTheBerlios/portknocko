@@ -4,7 +4,7 @@ expect "register"
 ########################
 
 #### typical example ####
-rule "SSH" "2000,2001" "22"
+rule_only "SSH" "2000,2001" "22"
 expect "SSH,(A)" 
 
 knock_udp "10.10.0.1" "22"
@@ -18,7 +18,7 @@ expect "PASS OK"
 ########################
 
 #### just one port ####
-rule "ONE" "20002" "22"
+rule_only "ONE" "20002" "22"
 expect "ONE,(A)" 
 
 knock_udp "133.10.0.1" "22"
@@ -30,7 +30,7 @@ expect "PASS OK"
 ########################
 
 #### typical example with a bad start####
-rule "SSH2" "8080,8081" "2222"
+rule_only "SSH2" "8080,8081" "2222"
 expect "SSH2,(A)" 
 
 knock_udp "11.10.0.1" "2222"
@@ -46,7 +46,7 @@ expect "PASS OK"
 ########################
 
 #### typical example with 2 peers ####
-rule "HTTP" "2002,2003,2004" "80"
+rule_only "HTTP" "2002,2003,2004" "80"
 expect "HTTP,(A)" 
 
 knock_udp "10.10.0.2" "80"
@@ -70,7 +70,7 @@ expect "PASS OK"
 ########################
 
 #### big example ####
-rule "BIG" "4000,4001,4002,4003,4004" "80"
+rule_only "BIG" "4000,4001,4002,4003,4004" "80"
 expect "BIG,(A)"
 
 knock_udp "10.10.0.20" "80"

@@ -1,7 +1,7 @@
 load
 
 #### not strict ####
-rule "MISS" "9990,9991" "80"
+rule_only "MISS" "9990,9991" "80"
 expect "MISS,(A)" 
 
 knock_udp "10.10.0.3" "9990"
@@ -21,7 +21,7 @@ unload
 load
 
 #### strict ####
-rule "MISS" "9990,9991" "80" "--strict"
+rule_only "MISS" "9990,9991" "80" "--strict"
 expect "MISS,(A)" 
 
 knock_udp "10.10.0.3" "9990"

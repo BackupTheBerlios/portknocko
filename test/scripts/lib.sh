@@ -9,12 +9,12 @@ function unload() {
 	scripts/reset.sh
 }
 
-function rule() {
-	iptables -A INPUT -m state --state NEW -m pknock $4 --name $1 --time 5 --knockports $2 -p udp --dport $3 -j ACCEPT 1> /dev/null
+function rule_only() {
+	iptables -A INPUT -m state --state NEW -m pknock $4 --name $1 --knockports $2 -p udp --dport $3 -j ACCEPT 1> /dev/null
 }
 
 function rule_set() {
-	iptables -A INPUT -m state --state NEW -m pknock $3 --name $1 --time 5 --knockports $2 -p udp -j DROP 1> /dev/null
+	iptables -A INPUT -m state --state NEW -m pknock $3 --name $1 --knockports $2 -p udp -j DROP 1> /dev/null
 }
 
 function rule_check() {

@@ -3,7 +3,7 @@ SECRET="whatasecret"
 
 load
 
-rule "SSH" "2000,2001" "22" "--secure $SECRET"
+rule_only "SSH" "2000,2001" "22" "--secure $SECRET"
 expect "SSH,(A)" 
 
 knock_udp "11.10.0.1" "22"  
