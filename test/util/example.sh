@@ -1,10 +1,5 @@
 #!/bin/sh
 
-if [ -z $1 ]; then
-	echo "usage: $0 <secret>"
-	exit 1
-fi
-
 scripts/init.sh
 
 insmod ../kernel/ipt_pknock.ko
