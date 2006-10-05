@@ -231,8 +231,12 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 static void final_check(unsigned int flags) { 
 	if (!flags)
 		exit_error(PARAMETER_PROBLEM, MOD "you must specify an option.\n");
-	//if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)))
-	//	exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
+	
+	/* --opensecret & --closesecret must be together */
+	if (!((flags & IPT_PKNOCK_OPENSECRET) && (flags & IPT_PKNOCK_CLOSESECRET))) {
+		if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)) != 0)
+			exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
+	}
 }
 
 /*

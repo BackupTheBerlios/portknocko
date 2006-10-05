@@ -895,6 +895,7 @@ static int checkentry(const char *tablename,
 	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
 		return 0;
 
+	/* singleton */
 	if (!rule_hashtable) {
 		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
 		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (u_int32_t));
@@ -904,6 +905,16 @@ static int checkentry(const char *tablename,
 		printk(KERN_ERR MOD "add_rule() error in checkentry() function.\n");
 		return 0;
 	}
+
+	if (info->option & IPT_PKNOCK_OPENSECRET) { 
+		if ((info->open_secret_len == info->close_secret_len)) {
+			if (memcmp(info->open_secret, info->close_secret, info->open_secret_len) == 0) {
+				printk(KERN_ERR MOD "opensecret & closesecret cannot be equal.\n");
+				return 0;
+			}
+		}
+	}
+	
 	return 1;
 }
 
