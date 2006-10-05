@@ -48,26 +48,32 @@ options:
 
 $ iptables -P INPUT DROP
 $ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-$ iptables -A INPUT -m state --state NEW -m pknock --name SSH --knockports 2000,2001 --secure your_secret -p udp -j DROP
+$ iptables -A INPUT -m state --state NEW -m pknock --name SSH --knockports 2000,2001 --opensecret your_opensecret --closesecret your_closesecret -p udp -j DROP
 $ iptables -A INPUT -m state --state NEW -m pknock --name SSH --checkip -p tcp --dport 22 -j ACCEPT
 
 this way you must send each UDP knock packet with a payload containing a md5 hmac digest:
 
-	md5_hmac(your_secret, your_ip, epoch_min)
+	md5_hmac(your_opensecret, your_ip, epoch_min)
 
 note: "epoch_min" is the UTC min since January 1st 1970 (unix time), so you must keep you hardware clock sync. You can do it this way:
 	
 $ rdate time-a.nist.gov # this will set your system clock
 $ /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 
-after the sequence is complete, you can begin the TCP traffic through port 22.
+after the sequence is complete, you can begin the TCP traffic through port 22. When you finish, close the door (see the example below) to avoid others come after you and use your same IP to log-in.
 
 We provide you a client for knocking the crypt way:
 
 $ cd test
-$ util/knock.sh <IP src> <PORT dst> <secret>
+$ util/knock.sh <IP src> <PORT dst> <opensecret> <closesecret>
 
-e.g: util/knock.sh 127.0.0.1 2000 your_secret
+e.g: util/knock.sh 127.0.0.1 2000 opensecret
+
+after you finish using the service you must "close the door":
+
+e.g: util/knock.sh 127.0.0.1 2000 closesecret
+
+note: Remeber that these are One Time Password, so you can not re use the same hmac, so you have just one knock try per minute.
 
 
 COMUNICATION WITH THE USERSPACE:

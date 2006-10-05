@@ -3,11 +3,13 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel.
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
-- For Lucho. Que cada hmac (validez de 1min) no pueda usarse más de una vez en ese minuto (para lograr nonreplayability). Tambien chequear esto: alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP está como ALLOWED). Por esto debemos tener una opción "close_door" que borre esa IP.
 
 DONE:
 -----
+- By Lucho. Ahora se envía un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
+	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP está como ALLOWED)"
 
+- By Lucho. Un hmac no puede usarse más de una vez en un mismo minuto.
 - By Lucho. Bug fixed: la ejecución del garbage collector se postergaba cada vez que se llamaba a match(). Ahora solo se posterga cada vez que hay un cambio en algún peer.
 - By Lucho. Cada hmac tiene una validez de 1min, ahora se incorpora en el hmac el epoch minute.
 - By Fender. Funcion parse() de libipt_pknock.c completa.

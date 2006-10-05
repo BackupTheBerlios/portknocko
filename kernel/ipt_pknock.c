@@ -230,6 +230,14 @@ static inline int is_time_exceeded(struct peer *peer, int max_time) {
 }
 
 /**
+ * @peer
+ * @return: 1 has logged, 0 otherwise
+ */
+static int has_logged_during_this_minute(struct peer *peer) {
+	return peer && (peer->login_min == get_epoch_minute());
+}
+
+/**
  * Garbage collector. It removes the old entries after that the timer has expired.
  *
  * @r: rule
@@ -242,7 +250,9 @@ static void peer_gc(unsigned long r) {
 	
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
-		if (peer->status == ST_ALLOWED || ((peer->status == ST_MATCHING) && is_time_exceeded(peer, rule->max_time))) {
+		// xxx
+		// no lo borro si se logueo en este minuto
+		if ((peer->status == ST_ALLOWED && !has_logged_during_this_minute(peer)) || ((peer->status == ST_MATCHING) && is_time_exceeded(peer, rule->max_time))) {
 #if DEBUG
 			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
 					NIPQUAD(peer->ip));
@@ -500,6 +510,7 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 
 	peer->timestamp = jiffies/HZ;
 	peer->status = ST_MATCHING;
+	peer->login_min = 0;
 }
 
 /**
@@ -625,7 +636,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
 		msg_to_userspace_nl(info, peer);
 #endif
-
+		peer->login_min = get_epoch_minute(); 
 		return 1;
 	}
 
@@ -774,7 +785,7 @@ static int match(const struct sk_buff *skb,
 	unsigned char *payload;
 	int payload_len;
 	int headers_len;
-
+	
 	switch ((proto = iph->protocol)) {
 		case IPPROTO_TCP:
 			port = ntohs(((struct tcphdr *)transph)->dest); 
@@ -812,18 +823,44 @@ static int match(const struct sk_buff *skb,
 		goto end;
 	}
 
-	/* If security is needed and the peer is still knocking ... */
-	if ((info->option & IPT_PKNOCK_SECURE) && !is_allowed(peer)) {
+	/* If security is needed */
+	if ((info->option & IPT_PKNOCK_OPENSECRET)) {
 		if (iph->protocol != IPPROTO_UDP) {
 			printk(KERN_INFO MOD "FAIL: proto must be UDP when --secure.\n");
 			goto end;
 		}
-
+		
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
-		if (!has_secret(info->password, info->password_len, iph->saddr, payload, payload_len))
-			goto end;
+
+		if (is_allowed(peer)) {
+			// check for CLOSE secret
+			if (has_secret(info->close_secret, info->close_secret_len, iph->saddr, payload, payload_len)) {
+				reset_knock_status(peer);
+				goto end;
+			}
+		} else { 
+			// the peer can't log more than once during the same minute
+			if (has_logged_during_this_minute(peer)) {
+#if DEBUG
+				printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - BLOCKED.\n", NIPQUAD(peer->ip));
+#endif				
+				goto end;
+			}
+		
+			// check for OPEN secret
+			if (!has_secret(info->open_secret, info->open_secret_len, iph->saddr, payload, payload_len)) {
+				goto end;
+			}
+
+		}
 	}
+
+	if ((info->option & IPT_PKNOCK_CLOSESECRET) && is_allowed(peer)) {
+		payload = (void *)iph + headers_len;
+		payload_len = skb->len - headers_len;
+	}
+
 	
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {

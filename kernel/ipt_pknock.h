@@ -13,12 +13,13 @@
 
 #define MOD "ipt_pknock: "
 
-#define IPT_PKNOCK_KNOCKPORT 	0x01
-#define IPT_PKNOCK_TIME  	0x02
-#define IPT_PKNOCK_NAME  	0x04
-#define IPT_PKNOCK_SECURE  	0x08
-#define IPT_PKNOCK_STRICT  	0x10
-#define IPT_PKNOCK_CHECK  	0x20
+#define IPT_PKNOCK_KNOCKPORT 		0x01
+#define IPT_PKNOCK_TIME  		0x02
+#define IPT_PKNOCK_NAME  		0x04
+#define IPT_PKNOCK_STRICT  		0x08
+#define IPT_PKNOCK_CHECK  		0x10
+#define IPT_PKNOCK_OPENSECRET  		0x20
+#define IPT_PKNOCK_CLOSESECRET  	0x40
 
 
 #define IPT_PKNOCK_MAX_PORTS 		15
@@ -31,8 +32,10 @@
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */
 	int		rule_name_len;
-	char		password[IPT_PKNOCK_MAX_PASSWD_LEN]; /* password */
-	int		password_len;
+	char		open_secret[IPT_PKNOCK_MAX_PASSWD_LEN]; 
+	int		open_secret_len;
+	char		close_secret[IPT_PKNOCK_MAX_PASSWD_LEN];
+	int		close_secret_len;
 	u_int8_t 	count_ports;			/* number of ports */
 	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS];	/* port[,port,port,...] */
 	unsigned long 	max_time;			/* max matching time between ports */
@@ -58,6 +61,7 @@ struct peer {
 	u_int32_t 	id_port_knocked;
 	enum status 	status;
 	unsigned long 	timestamp;
+	int		login_min; // the login epoch minute
 };
 
 #include <linux/proc_fs.h>

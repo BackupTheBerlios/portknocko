@@ -19,14 +19,15 @@
 #include "../kernel/ipt_pknock.h"
 
 static struct option opts[] = {
-	{ .name = "knockports", .has_arg = 1,	.flag = 0,	.val = 'k' },
-	{ .name = "t",		.has_arg = 1, 	.flag = 0, 	.val = 't' },
-	{ .name = "time",	.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
-	{ .name = "name", 	.has_arg = 1, 	.flag = 0, 	.val = 'n' },
-	{ .name = "secure", 	.has_arg = 1, 	.flag = 0, 	.val = 's' },
-	{ .name = "strict", 	.has_arg = 0, 	.flag = 0, 	.val = 'x' },
-	{ .name = "checkip", 	.has_arg = 0, 	.flag = 0, 	.val = 'c' },
-	{ .name = "chkip", 	.has_arg = 0, 	.flag = 0, 	.val = 'c' }, /* synonym */
+	{ .name = "knockports", 	.has_arg = 1,	.flag = 0,	.val = 'k' },
+	{ .name = "t",			.has_arg = 1, 	.flag = 0, 	.val = 't' },
+	{ .name = "time",		.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
+	{ .name = "name", 		.has_arg = 1, 	.flag = 0, 	.val = 'n' },
+	{ .name = "opensecret", 	.has_arg = 1, 	.flag = 0, 	.val = 'a' },
+	{ .name = "closesecret", 	.has_arg = 1, 	.flag = 0, 	.val = 'z' },
+	{ .name = "strict", 		.has_arg = 0, 	.flag = 0, 	.val = 'x' },
+	{ .name = "checkip", 		.has_arg = 0, 	.flag = 0, 	.val = 'c' },
+	{ .name = "chkip", 		.has_arg = 0, 	.flag = 0, 	.val = 'c' }, /* synonym */
 	{ .name = 0 }
 };
 
@@ -164,20 +165,36 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		info->option |= IPT_PKNOCK_NAME;
 		break;
 	
-	case 's': /* --secure */
-		if (*flags & IPT_PKNOCK_SECURE)
-			exit_error(PARAMETER_PROBLEM, MOD "Can't use --secure twice.\n");
+	case 'a': /* --opensecret */
+		if (*flags & IPT_PKNOCK_OPENSECRET)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't use --opensecret twice.\n");
 
 		if(invert)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
 
-		memset(info->password, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
-		strncpy(info->password, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);	
-		info->password_len = strlen(info->password);
+		memset(info->open_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
+		strncpy(info->open_secret, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);	
+		info->open_secret_len = strlen(info->open_secret);
 
-		*flags |= IPT_PKNOCK_SECURE;
-		info->option |= IPT_PKNOCK_SECURE;
+		*flags |= IPT_PKNOCK_OPENSECRET;
+		info->option |= IPT_PKNOCK_OPENSECRET;
 		break;
+
+	case 'z': /* --closesecret */
+		if (*flags & IPT_PKNOCK_CLOSESECRET)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't use --closesecret twice.\n");
+
+		if(invert)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
+
+		memset(info->close_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
+		strncpy(info->close_secret, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);	
+		info->close_secret_len = strlen(info->close_secret);
+
+		*flags |= IPT_PKNOCK_CLOSESECRET;
+		info->option |= IPT_PKNOCK_CLOSESECRET;
+		break;
+	
 	
 	case 'c': /* --checkip */
 		if (*flags & IPT_PKNOCK_CHECK)
@@ -214,6 +231,8 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 static void final_check(unsigned int flags) { 
 	if (!flags)
 		exit_error(PARAMETER_PROBLEM, MOD "you must specify an option.\n");
+	//if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)))
+	//	exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
 }
 
 /*
@@ -232,7 +251,8 @@ static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match, 
 	}
 	if (info->option & IPT_PKNOCK_TIME) printf("time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("name %s ", info->rule_name);
-	if (info->option & IPT_PKNOCK_SECURE) printf("secure ");
+	if (info->option & IPT_PKNOCK_OPENSECRET) printf("opensecret ");
+	if (info->option & IPT_PKNOCK_CLOSESECRET) printf("closesecret ");
 }
 
 /*
@@ -252,7 +272,8 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	}
 	if (info->option & IPT_PKNOCK_TIME) printf("--time %ld ", info->max_time);
 	if (info->option & IPT_PKNOCK_NAME) printf("--name %s ", info->rule_name);
-	if (info->option & IPT_PKNOCK_SECURE) printf("--secure ");
+	if (info->option & IPT_PKNOCK_OPENSECRET) printf("--opensecret ");
+	if (info->option & IPT_PKNOCK_CLOSESECRET) printf("--closesecret ");
 	if (info->option & IPT_PKNOCK_STRICT) printf("--strict ");
 	if (info->option & IPT_PKNOCK_CHECK) printf("--checkip ");
 }
