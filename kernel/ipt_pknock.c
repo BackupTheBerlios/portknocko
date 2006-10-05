@@ -75,6 +75,18 @@ static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initva
 }
 
 /**
+ * return: the epoch minute
+ */
+static u_int64_t get_epoch_minute(void) {
+	struct timespec t;
+	u_int64_t minute;
+	t = CURRENT_TIME;
+	minute = (u_int64_t)(t.tv_sec/60);
+	return minute;
+}
+
+
+/**
  * Alloc a hashtable with n buckets.
  * 
  * @size
@@ -433,6 +445,7 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
  */
 static inline void reset_knock_status(struct peer *peer) {
 	peer->id_port_knocked = 1;
+	peer->status 	= ST_INIT;
 }
 
 /**
@@ -454,7 +467,6 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 	INIT_LIST_HEAD(&peer->head);
 	peer->ip 	= ntohl(ip);
 	peer->proto 	= proto;
-	peer->status 	= ST_INIT;
 	peer->timestamp = jiffies/HZ;
 	reset_knock_status(peer);
 
@@ -677,6 +689,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	int hexa_size;
 	int crypt_size;
 	int ret = 1;
+	u_int64_t epoch_min;
 
 	if (payload_len == 0)
 		return 0;
@@ -701,12 +714,15 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 		return -EINVAL;
 	}
 
+	epoch_min = get_epoch_minute();
+
 	memset(result, 0, 64);
 	memset(hexresult, 0, (sizeof(char) * hexa_size));
 
 	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
+	sg_set_buf(&sg[1], &epoch_min, sizeof(u_int64_t));
 
-	crypto_hmac(tfm, secret, &secret_len, sg, 1, result);
+	crypto_hmac(tfm, secret, &secret_len, sg, 2, result);
 
 	crypt_to_hex(hexresult, result, crypt_size);
 
