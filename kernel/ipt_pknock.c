@@ -225,7 +225,7 @@ static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
  * @max_time
  * @return: 1 time exceeded, 0 still valid
  */ 
-static int is_time_exceeded(struct peer *peer, int max_time) {
+static inline int is_time_exceeded(struct peer *peer, int max_time) {
 	return time_after(jiffies/HZ, peer->timestamp + max_time);
 }
 
