@@ -53,7 +53,12 @@ $ iptables -A INPUT -m state --state NEW -m pknock --name SSH --checkip -p tcp -
 
 this way you must send each UDP knock packet with a payload containing a md5 hmac digest:
 
-	md5_hmac(your_secret, your_ip)
+	md5_hmac(your_secret, your_ip, epoch_min)
+
+note: "epoch_min" is the UTC min since January 1st 1970 (unix time), so you must keep you hardware clock sync. You can do it this way:
+	
+$ rdate ntp.server # this will set your system clock
+$ /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 
 after the sequence is complete, you can begin the TCP traffic through port 22.
 
