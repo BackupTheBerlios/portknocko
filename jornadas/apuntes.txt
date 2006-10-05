@@ -1,0 +1,64 @@
+¿Cuando es útil?
+===============
+
+port knocking can help cut down not only on brute force password attacks and their associated log spam but also protocol vulnerability exploits. Also DoS attacks!
+
+Although not a complete protection, port knocking would certainly be another level of defense against random attacks and, properly implemented, could even stop determined, targeted attacks.
+
+Port knocking is a stealthy authentication system that employs closed ports to carry out identification of trusted users.
+
+Port knocking is an additional security layer and does not replace existing application security.
+
+How does the client know whether the information has been received?
+
+It doesn’t. One of the central premises of port knocking is that the client is unable to determine whether the information is has been received. This is by design, so that the presence of the port knocking server cannot be deduced. The server’s firewall is configured to avoid sending any acknowledgement (e.g. DENY instead of REJECT) to the client as receipt of the port knock.
+
+If you go on holidays and someone discovers and disseminates a vulnerability in an ssh implementation, and you are unlucky enough to be running this implementation, your system is vulnerable.
+
+-----------------------------------------------------------------------------------------
+*** DEBE ser nonreplayable AND nonspoofable (eavesdroppers can't reuse the knock from a different IP address) ***
+-----------------------------------------------------------------------------------------
+
+FAQ:
+====
+
+- ¿como sincronizar los clocks de distintos hosts para que tengan = UTC?
+rpta: http://www.linuxsa.org.au/tips/time.html
+- one-time password: f(s), f(f(s)), f(f(f(s))), ... donde f() es una one-way function.
+- one-time pad: the plaintext is combined with a random key or "pad" that is as long as the plaintext and used only once.
+- ante una conexion a un puerto, ¿que respuestas puedo tener?
+rpta: 
+	es un tcp reset si la política está en accept y no hay ningun servicio escuchando.
+	es un icmp si la política es un reject.
+	no hay respuesta si la política es drop.
+	http://logi.cc/linux/reject_or_deny.php3
+
+- man in the middle attack:
+
+un ataque man-in-the-middle (MitM, u hombre en el medio, en castellano) es un ataque en el que el enemigo adquiere la capacidad de leer, insertar y modificar a voluntad, los mensajes entre dos partes sin que ninguna de ellas conozca que el enlace entre ellos ha sido violado. El atacante debe ser capaz de observar e interceptar mensajes entre las dos víctimas. El ataque MitM es particularmente significativo en el protocolo original de intercambio de claves de Diffie-Hellman, cuando éste se emplea sin autenticación.
+
+El ataque MitM puede incluir algunos de los siguientes subataques:
+
+    * Intercepción de la comunicación (eavesdropping), incluyendo análisis del tráfico y posiblemente un ataque a partir de textos planos (plaintext) conocidos.
+    * Ataques a partir de textos cifrados escogidos, en función de lo que el receptor haga con el mensaje descifrado.
+    * Ataques de sustitución.
+    * Ataques de repetición.
+    * Ataque por denegación de servicio (denial of service). El atacante podría, por ejemplo, bloquear las comunicaciones antes de atacar una de las partes. La defensa en ese caso pasa por el envío de periódico de mensajes de status autenticados.
+
+MitM se emplea típicamente para referirse a manipulaciones activas de los mensajes, más que para denotar intercepción pasiva de la comunicación.
+
+- the tumbler way: hmac(secret+ip+epoch_min). El hmac tiene validez por 1 minuto y no se puede repetir durante ese minuto.
+
+
+- Spoofing:
+
+Spoofing, en términos de seguridad informática hace referencia al uso de técnicas de suplantación de identidad generalmente con usos maliciosos o de investigación.
+
+Existen diferentes tipos de spoofing dependiendo de la tecnología a la que nos refiramos, los cuales se describirán más adelante, como el IP spoofing (quizás el más conocido), ARP spoofing, DNS spoofing, Web spoofing o e-mail spoofing, aunque en general se puede englobar dentro de spoofing cualquier tecnología de red susceptible de sufrir suplantaciones de identidad.
+
+
+- Portknocking: ¿es seguridad por oscuridad?
+
+http://www.bastille-linux.org/jay/obscurity-revisited.html
+http://www.portknocking.org/view/about/obscurity
+http://www.portknocking.org/view/about/critique

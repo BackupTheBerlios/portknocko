@@ -1,0 +1,7 @@
+Temas para la presentacion:
+---------------------------
+
+- explicación de portknocking.
+- escenarios de seguridad y tipos de ataques.
+- utilidad del userspace msg.
+- anecdotas de programación.
