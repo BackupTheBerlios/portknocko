@@ -208,6 +208,28 @@ static int read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 }
 
 /**
+ * It updates the rule timer to execute garbage collector.
+ *
+ * @rule
+ */
+static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
+	if (timer_pending(&rule->timer)) {
+		del_timer(&rule->timer);
+	}
+	rule->timer.expires = jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
+	add_timer(&rule->timer);
+}
+
+/**
+ * @peer
+ * @max_time
+ * @return: 1 time exceeded, 0 still valid
+ */ 
+static int is_time_exceeded(struct peer *peer, int max_time) {
+	return time_after(jiffies/HZ, peer->timestamp + max_time);
+}
+
+/**
  * Garbage collector. It removes the old entries after that the timer has expired.
  *
  * @r: rule
@@ -220,7 +242,7 @@ static void peer_gc(unsigned long r) {
 	
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
-		if (peer->status == ST_ALLOWED || peer->status == ST_MATCHING) {
+		if (peer->status == ST_ALLOWED || ((peer->status == ST_MATCHING) && is_time_exceeded(peer, rule->max_time))) {
 #if DEBUG
 			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
 					NIPQUAD(peer->ip));
@@ -400,19 +422,6 @@ static void remove_rule(struct ipt_pknock_info *info) {
 }
 
 /**
- * It updates the rule timer to execute garbage collector.
- *
- * @rule
- */
-static inline void update_rule_timer(struct ipt_pknock_rule *rule) {
-	if (timer_pending(&rule->timer)) {
-		del_timer(&rule->timer);
-	}
-	rule->timer.expires = jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
-	add_timer(&rule->timer);
-}
-
-/**
  * If peer status exist in the list it returns peer status, if not it returns NULL.
  *
  * @rule
@@ -573,24 +582,23 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 }
 #endif
 
+
 /**
  * It updates the peer matching status.
  *
  * @peer
  * @info
+ * @rule
  * @port
  * @return: 1 if allowed, 0 otherwise
  */
-static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
+static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct ipt_pknock_rule *rule, u_int16_t port) {
 	unsigned long time;
 
-	if (is_allowed(peer)) {
-#if DEBUG
-		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
-#endif
-		return 1;
+	if (peer == NULL) {
+		return 0;
 	}
-
+	
 	if (is_wrong_knock(peer, info, port)) {
 #if DEBUG
 		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
@@ -601,6 +609,9 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		}
 		return 0;
 	}
+	
+	/* just update the timer when there is a state change */
+	update_rule_timer(rule);
 
 	peer->id_port_knocked++;
 
@@ -615,14 +626,14 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
 		msg_to_userspace_nl(info, peer);
 #endif
 
-		return 0;
+		return 1;
 	}
 
 	/* Controls the max matching time between ports. */
 	if (info->option & IPT_PKNOCK_TIME) {
 		time = jiffies/HZ;
 		/* Returns true if the time a is after time b. */
-		if (time_after(time, peer->timestamp + info->max_time)) {
+		if (is_time_exceeded(peer, info->max_time)) {
 #if DEBUG
 			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - TIME EXCEEDED.\n", NIPQUAD(peer->ip));
 			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED.\n", NIPQUAD(peer->ip));
@@ -647,11 +658,13 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, u_int16_
  * @buf
  * @len
  */
+#if 0
 static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
 	while (len--)
 		printk("%02x", *buf++);
 	printk("\n");
 }
+#endif
 
 /**
  * Transforms a sequence of characters to hexadecimal.
@@ -786,9 +799,6 @@ static int match(const struct sk_buff *skb,
 		goto end;
 	}
 	
-	/* Updates the rule timer to execute the garbage collector. */
-	update_rule_timer(rule);
-	
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
 
@@ -817,15 +827,19 @@ static int match(const struct sk_buff *skb,
 	
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
+		if ((ret = is_allowed(peer))) {
+#if DEBUG
+			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
+#endif
+			goto end;
+		}
+		
 		if (is_first_knock(peer, info, port)) {
 			peer = new_peer(iph->saddr, proto);
 			add_peer(peer, rule);
 		} 
 
-		if (peer != NULL) {
-			ret = update_peer(peer, info, port);
-			goto end;
-		}
+		update_peer(peer, info, rule, port);
 	}
 
 end:
