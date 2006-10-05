@@ -57,7 +57,7 @@ this way you must send each UDP knock packet with a payload containing a md5 hma
 
 note: "epoch_min" is the UTC min since January 1st 1970 (unix time), so you must keep you hardware clock sync. You can do it this way:
 	
-$ rdate ntp.server # this will set your system clock
+$ rdate time-a.nist.gov # this will set your system clock
 $ /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 
 after the sequence is complete, you can begin the TCP traffic through port 22.
