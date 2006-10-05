@@ -36,7 +36,7 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define GC_EXPIRATION_TIME 30000 /* in msecs */
+#define GC_EXPIRATION_TIME 10000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -250,9 +250,7 @@ static void peer_gc(unsigned long r) {
 	
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
-		// xxx
-		// no lo borro si se logueo en este minuto
-		if ((peer->status == ST_ALLOWED && !has_logged_during_this_minute(peer)) || ((peer->status == ST_MATCHING) && is_time_exceeded(peer, rule->max_time))) {
+		if (!has_logged_during_this_minute(peer) && is_time_exceeded(peer, rule->max_time)) {
 #if DEBUG
 			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
 					NIPQUAD(peer->ip));
@@ -508,7 +506,6 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 #endif				
 	list_add(&peer->head, &rule->peer_head[hash]);
 
-	peer->timestamp = jiffies/HZ;
 	peer->status = ST_MATCHING;
 	peer->login_min = 0;
 }
@@ -814,9 +811,8 @@ static int match(const struct sk_buff *skb,
 	peer = get_peer(rule, iph->saddr);
 
 	if ((info->option & IPT_PKNOCK_CHECK)) {
-		ret = is_allowed(peer);
+		if ((ret = is_allowed(peer))) {
 #if DEBUG
-		if (ret) {
 			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK CHECKED.\n", NIPQUAD(peer->ip));
 		}
 #endif
