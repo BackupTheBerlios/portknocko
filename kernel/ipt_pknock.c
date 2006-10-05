@@ -77,11 +77,11 @@ static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initva
 /**
  * return: the epoch minute
  */
-static u_int64_t get_epoch_minute(void) {
+static int get_epoch_minute(void) {
 	struct timespec t;
-	u_int64_t minute;
+	int minute;
 	t = CURRENT_TIME;
-	minute = (u_int64_t)(t.tv_sec/60);
+	minute = (int)(t.tv_sec/60);
 	return minute;
 }
 
@@ -689,7 +689,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	int hexa_size;
 	int crypt_size;
 	int ret = 1;
-	u_int64_t epoch_min;
+	int epoch_min;
 
 	if (payload_len == 0)
 		return 0;
@@ -720,7 +720,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	memset(hexresult, 0, (sizeof(char) * hexa_size));
 
 	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
-	sg_set_buf(&sg[1], &epoch_min, sizeof(u_int64_t));
+	sg_set_buf(&sg[1], &epoch_min, sizeof(int));
 
 	crypto_hmac(tfm, secret, &secret_len, sg, 2, result);
 
