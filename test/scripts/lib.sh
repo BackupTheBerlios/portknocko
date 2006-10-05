@@ -28,11 +28,11 @@ function expect() {
 }
 
 function knock_udp() {
-	scripts/knocker.sh $1 $2 $digest_file -2
+	scripts/knocker.sh $1 $2 $digest_file -2 "localhost"
 }
 
 function knock_tcp() {
-	scripts/knocker.sh $1 $2 $digest_file
+	scripts/knocker.sh $1 $2 $digest_file "" "localhost"
 }
 
 function set_hmac() {
