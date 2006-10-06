@@ -639,9 +639,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	if (payload_len == 0)
 		return 0;
 
-	tfm = crypto_alloc_tfm(algo, 0);	
-
-	if (tfm == NULL) {
+	if ((tfm = crypto_alloc_tfm(algo, 0)) == NULL) {
 		printk(KERN_INFO MOD "failed to load transform for %s\n", algo);
 		return 0;
 	}
@@ -650,9 +648,8 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 
 	hexa_size = crypt_size * 2;
 
-	if (payload_len != hexa_size) {
+	if (payload_len != hexa_size) 
 		return 0;
-	}
 
 	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in has_secret() function.\n");
@@ -793,12 +790,10 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
  * @return: 1 if close knock, 0 otherwise
  */
 static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
-	if (is_allowed(peer)) {
-        	/* Check for CLOSE secret. */
-	        if (has_secret(info->close_secret, info->close_secret_len, htonl(peer->ip), payload, payload_len)) {
-        		DEBUG_MSG("RESET", peer);
-			return 1;
-		}
+        /* Check for CLOSE secret. */
+	if (has_secret(info->close_secret, info->close_secret_len, htonl(peer->ip), payload, payload_len)) {
+        	DEBUG_MSG("RESET", peer);
+		return 1;
 	}
 	return 0;
 }
