@@ -322,13 +322,14 @@ static int add_rule(struct ipt_pknock_info *info) {
 			/* If the rule exists. */
 			if (rulecmp(info, rule) == 0) {
 				rule->ref_count++;
-				
+			#if DEBUG				
 				if (info->option & IPT_PKNOCK_CHECK) {
-					printk(KERN_DEBUG MOD "add_rule() (AC) rule found: %s - ref_count: %d\n", rule->rule_name, rule->ref_count);
-				 
-					 return 1;
-				 }
-                 return 1;
+					printk(KERN_DEBUG MOD "add_rule() (AC) rule found: %s - ref_count: %d\n", 
+						rule->rule_name, rule->ref_count);
+					return 1;
+				}
+			#endif
+		                return 1;
 			}
 		}
 	}
@@ -376,8 +377,10 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
 	struct peer *peer = NULL;
-	int i, found = 0;
-
+	int i;
+#if DEBUG	
+	int found = 0;
+#endif
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, 
 				ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
 
@@ -387,24 +390,25 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		rule = list_entry(pos, struct ipt_pknock_rule, head);
 		/* If the rule exists. */
 		if (rulecmp(info, rule) == 0) {
+		#if DEBUG
 			found = 1;
+		#endif			
 			rule->ref_count--;
 			break;
 		}
 	}
-	
+#if DEBUG	
 	if (!found) {
-#if DEBUG
+
 		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
-#endif
 		return;
 	}
-
+#endif
 	if (rule != NULL && rule->ref_count == 0) {
 		hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 			peer = list_entry(pos, struct peer, head);
 			if (peer != NULL) {
-                DEBUG_MSG("DELETED", peer);			
+				DEBUG_MSG("DELETED", peer);			
 				list_del(pos);
 				kfree(peer);
 			}
@@ -695,21 +699,19 @@ end:
  * @return: 1 if pass security, 0 otherwise
  */
 static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
+	if (is_allowed(peer))
+        	return 1;
     
-    if (is_allowed(peer))
-        return 1;
+	/* The peer can't log more than once during the same minute. */
+	if (has_logged_during_this_minute(peer)) {
+	        DEBUG_MSG("BLOCKED", peer);			
+        	return 0;
+	}
+	/* Check for OPEN secret (peer could be NULL). */
+	if (!has_secret(info->open_secret, info->open_secret_len, htonl(peer->ip), payload, payload_len))
+    		return 0;
     
-    // the peer can't log more than once during the same minute
-    if (has_logged_during_this_minute(peer)) {
-        DEBUG_MSG("BLOCKED", peer);			
-        return 0;
-    }
-    // check for OPEN secret (peer could be NULL)
-    if (!has_secret(info->open_secret, info->open_secret_len, htonl(peer->ip), payload, payload_len)) {
-        return 0;
-    }
-    
-    return 1;
+	return 1;
 }
 
 /**
@@ -723,11 +725,13 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsign
  * @pauload_len
  * @return: 1 if allowed, 0 otherwise
  */
-static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct ipt_pknock_rule *rule, u_int16_t port, unsigned char *payload, int payload_len) {
+static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct ipt_pknock_rule *rule, 
+			u_int16_t port, unsigned char *payload, int payload_len) {
 	unsigned long time;
 	
 	if (is_wrong_knock(peer, info, port)) {
-        DEBUG_MSG("DIDN'T MATCH", peer);
+	        DEBUG_MSG("DIDN'T MATCH", peer);
+
 		if ((info->option & IPT_PKNOCK_STRICT)) {
 			/* Peer must start the sequence from scratch. */
 			reset_knock_status(peer);
@@ -735,12 +739,12 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		return 0;
 	}
 
-    /* If security is needed */
-    if ((info->option & IPT_PKNOCK_OPENSECRET)) {
-        if (!pass_security(peer, info, payload, payload_len)) {
-            return 0;
-        }
-    }
+	/* If security is needed */
+	if ((info->option & IPT_PKNOCK_OPENSECRET)) {
+        	if (!pass_security(peer, info, payload, payload_len)) {
+			return 0;
+		}
+	}
 	
 	/* just update the timer when there is a state change */
 	update_rule_timer(rule);
@@ -749,7 +753,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 
 	if (is_last_knock(peer, info)) {
 		peer->status = ST_ALLOWED;
-        DEBUG_MSG("ALLOWED", peer);
+		
+		DEBUG_MSG("ALLOWED", peer);
 
 #if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
@@ -775,7 +780,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		}
 		peer->timestamp = time;		
 	}
-    DEBUG_MSG("MATCHING", peer);
+	DEBUG_MSG("MATCHING", peer);
+	
 	return 0;
 }
 
@@ -790,14 +796,14 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
  * @return: 1 if close knock, 0 otherwise
  */
 static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
-    if (is_allowed(peer)) {
-        // check for CLOSE secret
-        if (has_secret(info->close_secret, info->close_secret_len, htonl(peer->ip), payload, payload_len)) {
-            DEBUG_MSG("RESET", peer);
-            return 1;
-        }
-    }
-    return 0;
+	if (is_allowed(peer)) {
+        	/* Check for CLOSE secret. */
+	        if (has_secret(info->close_secret, info->close_secret_len, htonl(peer->ip), payload, payload_len)) {
+        		DEBUG_MSG("RESET", peer);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 
@@ -818,8 +824,7 @@ static int match(const struct sk_buff *skb,
 	u_int8_t proto = 0;
 	int ret=0;	
 	unsigned char *payload;
-	int payload_len;
-	int headers_len;
+	int payload_len, headers_len;
 	
 	switch ((proto = iph->protocol)) {
 		case IPPROTO_TCP:
@@ -853,18 +858,18 @@ static int match(const struct sk_buff *skb,
 		goto end;
 	}
 
-    payload = (void *)iph + headers_len;
-    payload_len = skb->len - headers_len;
+	payload = (void *)iph + headers_len;
+	payload_len = skb->len - headers_len;
     
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
-            if ((info->option & IPT_PKNOCK_CLOSESECRET)) {
-                if (is_close_knock(peer, info, payload, payload_len)) {
-                    reset_knock_status(peer);
-                    ret = 0;
-                }
-            }            
+			if ((info->option & IPT_PKNOCK_CLOSESECRET)) {
+		                if (is_close_knock(peer, info, payload, payload_len)) {
+                    			reset_knock_status(peer);
+					ret = 0;
+				}
+			}            
 			goto end;
 		}
 		
@@ -873,15 +878,16 @@ static int match(const struct sk_buff *skb,
 			add_peer(peer, rule);
 		}
         
-        if (peer == NULL)
-            goto end;
+		if (peer == NULL) goto end;
         
 		update_peer(peer, info, rule, port, payload, payload_len);
 	}
 
 end:
-    if (ret)
-        DEBUG_MSG("PASS OK", peer);
+#if DEBUG
+	if (ret)
+        	DEBUG_MSG("PASS OK", peer);
+#endif		
 	spin_unlock_bh(&rule_list_lock);
 	return ret;
 }
