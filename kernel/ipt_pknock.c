@@ -750,6 +750,8 @@ end:
 
 
 /**
+ * Make the peer no more ALLOWED sending a payload with a special secret for closure
+ *
  * @peer
  * @info
  * @iph
@@ -770,6 +772,8 @@ static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, struc
 
 
 /**
+ * If the peer pass the security policy
+ *
  * @peer
  * @info
  * @iph
