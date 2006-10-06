@@ -56,6 +56,7 @@ Spoofing, en términos de seguridad informática hace referencia al uso de técn
 
 Existen diferentes tipos de spoofing dependiendo de la tecnología a la que nos refiramos, los cuales se describirán más adelante, como el IP spoofing (quizás el más conocido), ARP spoofing, DNS spoofing, Web spoofing o e-mail spoofing, aunque en general se puede englobar dentro de spoofing cualquier tecnología de red susceptible de sufrir suplantaciones de identidad.
 
+IP SPOOFING: Suplantación de IP. Consiste básicamente en sustituir la IP origen de un paquete TCP/IP por otra IP a la cual se desea suplantar.
 
 - Portknocking: ¿es seguridad por oscuridad?
 
