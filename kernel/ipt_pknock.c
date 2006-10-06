@@ -109,9 +109,7 @@ static struct list_head *alloc_hashtable(int size) {
 
 	for (i = 0; i < size; i++)
 		INIT_LIST_HEAD(&hash[i]);
-#if DEBUG
-	printk(KERN_DEBUG MOD "%d buckets created. \n", size);
-#endif				
+			
 	return hash;
 }
 
@@ -330,10 +328,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 				 
 					 return 1;
 				 }
-#if DEBUG
-				printk(KERN_DEBUG MOD "add_rule() (E) rule found: %s - ref_count: %d\n", rule->rule_name, rule->ref_count);
-#endif				
-				return 1;
+                 return 1;
 			}
 		}
 	}
@@ -409,10 +404,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 			peer = list_entry(pos, struct peer, head);
 			if (peer != NULL) {
-#if DEBUG	
-				printk(KERN_INFO MOD "(D) peer deleted: %u.%u.%u.%u\n", 
-						NIPQUAD(peer->ip));
-#endif				
+                DEBUG_MSG("DELETED", peer);			
 				list_del(pos);
 				kfree(peer);
 			}
@@ -504,9 +496,7 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), 
 				ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
-#if DEBUG
-	printk(KERN_DEBUG MOD "add_peer() -> hash %d \n", hash);
-#endif				
+			
 	list_add(&peer->head, &rule->peer_head[hash]);
 
 	peer->status = ST_MATCHING;
