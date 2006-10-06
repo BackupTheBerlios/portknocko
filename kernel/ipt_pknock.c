@@ -326,10 +326,9 @@ static int add_rule(struct ipt_pknock_info *info) {
 				if (info->option & IPT_PKNOCK_CHECK) {
 					printk(KERN_DEBUG MOD "add_rule() (AC) rule found: %s - ref_count: %d\n", 
 						rule->rule_name, rule->ref_count);
-					return 1;
 				}
 			#endif
-		                return 1;
+		        return 1;
 			}
 		}
 	}
