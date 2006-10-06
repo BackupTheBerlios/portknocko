@@ -36,7 +36,7 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define GC_EXPIRATION_TIME 10000 /* in msecs */
+#define GC_EXPIRATION_TIME 65000 /* in msecs */
 
 #define DEFAULT_RULE_HASH_SIZE 8
 #define DEFAULT_PEER_HASH_SIZE 16
@@ -503,7 +503,6 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 			
 	list_add(&peer->head, &rule->peer_head[hash]);
 
-	peer->status = ST_MATCHING;
 	peer->login_min = 0;
 }
 
@@ -707,7 +706,7 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsign
 	        DEBUG_MSG("BLOCKED", peer);			
         	return 0;
 	}
-	/* Check for OPEN secret (peer could be NULL). */
+	/* Check for OPEN secret */
 	if (!has_secret(info->open_secret, info->open_secret_len, htonl(peer->ip), payload, payload_len))
     		return 0;
     
@@ -781,7 +780,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		peer->timestamp = time;		
 	}
 	DEBUG_MSG("MATCHING", peer);
-	
+	peer->status = ST_MATCHING;
 	return 0;
 }
 
