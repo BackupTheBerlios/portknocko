@@ -730,7 +730,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	if (is_wrong_knock(peer, info, port)) {
 	        DEBUG_MSG("DIDN'T MATCH", peer);
 
-		if ((info->option & IPT_PKNOCK_STRICT)) {
+		if (info->option & IPT_PKNOCK_STRICT) {
 			/* Peer must start the sequence from scratch. */
 			reset_knock_status(peer);
 		}
@@ -738,7 +738,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	}
 
 	/* If security is needed */
-	if ((info->option & IPT_PKNOCK_OPENSECRET)) {
+	if (info->option & IPT_PKNOCK_OPENSECRET) {
         	if (!pass_security(peer, info, payload, payload_len)) {
 			return 0;
 		}
@@ -753,7 +753,6 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		peer->status = ST_ALLOWED;
 		
 		DEBUG_MSG("ALLOWED", peer);
-
 #if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
 		msg_to_userspace_nl(info, peer);
@@ -851,7 +850,7 @@ static int match(const struct sk_buff *skb,
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
 
-	if ((info->option & IPT_PKNOCK_CHECK)) {
+	if (info->option & IPT_PKNOCK_CHECK) {
 		ret = is_allowed(peer);
 		goto end;
 	}
@@ -862,7 +861,7 @@ static int match(const struct sk_buff *skb,
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
-			if ((info->option & IPT_PKNOCK_CLOSESECRET)) {
+			if (info->option & IPT_PKNOCK_CLOSESECRET) {
 		                if (is_close_knock(peer, info, payload, payload_len)) {
                     			reset_knock_status(peer);
 					ret = 0;
