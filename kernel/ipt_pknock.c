@@ -821,11 +821,6 @@ static int match(const struct sk_buff *skb,
 
 	/* If security is needed */
 	if ((info->option & IPT_PKNOCK_OPENSECRET)) {
-		if (iph->protocol != IPPROTO_UDP) {
-			printk(KERN_INFO MOD "FAIL: proto must be UDP when --secure.\n");
-			goto end;
-		}
-		
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
 
@@ -852,12 +847,6 @@ static int match(const struct sk_buff *skb,
 		}
 	}
 
-	if ((info->option & IPT_PKNOCK_CLOSESECRET) && is_allowed(peer)) {
-		payload = (void *)iph + headers_len;
-		payload_len = skb->len - headers_len;
-	}
-
-	
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
