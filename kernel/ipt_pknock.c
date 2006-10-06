@@ -836,7 +836,7 @@ static int match(const struct sk_buff *skb,
 
 		default:
 			printk(KERN_INFO MOD "IP payload protocol is neither tcp nor udp.\n");
-			goto end;
+			return 0;
 	}
 
 	spin_lock_bh(&rule_list_lock);
