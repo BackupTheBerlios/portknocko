@@ -763,6 +763,56 @@ end:
 }
 
 
+/**
+ * @peer
+ * @info
+ * @iph
+ * @payload
+ * @payload_len
+ * @return: 1 if close knock, 0 otherwise
+ */
+static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, struct iphdr *iph, unsigned char *payload, int payload_len) {
+    if (is_allowed(peer)) {
+        // check for CLOSE secret
+        if (has_secret(info->close_secret, info->close_secret_len, iph->saddr, payload, payload_len)) {
+#if DEBUG
+            printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - RESET.\n", NIPQUAD(peer->ip));
+#endif
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+/**
+ * @peer
+ * @info
+ * @iph
+ * @payload
+ * @payload_len
+ * @return: 1 if pass security, 0 otherwise
+ */
+static int pass_security(struct peer *peer, struct ipt_pknock_info *info, struct iphdr *iph, unsigned char *payload, int payload_len) {
+    
+    if (is_allowed(peer))
+        return 1;
+    
+    // the peer can't log more than once during the same minute
+    if (has_logged_during_this_minute(peer)) {
+#if DEBUG
+        printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - BLOCKED.\n", NIPQUAD(peer->ip));
+#endif				
+        return 0;
+    }
+    // check for OPEN secret
+    if (!has_secret(info->open_secret, info->open_secret_len, iph->saddr, payload, payload_len)) {
+        return 0;
+    }
+    
+    return 1;
+}
+
 static int match(const struct sk_buff *skb,
 		const struct net_device *in,
 		const struct net_device *out,
@@ -824,27 +874,13 @@ static int match(const struct sk_buff *skb,
 		payload = (void *)iph + headers_len;
 		payload_len = skb->len - headers_len;
 
-		if (is_allowed(peer)) {
-			// check for CLOSE secret
-			if (has_secret(info->close_secret, info->close_secret_len, iph->saddr, payload, payload_len)) {
-				reset_knock_status(peer);
-				goto end;
-			}
-		} else { 
-			// the peer can't log more than once during the same minute
-			if (has_logged_during_this_minute(peer)) {
-#if DEBUG
-				printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - BLOCKED.\n", NIPQUAD(peer->ip));
-#endif				
-				goto end;
-			}
-		
-			// check for OPEN secret
-			if (!has_secret(info->open_secret, info->open_secret_len, iph->saddr, payload, payload_len)) {
-				goto end;
-			}
-
-		}
+        if (is_close_knock(peer, info, iph, payload, payload_len)) {
+            reset_knock_status(peer);
+            goto end;
+        }
+        if (!pass_security(peer, info, iph, payload, payload_len)) {
+            goto end;
+        }
 	}
 
 	/* Sets, updates, removes or checks the peer matching status. */

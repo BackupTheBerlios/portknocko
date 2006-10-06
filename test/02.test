@@ -43,6 +43,7 @@ expect "PASS OK"
 # close door
 set_hmac $CLOSESECRET "11.10.0.1" 
 knock_udp "11.10.0.1" "9999" # send to any port!
+expect "RESET"
 
 # verify it is closed
 knock_udp "11.10.0.1" "22"
