@@ -47,6 +47,12 @@ MODULE_LICENSE("GPL");
 	for ((i) = 0; (i) < (size); (i)++) \
 		list_for_each_safe((pos), (n), (&head[(i)]))
 
+#if DEBUG
+    #define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
+#else
+    #define DEBUG_MSG(msg, peer)
+#endif
+    
 static u_int32_t ipt_pknock_hash_rnd;
 
 static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
@@ -251,10 +257,7 @@ static void peer_gc(unsigned long r) {
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
 		if (!has_logged_during_this_minute(peer) && is_time_exceeded(peer, rule->max_time)) {
-#if DEBUG
-			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED\n",
-					NIPQUAD(peer->ip));
-#endif		
+            DEBUG_MSG("DESTROYED", peer);	
 			list_del(pos);
 			kfree(peer);
 		}
@@ -608,9 +611,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	}
 	
 	if (is_wrong_knock(peer, info, port)) {
-#if DEBUG
-		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - DIDN'T MATCH.\n", NIPQUAD(peer->ip));
-#endif
+        DEBUG_MSG("DIDN'T MATCH", peer);
 		if ((info->option & IPT_PKNOCK_STRICT)) {
 			/* Peer must start the sequence from scratch. */
 			reset_knock_status(peer);
@@ -625,9 +626,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 
 	if (is_last_knock(peer, info)) {
 		peer->status = ST_ALLOWED;
-#if DEBUG
-		printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - ALLOWED.\n", NIPQUAD(peer->ip));	
-#endif
+        DEBUG_MSG("ALLOWED", peer);
 
 #if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
@@ -643,8 +642,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		/* Returns true if the time a is after time b. */
 		if (is_time_exceeded(peer, info->max_time)) {
 #if DEBUG
-			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - TIME EXCEEDED.\n", NIPQUAD(peer->ip));
-			printk(KERN_INFO MOD "(X) peer: %u.%u.%u.%u - DESTROYED.\n", NIPQUAD(peer->ip));
+			DEBUG_MSG("TIME EXCEEDED", peer);
+			DEBUG_MSG("DESTROYED", peer);
 			printk(KERN_INFO MOD "max_time: %ld - time: %ld\n", 
 					peer->timestamp + info->max_time, time);
 #endif
@@ -653,10 +652,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		}
 		peer->timestamp = time;		
 	}
-#if DEBUG
-	printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - MATCHING.\n", 
-			NIPQUAD(peer->ip));
-#endif
+    DEBUG_MSG("MATCHING", peer);
 	return 0;
 }
 
@@ -775,9 +771,7 @@ static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, struc
     if (is_allowed(peer)) {
         // check for CLOSE secret
         if (has_secret(info->close_secret, info->close_secret_len, iph->saddr, payload, payload_len)) {
-#if DEBUG
-            printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - RESET.\n", NIPQUAD(peer->ip));
-#endif
+            DEBUG_MSG("RESET", peer);
             return 1;
         }
     }
@@ -800,9 +794,7 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info, struct
     
     // the peer can't log more than once during the same minute
     if (has_logged_during_this_minute(peer)) {
-#if DEBUG
-        printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - BLOCKED.\n", NIPQUAD(peer->ip));
-#endif				
+        DEBUG_MSG("BLOCKED", peer);			
         return 0;
     }
     // check for OPEN secret
@@ -862,10 +854,8 @@ static int match(const struct sk_buff *skb,
 
 	if ((info->option & IPT_PKNOCK_CHECK)) {
 		if ((ret = is_allowed(peer))) {
-#if DEBUG
-			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK CHECKED.\n", NIPQUAD(peer->ip));
+            DEBUG_MSG("PASS OK CHECKED", peer);
 		}
-#endif
 		goto end;
 	}
 
@@ -886,9 +876,7 @@ static int match(const struct sk_buff *skb,
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
-#if DEBUG
-			printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - PASS OK.\n", NIPQUAD(peer->ip));
-#endif
+            DEBUG_MSG("PASS OK", peer);
 			goto end;
 		}
 		
