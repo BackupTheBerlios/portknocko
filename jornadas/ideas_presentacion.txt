@@ -46,7 +46,7 @@ Temas para la presentacion:
 
 - Cuestiones del Escenario 2:
 
-	* ARP spoof?: roban nuestra identidad (ipsrc)
+	* ARP spoof -> MitM ?: roban nuestra identidad (ipsrc)
 	* solucion: hmac(ipsrc + secreto + epoch_min)
 	* validez de un solo minuto
 	* no acepto repeticion dentro de ese minuto
@@ -78,4 +78,5 @@ Temas para la presentacion:
 - Conclusion
 
 	* ...
+	* destino: netfilter repository
 	* help from comunidad mendocina? beta testers?

@@ -62,6 +62,8 @@ Existen diferentes tipos de spoofing dependiendo de la tecnología a la que nos 
 
 IP SPOOFING: Suplantación de IP. Consiste básicamente en sustituir la IP origen de un paquete TCP/IP por otra IP a la cual se desea suplantar.
 
+ARP SPOOFING: The principle of ARP spoofing is to send fake, or 'spoofed', ARP messages to an Ethernet LAN. These frames contain false MAC addresses, confusing network devices, such as network switches. As a result frames intended for one machine can be mistakenly sent to another (allowing the packets to be sniffed) or an unreachable host (a denial of service attack). ARP spoofing can also be used in a man-in-the-middle attack in which all traffic is forwarded through a host with the use of ARP spoofing and analyzed for passwords and other information.
+
 - Portknocking: ¿es seguridad por oscuridad?
 
 http://www.bastille-linux.org/jay/obscurity-revisited.html
