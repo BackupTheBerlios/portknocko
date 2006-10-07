@@ -1,7 +1,81 @@
 Temas para la presentacion:
----------------------------
+===========================
 
-- explicación de portknocking.
-- escenarios de seguridad y tipos de ataques.
-- utilidad del userspace msg.
-- anecdotas de programación.
+- Intro: Necesidad
+
+	* servicios accesibles desde afuera, pero no públicos.
+
+
+- Que Hace:
+
+	* evita ataques por fuerza bruta
+	* evita log spam
+	* ¡evita vulnerabilidades del servicio!
+
+
+- Como:
+
+	* sistema "sigiloso" que utiliza la
+	  comunicacion a través de puertos cerrados para autenticar.
+	* no hay rpta (sigiloso).
+	* secreto compartido.
+
+
+- Escenario 1:
+
+	* TCP
+	* Secuencia de "knocks"
+	* secreto compartido.
+	* peers, rules.
+	* ejemplo de iptables en una sola regla.
+	* netfilter
+
+
+- Cuestiones del Escenario 1:
+
+	* sniffing => replay
+
+
+- Escenario 2:
+
+	* necesidad de anti-replay
+	* autenticamos con el payload en un solo msj UDP
+	* payload: hmac(ipsrc + secreto)
+	* no pueden hacer replay desde otra ipsrc
+
+
+- Cuestiones del Escenario 2:
+
+	* ARP spoof?: roban nuestra identidad (ipsrc)
+	* solucion: hmac(ipsrc + secreto + epoch_min)
+	* validez de un solo minuto
+	* no acepto repeticion dentro de ese minuto
+
+
+- Problemas aun:
+
+	* Man in the Middle
+	* integridad y confidencialidad de la comunicación
+	* VPN ...
+
+
+- Utilidad del userspace message.
+
+	* Arquitectura de otras implementaciones de port knocking
+	* Nuestra arquitectura
+	* mensajes kernelspace -> userspace
+
+
+- Anecdotas de programación.
+
+	* iptables
+	* netfilter
+	* garbage collector
+	* hash tables
+	* mini-framework para testing
+
+
+- Conclusion
+
+	* ...
+	* help from comunidad mendocina? beta testers?

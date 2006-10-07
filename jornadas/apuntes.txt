@@ -22,6 +22,10 @@ If you go on holidays and someone discovers and disseminates a vulnerability in 
 FAQ:
 ====
 
+- when to port knock? cuando queremos autenticación, pero no integridad ni confidencialidad.
+- ¿QUE HACEMOS CON NAT? rpta: cambio ipsrc en el hmac.
+- ¿COMO EVITO DoS ATTACKs? rpta: -m limit
+- problem: no hay asociación entre la autenticacion y la conexión. ej: Alguien podria dejar pasar la autenticación y luego bloquear el trafico que viene al puerto 22, tomar la IP del que autentico e iniciar una conexión el mismo al puerto 22.
 - ¿como sincronizar los clocks de distintos hosts para que tengan = UTC?
 rpta: http://www.linuxsa.org.au/tips/time.html
 - one-time password: f(s), f(f(s)), f(f(f(s))), ... donde f() es una one-way function.
