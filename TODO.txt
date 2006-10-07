@@ -6,9 +6,9 @@ TODO:
 
 DONE:
 -----
+- By Fender. Kernel panic fixed.
 - By Lucho. Ahora se envía un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
-	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP está como ALLOWED)"
-
+	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP está como ALLOWED)".
 - By Lucho. Un hmac no puede usarse más de una vez en un mismo minuto.
 - By Lucho. Bug fixed: la ejecución del garbage collector se postergaba cada vez que se llamaba a match(). Ahora solo se posterga cada vez que hay un cambio en algún peer.
 - By Lucho. Cada hmac tiene una validez de 1min, ahora se incorpora en el hmac el epoch minute.
