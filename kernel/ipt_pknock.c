@@ -811,7 +811,7 @@ static int match(const struct sk_buff *skb,
 	struct peer *peer = NULL;
 	struct iphdr *iph = skb->nh.iph;
 	int iphl = iph->ihl * 4;
-	void *transph = (void *)iph + iphl;		/* tranport protocol header */
+	void *transph = (void *)iph + iphl;	/* tranport protocol header */
 	u_int16_t port = 0;
 	u_int8_t proto = 0;
 	int ret=0;	
