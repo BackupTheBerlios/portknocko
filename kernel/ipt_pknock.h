@@ -47,7 +47,6 @@ struct ipt_pknock_nl_msg {
 	u_int32_t 		peer_ip;
 };
 
-
 enum status {ST_INIT=1, ST_MATCHING, ST_ALLOWED};
 
 #ifdef __KERNEL__
@@ -61,7 +60,7 @@ struct peer {
 	u_int32_t 	id_port_knocked;
 	enum status 	status;
 	unsigned long 	timestamp;
-	int		login_min; // the login epoch minute
+	int		login_min; 	/* the login epoch minute */
 };
 
 #include <linux/proc_fs.h>
@@ -79,4 +78,3 @@ struct ipt_pknock_rule {
 
 #endif /* __KERNEL__ */
 #endif /* _IPT_PKNOCK_H */
-
