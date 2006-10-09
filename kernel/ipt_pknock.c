@@ -36,12 +36,12 @@ MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
-#define GC_EXPIRATION_TIME 65000 /* in msecs */
-
-#define DEFAULT_RULE_HASH_SIZE 8
-#define DEFAULT_PEER_HASH_SIZE 16
-
-#define NL_MULTICAST_GROUP 1
+enum {
+    GC_EXPIRATION_TIME = 65000, /* in msecs */
+    DEFAULT_RULE_HASH_SIZE = 8,
+    DEFAULT_PEER_HASH_SIZE = 16,
+    NL_MULTICAST_GROUP = 1
+};
 
 #define hashtable_for_each_safe(pos, n, head, size, i) \
 	for ((i) = 0; (i) < (size); (i)++) \
@@ -441,7 +441,7 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 
 	ip = ntohl(ip);
 
-	hash = pknock_hash(&ip, sizeof(u_int32_t), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
+	hash = pknock_hash(&ip, sizeof(ip), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 
 	if (list_empty(&rule->peer_head[hash])) return NULL;
 
@@ -497,7 +497,7 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
  * @rule
  */
 static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
-	int hash = pknock_hash(&peer->ip, sizeof(u_int32_t), 
+	int hash = pknock_hash(&peer->ip, sizeof(peer->ip), 
 				ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 			
 	list_add(&peer->head, &rule->peer_head[hash]);
@@ -661,8 +661,8 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	memset(result, 0, 64);
 	memset(hexresult, 0, (sizeof(char) * hexa_size));
 
-	sg_set_buf(&sg[0], &ipsrc, sizeof(u_int32_t));
-	sg_set_buf(&sg[1], &epoch_min, sizeof(int));
+	sg_set_buf(&sg[0], &ipsrc, sizeof(ipsrc));
+	sg_set_buf(&sg[1], &epoch_min, sizeof(epoch_min));
 
 	crypto_hmac(tfm, secret, &secret_len, sg, 2, result);
 
@@ -898,7 +898,7 @@ static int checkentry(const char *tablename,
 	/* singleton */
 	if (!rule_hashtable) {
 		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
-		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (u_int32_t));
+		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (ipt_pknock_hash_rnd));
 	}
 
 	if (!add_rule(info)) {
