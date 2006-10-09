@@ -3,20 +3,20 @@ Temas para la presentacion:
 
 - Intro: Necesidad
 
-	* servicios accesibles desde afuera, pero no pÃºblicos.
+	* servicios accesibles desde afuera, pero no públicos.
 
 
 - Que Hace:
 
 	* evita ataques por fuerza bruta
 	* evita log spam
-	* Â¡evita vulnerabilidades del servicio!
+	* ¡evita vulnerabilidades del servicio!
 
 
 - Como:
 
 	* sistema "sigiloso" que utiliza la
-	  comunicacion a travÃ©s de puertos cerrados para autenticar.
+	  comunicacion a través de puertos cerrados para autenticar.
 	* no hay rpta (sigiloso).
 	* secreto compartido.
 
@@ -52,10 +52,10 @@ Temas para la presentacion:
 	* no acepto repeticion dentro de ese minuto
 
 
-- Portknocking no es una soluciÃ³n a:
+- Portknocking no es una solución a:
 
 	* Man in the Middle
-	* integridad y confidencialidad de la comunicaciÃ³n
+	* integridad y confidencialidad de la comunicación
 	* VPN ...
 
 
@@ -66,7 +66,7 @@ Temas para la presentacion:
 	* mensajes kernelspace -> userspace
 
 
-- Anecdotas de programaciÃ³n.
+- Anecdotas de programación.
 
 	* iptables
 	* netfilter
