@@ -904,7 +904,7 @@ static int checkentry(const char *tablename,
 	}
 
 	if (info->option & IPT_PKNOCK_OPENSECRET) { 
-		if ((info->open_secret_len == info->close_secret_len)) {
+		if (info->open_secret_len == info->close_secret_len) {
 			if (memcmp(info->open_secret, info->close_secret, info->open_secret_len) == 0) {
 				printk(KERN_ERR MOD "opensecret & closesecret cannot be equal.\n");
 				return 0;
