@@ -8,7 +8,6 @@
  *
  * This program is released under the terms of GNU GPL.
  */
-
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +36,7 @@ static void help(void) {
 		" --time seconds\n"
 		" --t ...				Time between port match.\n"
 		" --secure 				hmac must be in the packets.\n"
-		" --strict				knocks sequence must be exact.\n"
+		" --strict				Knocks sequence must be exact.\n"
 		" --name rule_name			Rule name.\n"
 		" --checkip				Matches if the source ip is in the list.\n"
 		" --chkip\n",
@@ -52,16 +51,14 @@ static void init(struct ipt_entry_match *m, unsigned int *nfcache) {
 	*nfcache |= NFC_UNKNOWN;
 }
 
-/*
- * parse_ports():
- *
+/**
  * Parsea ports por comas (ej. de ports: "4000,1000,2000"), los 
  * convierte a entero y los devuelve en port_buf.
  *
- * @param const char *ports	number of ports
- * @param u_int16_t *port_buf
- * @param u_int8_t *count	count ports
- * @return			0 success, > 0 otherwise
+ * @ports
+ * @port_buf
+ * @count: count ports
+ * @return: 0 success, > 0 otherwise
  */
 static int parse_ports(const char *ports, u_int16_t *port_buf, u_int8_t *count) {
 	char *token=NULL, *str=NULL;
@@ -100,16 +97,13 @@ static int parse_ports(const char *ports, u_int16_t *port_buf, u_int8_t *count) 
 	exit(EXIT_FAILURE);								\
 } while (0)										\
 
-/*
- * parse()
- *
+/**
  * Parsea la línea de comandos. Devuelve true si encuentra una opción.
  * Es llamada cada vez que se encuentra un argumento.
  *
- * @param integer c - código del argumento
- * @param struct ipt_entry_match *match - contiene los argumentos, es compartida con el espacio de kernel.
- *
- * @return integer - 1 if option is found, 0 otherwise
+ * @c: código del argumento
+ * @match
+ * @return: 1 if option is found, 0 otherwise
  */
 static int parse(int c, char **argv, int invert, unsigned int *flags, 
 		const struct ipt_entry *entry, 
@@ -195,7 +189,6 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		info->option |= IPT_PKNOCK_CLOSESECRET;
 		break;
 	
-	
 	case 'c': /* --checkip */
 		if (*flags & IPT_PKNOCK_CHECK)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --checkip twice.\n");
@@ -233,10 +226,9 @@ static void final_check(unsigned int flags) {
 		exit_error(PARAMETER_PROBLEM, MOD "you must specify an option.\n");
 	
 	/* --opensecret & --closesecret must be together */
-	if (!((flags & IPT_PKNOCK_OPENSECRET) && (flags & IPT_PKNOCK_CLOSESECRET))) {
+	if (!((flags & IPT_PKNOCK_OPENSECRET) && (flags & IPT_PKNOCK_CLOSESECRET)))
 		if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)) != 0)
 			exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
-	}
 }
 
 /*
@@ -282,7 +274,6 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	if (info->option & IPT_PKNOCK_CHECK) printf("--checkip ");
 }
 
-
 static struct iptables_match pknock = {
 	.name 		= "pknock",
 	.version 	= IPTABLES_VERSION,
@@ -297,8 +288,6 @@ static struct iptables_match pknock = {
 	.extra_opts	= opts
 };
 
-
 void _init(void) {
 	register_match(&pknock);
 }
-
