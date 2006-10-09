@@ -52,7 +52,7 @@ Temas para la presentacion:
 	* no acepto repeticion dentro de ese minuto
 
 
-- Problemas aun:
+- Portknocking no es una solución a:
 
 	* Man in the Middle
 	* integridad y confidencialidad de la comunicación
