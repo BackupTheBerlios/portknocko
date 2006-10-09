@@ -89,7 +89,6 @@ static int get_epoch_minute(void) {
 	return (int)(t.tv_sec/60);
 }
 
-
 /**
  * Alloc a hashtable with n buckets.
  * 
@@ -724,21 +723,18 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	if (is_wrong_knock(peer, info, port)) {
 	        DEBUG_MSG("DIDN'T MATCH", peer);
 
-		if (info->option & IPT_PKNOCK_STRICT) {
-			/* Peer must start the sequence from scratch. */
+		/* Peer must start the sequence from scratch. */
+		if (info->option & IPT_PKNOCK_STRICT)
 			reset_knock_status(peer);
-		}
 		return 0;
 	}
 
-	/* If security is needed */
-	if (info->option & IPT_PKNOCK_OPENSECRET) {
-        	if (!pass_security(peer, info, payload, payload_len)) {
+	/* If security is needed. */
+	if (info->option & IPT_PKNOCK_OPENSECRET)
+        	if (!pass_security(peer, info, payload, payload_len))
 			return 0;
-		}
-	}
 	
-	/* just update the timer when there is a state change */
+	/* Just update the timer when there is a state change. */
 	update_rule_timer(rule);
 
 	peer->id_port_knocked++;
