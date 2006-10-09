@@ -85,10 +85,8 @@ static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initva
  */
 static int get_epoch_minute(void) {
 	struct timespec t;
-	int minute;
 	t = CURRENT_TIME;
-	minute = (int)(t.tv_sec/60);
-	return minute;
+	return (int)(t.tv_sec/60);
 }
 
 
@@ -267,7 +265,7 @@ static void peer_gc(unsigned long r) {
  * 
  * @info
  * @rule
- * @return: 0 success, 1 failure
+ * @return: 0 equals, 1 otherwise
  */
 static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule) {
 	if (info->rule_name_len != rule->rule_name_len)
@@ -483,6 +481,7 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 	peer->ip 	= ntohl(ip);
 	peer->proto 	= proto;
 	peer->timestamp = jiffies/HZ;
+    peer->login_min = 0;
 	reset_knock_status(peer);
 
 	return peer;
@@ -501,8 +500,6 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) {
 				ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 			
 	list_add(&peer->head, &rule->peer_head[hash]);
-
-	peer->login_min = 0;
 }
 
 /**
