@@ -118,19 +118,21 @@ $ util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
 
 e.g: 
 -------------------------------------------------
-$ ~/util/knock.sh 127.0.0.1 2000 your_opensecret
+$ ~/util/knock.sh 192.168.0.1 2000 your_opensecret
 -------------------------------------------------
 
 after you finish using the service you should "close the door":
 
 e.g: 
 --------------------------------------------------
-$ ~/util/knock.sh 127.0.0.1 2000 your_closesecret
+$ ~/util/knock.sh 192.168.0.1 2000 your_closesecret
 --------------------------------------------------
 
 [icons=None, caption="Note"]
 NOTE: Remeber that these are One Time Password, so you can not re use the same 
 hmac, letting you knock just once per minute (cause the epoch_min).
+
+In case you are being NATed, just replace <IP src> with the NATed IP.
 
 The security protocol used in this module is based on a userspace implementation called Tumbler: http://tumbler.sourceforge.net/
 
