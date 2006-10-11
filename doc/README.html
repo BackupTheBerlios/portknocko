@@ -386,13 +386,13 @@ $ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</t
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/util/knock.sh 127.0.0.1 2000 your_opensecret</tt></pre>
+<pre><tt>$ ~/util/knock.sh 192.168.0.1 2000 your_opensecret</tt></pre>
 </div></div>
 <p>after you finish using the service you should "close the door":</p>
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/util/knock.sh 127.0.0.1 2000 your_closesecret</tt></pre>
+<pre><tt>$ ~/util/knock.sh 192.168.0.1 2000 your_closesecret</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -403,6 +403,8 @@ $ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</t
 hmac, letting you knock just once per minute (cause the epoch_min).</td>
 </tr></table>
 </div>
+<p>In case you are being NATed, just replace &lt;IP src&gt; with the NATed IP.</p>
+<p>The security protocol used in this module is based on a userspace implementation called Tumbler: http://tumbler.sourceforge.net/</p>
 </div>
 <h2>COMUNICATION WITH THE USERSPACE:</h2>
 <div class="sectionbody">
@@ -430,7 +432,7 @@ sequence.</p>
 <p>If you are a developer you want to run these while you refactor the code</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/portknocko/cd test/
+<pre><tt>$ ~/portknocko/cd test
 $ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div></div>
 <div class="admonitionblock">
@@ -445,7 +447,7 @@ as the original version, so tests can run much faster.</td>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 11-Oct-2006 16:51:17 ART
+Last updated 11-Oct-2006 17:11:07 ART
 </div>
 </div>
 </body>
