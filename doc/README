@@ -19,15 +19,15 @@ svn checkout svn://svn.berlios.de/portknocko/trunk
 
 -------------------------------------
 $ cd portknocko
-$ ~/portnocko/cd iptables
-$ ~/portnocko/iptables/make clean
-$ ~/portnocko/iptables/make
-$ ~/portnocko/iptables/make install
+$ ~/portknocko/cd iptables
+$ ~/portknocko/iptables/make clean
+$ ~/portknocko/iptables/make
+$ ~/portknocko/iptables/make install
 
 $ cd ../kernel
-$ ~/portnocko/kernel/make clean
-$ ~/portnocko/kernel/make
-$ ~/portnocko/kernel/make install
+$ ~/portknocko/kernel/make clean
+$ ~/portknocko/kernel/make
+$ ~/portknocko/kernel/make install
 
 $ depmod -Ae
 ------------------------------------
@@ -170,7 +170,7 @@ TESTS: (be careful, it will erase your loaded iptables rules)
 If you are a developer you want to run these while you refactor the code
 
 ---------------------------------------------
-$ ~/portknocko/cd test/
+$ ~/portknocko/cd test
 $ ~/portknocko/test/./testrunner.sh all.test
 ---------------------------------------------
 

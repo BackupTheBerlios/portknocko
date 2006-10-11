@@ -2,8 +2,8 @@
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO8859-1" />
-<meta name="generator" content="AsciiDoc 7.1.2" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 7.0.2" />
 <style type="text/css">
 /* Debug borders */
 p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
@@ -16,13 +16,8 @@ body {
   margin: 1em 5% 1em 5%;
 }
 
-a {
-  color: blue;
-  text-decoration: underline;
-}
-a:visited {
-  color: fuchsia;
-}
+a { color: blue; }
+a:visited { color: fuchsia; }
 
 em {
   font-style: italic;
@@ -153,12 +148,8 @@ div.listingblock > div.content {
 div.quoteblock > div.content {
   padding-left: 2.0em;
 }
-
-div.attribution {
+div.quoteblock .attribution {
   text-align: right;
-}
-div.verseblock + div.attribution {
-  text-align: left;
 }
 
 div.admonitionblock .icon {
@@ -208,7 +199,8 @@ ol.olist2 {
 }
 
 div.tableblock > table {
-  border: 3px solid #527bbd;
+  border-color: #527bbd;
+  border-width: 3px;
 }
 thead {
   font-family: sans-serif;
@@ -288,15 +280,15 @@ instance, this can be used to avoid brute force attacks to ssh or ftp services.<
 <div class="listingblock">
 <div class="content">
 <pre><tt>$ cd portknocko
-$ ~/portnocko/cd iptables
-$ ~/portnocko/iptables/make clean
-$ ~/portnocko/iptables/make
-$ ~/portnocko/iptables/make install
+$ ~/portknocko/cd iptables
+$ ~/portknocko/iptables/make clean
+$ ~/portknocko/iptables/make
+$ ~/portknocko/iptables/make install
 
 $ cd ../kernel
-$ ~/portnocko/kernel/make clean
-$ ~/portnocko/kernel/make
-$ ~/portnocko/kernel/make install
+$ ~/portknocko/kernel/make clean
+$ ~/portknocko/kernel/make
+$ ~/portknocko/kernel/make install
 
 $ depmod -Ae</tt></pre>
 </div></div>
@@ -453,7 +445,7 @@ as the original version, so tests can run much faster.</td>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 11-Oct-2006 12:31:55 ART
+Last updated 11-Oct-2006 16:51:17 ART
 </div>
 </div>
 </body>
