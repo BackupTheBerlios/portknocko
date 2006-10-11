@@ -1,33 +1,46 @@
 Temas para la presentacion:
 ===========================
 
+
 - Intro: Necesidad
 
 	* servicios accesibles desde afuera, pero no públicos.
+    * ej: SSH, cpanels webs.
+    * experiencia: log spam => disk full [& brokers example: 50MB semanales].
+    * experiencia: previa con iptables
 
 
-- Que Hace:
+- Que es:
+
+	* sistema "sigiloso" que utiliza la
+	  comunicacion a través de puertos cerrados para autorizar el uso de servicios.
+	* no hay rpta (sigiloso).
+	* secreto compartido (secuencia de puertos knockeados).
+    * Mostar tipico grafico de secuencia.
+
+
+- Que Resuelve:
 
 	* evita ataques por fuerza bruta
 	* evita log spam
 	* ¡evita vulnerabilidades del servicio!
+    
 
+- Nuestra Solucion:
 
-- Como:
-
-	* sistema "sigiloso" que utiliza la
-	  comunicacion a través de puertos cerrados para autenticar.
-	* no hay rpta (sigiloso).
-	* secreto compartido.
-
-
+    * extension de netfilter + iptables.
+    * aclarar que es netfilter e iptables (rol de cada uno).
+    * que tareas se hacen en userspace y en kernelspace (flujo desde setear la regla hasta llegar al kernel).
+    
+    
 - Escenario 1:
 
 	* TCP
 	* Secuencia de "knocks"
 	* secreto compartido.
 	* peers, rules.
-	* ejemplo de iptables en una sola regla.
+	* ejemplo de iptables en una sola regla (con las posibles opciones).
+    * statefull
 	* netfilter
 
 

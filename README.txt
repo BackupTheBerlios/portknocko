@@ -28,10 +28,11 @@ We will show you some different possibilites on how to use this module:
 
 $ iptables -P INPUT DROP
 $ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
-$ iptables -A INPUT -m state --state NEW -m pknock --name SSH --knockports 2000,2001 -p tcp --dport 22 -j ACCEPT
+$ iptables -A INPUT -m state --state NEW -m pknock --name SSH --knockports 2002,2001,2004 -p tcp --dport 22 -j ACCEPT
 
-$ telnet yourserver 2000 # first knock
-$ telnet yourserver 2001 # last knock
+$ telnet yourserver 2002 # first knock
+$ telnet yourserver 2001
+$ telnet yourserver 2004 # last knock
 
 $ ssh user@yourserver
 

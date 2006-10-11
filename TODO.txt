@@ -3,6 +3,7 @@ TODO:
 
 - For Fede. Validar parametros en espacio de kernel.
 - For Fede. Soporte para x_tables y posiblemente para IPV6.
+- For Lucho. timestamp con jiffies, be careful!
 
 DONE:
 -----
