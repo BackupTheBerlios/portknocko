@@ -4,7 +4,7 @@ Temas para la presentacion:
 
 - Intro: Necesidad
 
-	* servicios accesibles desde afuera, pero no públicos.
+	* servicios(puertos) accesibles desde afuera, pero no públicos.
     * ej: SSH, cpanels webs.
     * experiencia: log spam => disk full [& brokers example: 50MB semanales].
     * experiencia: previa con iptables
@@ -13,8 +13,9 @@ Temas para la presentacion:
 - Que es:
 
 	* sistema "sigiloso" que utiliza la
-	  comunicacion a través de puertos cerrados para autorizar el uso de servicios.
-	* no hay rpta (sigiloso).
+	  comunicacion a través de puertos cerrados para autorizar el uso de servicios(puertos).
+	* "sigiloso" porque no hay respuesta.
+    * inmunidad para reconocer dichos servicios con port scanning.
 	* secreto compartido (secuencia de puertos knockeados).
     * Mostar tipico grafico de secuencia.
 
@@ -47,17 +48,23 @@ Temas para la presentacion:
 - Cuestiones del Escenario 1:
 
 	* sniffing => replay
-
-
+    
+    
 - Escenario 2:
 
 	* necesidad de anti-replay
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
 	* no pueden hacer replay desde otra ipsrc
-
-
+    
+    
 - Cuestiones del Escenario 2:
+
+    We assume that an adversary can:
+
+    * monitor and intercept all network traffic
+    * send packets with arbitrary source addresses
+    * replay captured network traffic
 
 	* ARP spoof -> MitM ?: roban nuestra identidad (ipsrc)
 	* solucion: hmac(ipsrc + secreto + epoch_min)
@@ -74,7 +81,7 @@ Temas para la presentacion:
 
 - Utilidad del userspace message.
 
-	* Arquitectura de otras implementaciones de port knocking
+	* Arquitectura de otras implementaciones de port knocking (what about pcaplib)
 	* Nuestra arquitectura
 	* mensajes kernelspace -> userspace
 
