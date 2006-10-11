@@ -61,13 +61,14 @@ Temas para la presentacion:
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
     * que es un hmac?
-	* no pueden hacer replay desde otra ipsrc
-    * podrian al hacer replay, abrir la puerta a otra IP.
+	* no pueden abrir el servicio desde otra ipsrc
+    * podrian al repetir el msj, abrir la puerta a otra IP.
     
     
 - Cuestiones del Escenario 2:
 
-	* roban nuestra identidad (ipsrc), podrian replicar el open knock.
+	* roban nuestra identidad (ipsrc), podrian repetir el open knock.
+    * ¿Como logro evitar cualquier tipo de replay?
 	* solucion: hmac(ipsrc + secreto + epoch_min)
 	* validez de un solo minuto
     * clock sync
