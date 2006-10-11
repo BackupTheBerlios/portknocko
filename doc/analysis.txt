@@ -23,11 +23,14 @@ A Packet Traversing the Netfilter System:
                  |            |
                  v            |
 
-In PortKnocking we will consider the 'filter' table, and the hooks [2], [3] and [4] which are involved in 'filtering'.
+In PortKnocking we will consider the 'filter' table, and the hooks [2], [3] and [4] which are 
+involved in 'filtering'.
 
 So for example we could try:
 
-(1) iptables -A INPUT -p tcp -m pknock --knockports 2000,2002,2001 --name TEST --dport 22 -j ACCEPT
+(1) iptables -A INPUT -p tcp -m pknock --knockports 2005,2000,3002 --name TEST --dport 22 -j ACCEPT
 
-(1) The pknock module is not going to match the rule (match() return 1) until you are in the ALLOWED status. To achive this, you must first send three packets to these ports in this order: 2000, 2002 and 2001. From this moment you match the pknock rule and all the following packets sent from you to port 22 are going to apply the target ACCEPT.
-
+(1) The pknock module is not going to match the rule (match() return 1) until you are in the ALLOWED 
+status. To achive this, you must first send three packets to these ports in this order: 2005, 2000 
+and 3002. From this moment you match the pknock rule and all the following packets sent from you to 
+port 22 are going to apply the target ACCEPT.
