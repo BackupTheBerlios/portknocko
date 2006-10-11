@@ -51,38 +51,39 @@ Temas para la presentacion:
     
     
 - Escenario 2:
+    
+    We assume that an adversary can:
 
-	* necesidad de anti-replay
+    * monitor and intercept all network trafc
+    * send packets with arbitrary source addresses
+    * replay captured network traffic
+
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
+    * que es un hmac?
 	* no pueden hacer replay desde otra ipsrc
+    * podrian al hacer replay, abrir la puerta a otra IP.
     
     
 - Cuestiones del Escenario 2:
 
-    We assume that an adversary can:
-
-    * monitor and intercept all network traffic
-    * send packets with arbitrary source addresses
-    * replay captured network traffic
-
-	* ARP spoof -> MitM ?: roban nuestra identidad (ipsrc)
+	* roban nuestra identidad (ipsrc), podrian replicar el open knock.
 	* solucion: hmac(ipsrc + secreto + epoch_min)
 	* validez de un solo minuto
+    * clock sync
 	* no acepto repeticion dentro de ese minuto
 
 
 - Portknocking no es una solución a:
 
-	* Man in the Middle
-	* integridad y confidencialidad de la comunicación
-	* VPN ...
+	* Man in the Middle, con capacidad de suprimir trafico, podria dejar pasar el open knock, luego bloquear nuestro trafico y tomar nuestra identidad. El problema es que en portknocking no hay una asociación entre autenticacion y conexion.
+	* integridad y confidencialidad de la comunicación => VPN
 
 
 - Utilidad del userspace message.
 
-	* Arquitectura de otras implementaciones de port knocking (what about pcaplib)
-	* Nuestra arquitectura
+	* Arquitectura de otras implementaciones de port knocking (asincrono)
+	* Nuestra arquitectura (sincrono)
 	* mensajes kernelspace -> userspace
 
 
