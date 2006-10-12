@@ -49,18 +49,18 @@ Temas para la presentacion:
 
     We assume that an adversary can:
 
-    * monitor and intercept all network traffic
+    * monitor all network traffic
     * send packets with arbitrary source addresses
     * replay captured network traffic
     
-    * en nuestro caso con solo hacer replay desde otra IPsrc estaría abriendo la puerta.
+    * nuestro problema: con solo hacer replay desde otra IPsrc estaría abriendo el puerto.
     
     
 - Escenario 2:
 
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
-    * que es un hmac?
+    * ¿que es un hmac?
 	* no pueden abrir el servicio desde otra ipsrc
     * podrian al repetir el msj, abrir la puerta a otra IP.
     
