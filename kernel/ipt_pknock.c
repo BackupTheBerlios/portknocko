@@ -37,10 +37,10 @@ MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
 MODULE_LICENSE("GPL");
 
 enum {
-    GC_EXPIRATION_TIME = 65000, /* in msecs */
-    DEFAULT_RULE_HASH_SIZE = 8,
-    DEFAULT_PEER_HASH_SIZE = 16,
-    NL_MULTICAST_GROUP = 1
+	GC_EXPIRATION_TIME = 65000, /* in msecs */
+	DEFAULT_RULE_HASH_SIZE = 8,
+	DEFAULT_PEER_HASH_SIZE = 16,
+	NL_MULTICAST_GROUP = 1
 };
 
 #define hashtable_for_each_safe(pos, n, head, size, i) \
@@ -48,9 +48,9 @@ enum {
 		list_for_each_safe((pos), (n), (&head[(i)]))
 
 #if DEBUG
-    #define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
+	#define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
 #else
-    #define DEBUG_MSG(msg, peer)
+	#define DEBUG_MSG(msg, peer)
 #endif
     
 static u_int32_t ipt_pknock_hash_rnd;
@@ -252,7 +252,7 @@ static void peer_gc(unsigned long r) {
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
 		if (!has_logged_during_this_minute(peer) && is_time_exceeded(peer, rule->max_time)) {
-            DEBUG_MSG("DESTROYED", peer);	
+ 			DEBUG_MSG("DESTROYED", peer);	
 			list_del(pos);
 			kfree(peer);
 		}
@@ -296,7 +296,6 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
 				return rule;
 		}		
 	}
-
 	return NULL;
 }
 
@@ -480,7 +479,7 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 	peer->ip 	= ntohl(ip);
 	peer->proto 	= proto;
 	peer->timestamp = jiffies/HZ;
-    peer->login_min = 0;
+ 	peer->login_min = 0;
 	reset_knock_status(peer);
 
 	return peer;
