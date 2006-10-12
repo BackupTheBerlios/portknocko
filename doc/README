@@ -91,10 +91,9 @@ $ iptables -A INPUT -p tcp -m state --state NEW
 	-m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT
 -------------------------------------------------------------------------------
 
-this way you must send the UDP knock packet with a payload containing a md5 
-(or sha256) hmac digest:
+this way you must send the UDP knock packet with a payload containing a sha256 hmac digest:
 
-	md5_hmac(your_opensecret, your_ip, epoch_min)
+	sha256_mac(your_opensecret, your_ip, epoch_min)
 
 [icons=None, caption="Note"]
 NOTE: "epoch_min" is the UTC min since January 1st 1970 (unix time), so you must 
@@ -115,6 +114,8 @@ We provide you a client for knocking the crypt way:
 $ cd test
 $ util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
 ------------------------------------------------------
+
+NOTE: you must have python-crypto installed
 
 e.g: 
 -------------------------------------------------
