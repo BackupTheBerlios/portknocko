@@ -12,8 +12,8 @@ Temas para la presentacion:
 
 - Que es Portknocking:
 
-	* técnica "sigilosa" que utiliza la
-	comunicacion a través de puertos cerrados para autorizar el uso de servicios(puertos).
+	* técnica "sigilosa" que utiliza la comunicacion a través de puertos cerrados 
+	para autorizar el uso de servicios(puertos).
 	* "sigiloso" porque no hay respuesta.
 	* inmunidad para reconocer dichos servicios con port scanning.
 	* secreto compartido (secuencia de puertos knockeados).
@@ -31,7 +31,8 @@ Temas para la presentacion:
 
 	* extension de netfilter + iptables.
 	* aclarar que es netfilter e iptables (rol de cada uno).
-	* que tareas se hacen en userspace y en kernelspace (flujo desde setear la regla hasta llegar al kernel).
+	* que tareas se hacen en userspace y en kernelspace (flujo desde setear la regla 
+	hasta llegar al kernel).
     
     
 - Escenario 1:
