@@ -588,7 +588,7 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
  * @len
  */
 #if 0
-static void hexdump(unsigned char *buf, unsigned int len /*md5: 16*/) {
+static void hexdump(unsigned char *buf, unsigned int len /*sha256: 32*/) {
 	while (len--)
 		printk("%02x", *buf++);
 	printk("\n");
