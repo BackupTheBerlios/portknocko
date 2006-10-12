@@ -1,7 +1,7 @@
 Temas para la presentacion:
 ===========================
 
-
+[FEDE]
 - Intro: Necesidad
 
 	* servicios(puertos) accesibles desde afuera, pero no públicos.
@@ -10,9 +10,9 @@ Temas para la presentacion:
     * experiencia: previa con iptables
 
 
-- Que es:
+- Que es Portknocking:
 
-	* sistema "sigiloso" que utiliza la
+	* técnica "sigilosa" que utiliza la
 	  comunicacion a través de puertos cerrados para autorizar el uso de servicios(puertos).
 	* "sigiloso" porque no hay respuesta.
     * inmunidad para reconocer dichos servicios con port scanning.
@@ -25,7 +25,7 @@ Temas para la presentacion:
 	* evita ataques por fuerza bruta
 	* evita log spam
 	* ¡evita vulnerabilidades del servicio!
-    
+
 
 - Nuestra Solucion:
 
@@ -38,25 +38,25 @@ Temas para la presentacion:
 
 	* TCP
 	* Secuencia de "knocks"
-	* secreto compartido.
-	* peers, rules.
-	* ejemplo de iptables en una sola regla (con las posibles opciones).
+	* secreto compartido
+	* peers, rules
+	* ejemplo de iptables en una sola regla (con las posibles opciones)
     * statefull
 	* netfilter
 
-
+[LUCHO]
 - Cuestiones del Escenario 1:
 
-	* sniffing => replay
+    We assume that an adversary can:
+
+    * monitor and intercept all network traffic
+    * send packets with arbitrary source addresses
+    * replay captured network traffic
+    
+    * en nuestro caso con solo hacer replay desde otra IPsrc estaría abriendo la puerta.
     
     
 - Escenario 2:
-    
-    We assume that an adversary can:
-
-    * monitor and intercept all network trafc
-    * send packets with arbitrary source addresses
-    * replay captured network traffic
 
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
@@ -67,9 +67,10 @@ Temas para la presentacion:
     
 - Cuestiones del Escenario 2:
 
-	* roban nuestra identidad (ipsrc), podrian repetir el open knock.
+	* roban nuestra identidad (impersonation, suplantación ó spoofing de nuestra IP), podrian repetir el open knock.
     * ¿Como logro evitar cualquier tipo de replay?
-	* solucion: hmac(ipsrc + secreto + epoch_min)
+    * solucion: ISO 9798-4 one-pass unilateral authentication with hmac and timestamps:
+	* hmac(ipsrc + secreto + epoch_min)
 	* validez de un solo minuto
     * clock sync
 	* no acepto repeticion dentro de ese minuto
@@ -83,16 +84,18 @@ Temas para la presentacion:
 
 - Utilidad del userspace message.
 
-	* Arquitectura de otras implementaciones de port knocking (asincrono)
-	* Nuestra arquitectura (sincrono)
+	* Arquitectura de otras implementaciones de port knocking (asíncrono)
+	* Nuestra arquitectura (síncrono) -> mas efectiva.
 	* mensajes kernelspace -> userspace
 
 
+[FEDE]
 - Anecdotas de programación.
 
 	* iptables
 	* netfilter
 	* garbage collector
+[LUCHO]
 	* hash tables
 	* mini-framework para testing
 
