@@ -1,4 +1,4 @@
-Â¿Cuando es Ãºtil?
+¿Cuando es útil?
 ===============
 
 port knocking can help cut down not only on brute force password attacks and their associated log spam but also protocol vulnerability exploits. Also DoS attacks!
@@ -11,61 +11,59 @@ Port knocking is an additional security layer and does not replace existing appl
 
 How does the client know whether the information has been received?
 
-It doesnâ€™t. One of the central premises of port knocking is that the client is unable to determine whether the information is has been received. This is by design, so that the presence of the port knocking server cannot be deduced. The serverâ€™s firewall is configured to avoid sending any acknowledgement (e.g. DENY instead of REJECT) to the client as receipt of the port knock.
+It doesn?t. One of the central premises of port knocking is that the client is unable to determine whether the information is has been received. This is by design, so that the presence of the port knocking server cannot be deduced. The server?s firewall is configured to avoid sending any acknowledgement (e.g. DENY instead of REJECT) to the client as receipt of the port knock.
 
 If you go on holidays and someone discovers and disseminates a vulnerability in an ssh implementation, and you are unlucky enough to be running this implementation, your system is vulnerable.
-
------------------------------------------------------------------------------------------
-*** DEBE ser nonreplayable AND nonspoofable (eavesdroppers can't reuse the knock from a different IP address) ***
------------------------------------------------------------------------------------------
+ ----------------------------------------------------------------------------------------- *** DEBE ser nonreplayable AND nonspoofable (eavesdroppers can't reuse the knock from a different IP address) *** ----------------------------------------------------------------------------------------- 
 
 FAQ:
 ====
 
-- when to port knock? cuando queremos autenticaciÃ³n, pero no integridad ni confidencialidad.
-- Â¿QUE HACEMOS CON NAT? rpta: cambio ipsrc en el hmac.
-- Â¿COMO EVITO DoS ATTACKs? rpta: -m limit
-- problem: no hay asociaciÃ³n entre la autenticacion y la conexiÃ³n. ej: Alguien podria dejar pasar la autenticaciÃ³n y luego bloquear el trafico que viene al puerto 22, tomar la IP del que autentico e iniciar una conexiÃ³n el mismo al puerto 22.
-- Â¿como sincronizar los clocks de distintos hosts para que tengan = UTC?
+- when to port knock? cuando queremos autenticación, pero no integridad ni confidencialidad.
+- ¿QUE HACEMOS CON NAT? rpta: cambio ipsrc en el hmac.
+- ¿COMO EVITO DoS ATTACKs? rpta: -m limit
+- problem: no hay asociación entre la autenticacion y la conexión. ej: Alguien podria dejar pasar la autenticación y luego bloquear el trafico que viene al puerto 22, tomar la IP del que autentico e iniciar una conexión el mismo al puerto 22.
+- ¿como sincronizar los clocks de distintos hosts para que tengan = UTC?
 rpta: http://www.linuxsa.org.au/tips/time.html
 - one-time password: f(s), f(f(s)), f(f(f(s))), ... donde f() es una one-way function.
 - one-time pad: the plaintext is combined with a random key or "pad" that is as long as the plaintext and used only once.
-- ante una conexion a un puerto, Â¿que respuestas puedo tener?
-rpta: 
-	es un tcp reset si la polÃ­tica estÃ¡ en accept y no hay ningun servicio escuchando.
-	es un icmp si la polÃ­tica es un reject.
-	no hay respuesta si la polÃ­tica es drop.
-	http://logi.cc/linux/reject_or_deny.php3
+- ante una conexion a un puerto, ¿que respuestas puedo tener?
+rpta:
+        es un tcp reset si la política está en accept y no hay ningun servicio escuchando.
+        es un icmp si la política es un reject.
+        no hay respuesta si la política es drop.
+        http://logi.cc/linux/reject_or_deny.php3
 
 - man in the middle attack:
 
-un ataque man-in-the-middle (MitM, u hombre en el medio, en castellano) es un ataque en el que el enemigo adquiere la capacidad de leer, insertar y modificar a voluntad, los mensajes entre dos partes sin que ninguna de ellas conozca que el enlace entre ellos ha sido violado. El atacante debe ser capaz de observar e interceptar mensajes entre las dos vÃ­ctimas. El ataque MitM es particularmente significativo en el protocolo original de intercambio de claves de Diffie-Hellman, cuando Ã©ste se emplea sin autenticaciÃ³n.
+un ataque man-in-the-middle (MitM, u hombre en el medio, en castellano) es un ataque en el que el enemigo adquiere la capacidad de leer, insertar y modificar a voluntad, los mensajes entre dos partes sin que ninguna de ellas conozca que el enlace entre ellos ha sido violado. El atacante debe ser capaz de observar e interceptar mensajes entre las dos víctimas. El ataque MitM es particularmente significativo en el protocolo original de intercambio de claves de Diffie-Hellman, cuando éste se emplea sin autenticación.
 
 El ataque MitM puede incluir algunos de los siguientes subataques:
 
-    * IntercepciÃ³n de la comunicaciÃ³n (eavesdropping), incluyendo anÃ¡lisis del trÃ¡fico y posiblemente un ataque a partir de textos planos (plaintext) conocidos.
-    * Ataques a partir de textos cifrados escogidos, en funciÃ³n de lo que el receptor haga con el mensaje descifrado.
-    * Ataques de sustituciÃ³n.
-    * Ataques de repeticiÃ³n.
-    * Ataque por denegaciÃ³n de servicio (denial of service). El atacante podrÃ­a, por ejemplo, bloquear las comunicaciones antes de atacar una de las partes. La defensa en ese caso pasa por el envÃ­o de periÃ³dico de mensajes de status autenticados.
+    * Intercepción de la comunicación (eavesdropping), incluyendo análisis del tráfico y posiblemente un ataque a partir de textos planos (plaintext) conocidos.
+    * Ataques a partir de textos cifrados escogidos, en función de lo que el receptor haga con el mensaje descifrado.
+    * Ataques de sustitución.
+    * Ataques de repetición.
+    * Ataque por denegación de servicio (denial of service). El atacante podría, por ejemplo, bloquear las comunicaciones antes de atacar una de las partes. La defensa en ese caso pasa por el envío de periódico de mensajes de status autenticados.
 
-MitM se emplea tÃ­picamente para referirse a manipulaciones activas de los mensajes, mÃ¡s que para denotar intercepciÃ³n pasiva de la comunicaciÃ³n.
+MitM se emplea típicamente para referirse a manipulaciones activas de los mensajes, más que para denotar intercepción pasiva de la comunicación.
 
 - the tumbler way: hmac(secret+ip+epoch_min). El hmac tiene validez por 1 minuto y no se puede repetir durante ese minuto.
 
 
 - Spoofing:
 
-Spoofing, en tÃ©rminos de seguridad informÃ¡tica hace referencia al uso de tÃ©cnicas de suplantaciÃ³n de identidad generalmente con usos maliciosos o de investigaciÃ³n.
+Spoofing, en términos de seguridad informática hace referencia al uso de técnicas de suplantación de identidad generalmente con usos maliciosos o de investigación.
 
-Existen diferentes tipos de spoofing dependiendo de la tecnologÃ­a a la que nos refiramos, los cuales se describirÃ¡n mÃ¡s adelante, como el IP spoofing (quizÃ¡s el mÃ¡s conocido), ARP spoofing, DNS spoofing, Web spoofing o e-mail spoofing, aunque en general se puede englobar dentro de spoofing cualquier tecnologÃ­a de red susceptible de sufrir suplantaciones de identidad.
+Existen diferentes tipos de spoofing dependiendo de la tecnología a la que nos refiramos, los cuales se describirán más adelante, como el IP spoofing (quizás el más conocido), ARP spoofing, DNS spoofing, Web spoofing o e-mail spoofing, aunque en general se puede englobar dentro de spoofing cualquier tecnología de red susceptible de sufrir suplantaciones de identidad.
 
-IP SPOOFING: SuplantaciÃ³n de IP. Consiste bÃ¡sicamente en sustituir la IP origen de un paquete TCP/IP por otra IP a la cual se desea suplantar.
+IP SPOOFING: Suplantación de IP. Consiste básicamente en sustituir la IP origen de un paquete TCP/IP por otra IP a la cual se desea suplantar.
 
 ARP SPOOFING: The principle of ARP spoofing is to send fake, or 'spoofed', ARP messages to an Ethernet LAN. These frames contain false MAC addresses, confusing network devices, such as network switches. As a result frames intended for one machine can be mistakenly sent to another (allowing the packets to be sniffed) or an unreachable host (a denial of service attack). ARP spoofing can also be used in a man-in-the-middle attack in which all traffic is forwarded through a host with the use of ARP spoofing and analyzed for passwords and other information.
 
-- Portknocking: Â¿es seguridad por oscuridad?
+- Portknocking: ¿es seguridad por oscuridad?
 
 http://www.bastille-linux.org/jay/obscurity-revisited.html
 http://www.portknocking.org/view/about/obscurity
 http://www.portknocking.org/view/about/critique
+
