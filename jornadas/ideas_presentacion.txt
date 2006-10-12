@@ -79,7 +79,8 @@ Temas para la presentacion:
 - Portknocking no es una solución a:
 
 	* Man in the Middle, con capacidad de suprimir trafico, podria dejar pasar el open knock, luego bloquear nuestro trafico y tomar nuestra identidad. El problema es que en portknocking no hay una asociación entre autenticacion y conexion.
-	* integridad y confidencialidad de la comunicación => VPN
+	* integridad y confidencialidad de la comunicación
+    * solucion: VPN
 
 
 - Utilidad del userspace message.
@@ -87,6 +88,7 @@ Temas para la presentacion:
 	* Arquitectura de otras implementaciones de port knocking (asíncrono)
 	* Nuestra arquitectura (síncrono) -> mas efectiva.
 	* mensajes kernelspace -> userspace
+    * separacion de intereses.
 
 
 [FEDE]
