@@ -1,0 +1,30 @@
+(*) Funcionamiento de port knocking
+
+Port knocking is a method of "message transmission across closed ports." It works like this: initially a firewall blocks all ports on the server. The client issues a series of connection requests (knocks) to different ports; these are, of course, dropped since the ports are blocked. However, there is a daemon that monitors the log files for connection requests, and the sequence of requests serves as an encrypted code. If the code makes sense to the daemon, it enables SSH or another service (for a particular IP address and on a particular port encoded by the knock sequence).
+
+
+Arvind provides a good description of port knocking here.
+
+Port knocking acts as an extra layer of security. It is also claimed to have the advantage of stealth: an attacker can't detect whether you're using port knocking or not. 
+
+
+(*) Una barrera mas de seguridad
+
+Port knocking relies on a secret - the secret knock. This fact does not make port knocking an obscure system. First, the knock should be encrypted to make it more difficult to deconstruct it and reassemble the knock information with a malevolent payload. Second, port knocking is fully compatible with the notion of access control. The knocking daemon monitors knock attempts by way of a firewall log file. Third, attempts at breaching the system through brute-force guessing can be easily detected.
+
+
+(*) Porque proteger servicios publicos?
+
+Port knocking is meant to protect vulnerable network services against public access. It is an added form of security, and not meant as a replacement for regular security maintenance. If you go on holidays and someone discovers and disseminates a vulnerability in an ssh implementation, and you are unlucky enough to be running this implementation, your system is vulnerable. You may come back in time to read the bulletin and patch your server - or not. In such a case, port knocking would be used to keep port 22 closed. Of course, you would still patch your server as soon as you got back, right?
+
+Patching is not merely an option, it is a requirement of keeping a system secure.
+
+
+(*) La seguridad de port knocking está limitada al ámbito
+
+The stealthiness of port knocking is limited in scope, by design
+
+
+(*) Lo bueno de un módulo en kernel
+
+This brings me to the point of what happens if a port knocking daemon is disabled by a remote attacker. This is possible if the implementation contains bugs which cause unexpected behaviour for some combinations of port numbers, for example. If the daemon dies, then no further authentication is possible and the system is effectively knocked offline. The down side: nobody can connect. The up side: nobody can successfully attack, either.
