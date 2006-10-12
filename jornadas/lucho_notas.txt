@@ -1,3 +1,117 @@
+[LUCHO]
 - Cuestiones del Escenario 1:
 
-á
+    {todo muy lindo, pero vimos que era necesario agregar algo de seguridad al mecanismo traficional, imaginemos esta posibilidad:}
+    
+    Asumimos que un adversario podría:
+
+    * monitorear (sniffear) todo el trafico de red.
+    * enviar paquetes con direcciones de origen cambiadas.
+    * hacer "replay" ó repetir tráfico previo.
+    
+    * nuestro problema: con solo hacer replay desde otra IPsrc estaría abriendo el puerto.
+    
+    {y todo se vendria abajo... :(}
+    
+- Escenario 2:
+
+	* autenticamos con el payload en un solo msj UDP
+	* payload: hmac(ipsrc, password)
+    {ahora nuestro secreto cambia de ser la secuencia de puertos a un password que se incluira en el hmac}
+    * ¿que es un hmac?
+    {mac: message authentication code -> código de autenticación de mensajes, para garantizar autenticidad e integridad, se necesita de una clave simetrica.
+    hmac: mac usando hash functions y aplicando algunas operaciones XOR y de concatenacion con valores ctes.
+    hash: fcs "one-way", sabiendo la salida de la fc no me permite saber la entrada, es muy dificil "volver para atras"
+    diff entre hash y hmacs: a MAC may be considered secure even if the key-holder can efficiently find collisions.
+    }
+    
+	* no pueden abrir el servicio desde otra ipsrc
+    {con saber el hmac del knock de una IP no me permite saber el secreto y por ende no puedo generar un nuevo hmac que sea valido desde otra IP}
+    * podrian al repetir el msj, abrir la puerta a otra IP.
+    {o lo que es peor...}
+    
+    
+- Cuestiones del Escenario 2:
+
+	* roban nuestra identidad (impersonation, suplantación ó spoofing de nuestra IP), podrian repetir el open knock. {por ejemplo, luego que termino mi conexion, viene otro atrás y toma mi identidad con un ataque ARP spoof}
+    * ¿Como logro evitar cualquier tipo de replay?
+    * solucion: ISO 9798-4 one-pass unilateral authentication with hmac and timestamps:
+	* hmac(ipsrc, secreto, epoch_min)
+	{epoch_min is the minute since 1st january 1970}
+	* validez de un solo minuto
+    * clock sync {rdate para setear el reloj del sistema segun UTC (tiempo universal coordinado), luego hay que setear el del hardware}
+	* no acepto repeticion dentro de ese minuto
+	* esto soluciona el siguiente escenario:
+		- open knock
+		- conexion
+		- close knock
+		- dentro del mismo minuto alguien roba mi identidad y quiere replicar el paquete.
+	* "un knock por IP por minuto"
+
+
+- Portknocking no es una solución a:
+
+	* Man in the Middle, con capacidad de suprimir trafico, podria dejar pasar el open knock, luego bloquear nuestro trafico y tomar nuestra identidad. El problema es que en portknocking no hay una asociación entre autenticacion y conexion.
+	* integridad y confidencialidad de la conexión
+    * solucion: VPN
+
+
+- Utilidad del userspace message.
+
+	* Arquitectura de otras implementaciones de port knocking (asíncrono)
+	* Nuestra arquitectura (síncrono) -> mas efectiva.
+	* mensajes kernelspace -> userspace : RULE_NAME + Peer IP 
+    * separacion de intereses.
+	{el kernel se encarga de reconocer aquellos que concretaron una sequencia valida de knocks y la aplicacion se encarga de disparar una accion}
+
+[LUCHO]
+	* mini-framework para testing
+	{
+	
+	situacion: fede hizo lo 1ro, y yo lo continue...
+	cuestión: en cada cambio al módulo, ¿como me aseguro que no rompi nada?
+	pruebas manuales: todo mal, consumen tiempo, repetitivas, con el paso del tiempo me cansaria y no las haría. ej:
+	
+	ssh user@localhost # no me debe dejar entrar
+	ssh user@localhost -p 2003
+	ssh user@localhost -p 2001
+	ssh user@localhost -p 2005
+	ssh user@localhost # debo poder entrar
+	
+	solucion: pruebas automatizadas!!!!!!!!!!
+	
+	posibilidad de "ejecutar" una especificacion del modulo, un caso de uso, un escenario:
+	
+	01.test:
+	
+	#####
+	load
+	expect "register"
+	
+	knock_udp "10.10.0.1" "22"
+	expect "!PASS OK"
+	knock_udp "10.10.0.1" "2000"
+	expect "MATCHING"
+	knock_udp "10.10.0.1" "2001"
+	expect "ALLOWED"
+	knock_udp "10.10.0.1" "22"
+	expect "PASS OK"
+	#####
+	
+	Era complicado probar en kernel, no hay frameworks para hacer pruebas unitarias, entonces gracias a facilidades de loggear partes ejecutadas del código + hping para generar paquetes + una combinacion de shell scripting & python:
+	
+	./testrunner.sh 01.test
+	.....
+	5 tests
+	PASS OK!
+	
+	actualmente:
+	
+	./testrunner.sh all.test
+	...................................................................
+	67 tests
+	PASS OK!
+	
+	de esta manera se tenia confianza y agilidad para realizar cambios
+	
+	}

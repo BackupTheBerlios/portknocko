@@ -96,8 +96,8 @@ this way you must send the UDP knock packet with a payload containing a sha256 h
 	sha256_mac(your_opensecret, your_ip, epoch_min)
 
 [icons=None, caption="Note"]
-NOTE: "epoch_min" is the UTC min since January 1st 1970 (unix time), so you must 
-keep you hardware clock sync. You can do it this way:
+NOTE: "epoch_min" is the min since January 1st 1970, so you must 
+keep you hardware clocks sync. You can do it this way:
 
 ---------------------------------------------------------------------------	
 $ rdate time-a.nist.gov # this will set your system clock
