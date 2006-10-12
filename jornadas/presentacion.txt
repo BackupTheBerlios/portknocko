@@ -5,19 +5,19 @@ Temas para la presentacion:
 - Intro: Necesidad
 
 	* servicios(puertos) accesibles desde afuera, pero no públicos.
-    * ej: SSH, cpanels webs.
-    * experiencia: log spam => disk full [& brokers example: 50MB semanales].
-    * experiencia: previa con iptables
+	* ej: SSH, cpanels webs.
+	* experiencia: log spam => disk full [& brokers example: 50MB semanales].
+	* experiencia: previa con iptables
 
 
 - Que es Portknocking:
 
 	* técnica "sigilosa" que utiliza la
-	  comunicacion a través de puertos cerrados para autorizar el uso de servicios(puertos).
+	comunicacion a través de puertos cerrados para autorizar el uso de servicios(puertos).
 	* "sigiloso" porque no hay respuesta.
-    * inmunidad para reconocer dichos servicios con port scanning.
+	* inmunidad para reconocer dichos servicios con port scanning.
 	* secreto compartido (secuencia de puertos knockeados).
-    * Mostar tipico grafico de secuencia.
+	* Mostar tipico grafico de secuencia.
 
 
 - Que Resuelve:
@@ -29,9 +29,9 @@ Temas para la presentacion:
 
 - Nuestra Solucion:
 
-    * extension de netfilter + iptables.
-    * aclarar que es netfilter e iptables (rol de cada uno).
-    * que tareas se hacen en userspace y en kernelspace (flujo desde setear la regla hasta llegar al kernel).
+	* extension de netfilter + iptables.
+	* aclarar que es netfilter e iptables (rol de cada uno).
+	* que tareas se hacen en userspace y en kernelspace (flujo desde setear la regla hasta llegar al kernel).
     
     
 - Escenario 1:
@@ -41,38 +41,38 @@ Temas para la presentacion:
 	* secreto compartido
 	* peers, rules
 	* ejemplo de iptables en una sola regla (con las posibles opciones)
-    * statefull
+	* statefull
 	* netfilter
 
 [LUCHO]
 - Cuestiones del Escenario 1:
 
-    We assume that an adversary can:
+	We assume that an adversary can:
 
-    * monitor all network traffic
-    * send packets with arbitrary source addresses
-    * replay captured network traffic
+	* monitor all network traffic
+	* send packets with arbitrary source addresses
+	* replay captured network traffic
     
-    * nuestro problema: con solo hacer replay desde otra IPsrc estaría abriendo el puerto.
+	* nuestro problema: con solo hacer replay desde otra IPsrc estaría abriendo el puerto.
     
     
 - Escenario 2:
 
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc + secreto)
-    * ¿que es un hmac?
+	* ¿que es un hmac?
 	* no pueden abrir el servicio desde otra ipsrc
-    * podrian al repetir el msj, abrir la puerta a otra IP.
+	* podrian al repetir el msj, abrir la puerta a otra IP.
     
     
 - Cuestiones del Escenario 2:
 
 	* roban nuestra identidad (impersonation, suplantación ó spoofing de nuestra IP), podrian repetir el open knock.
-    * ¿Como logro evitar cualquier tipo de replay?
-    * solucion: ISO 9798-4 one-pass unilateral authentication with hmac and timestamps:
+	* ¿Como logro evitar cualquier tipo de replay?
+	* solucion: ISO 9798-4 one-pass unilateral authentication with hmac and timestamps:
 	* hmac(ipsrc + secreto + epoch_min)
 	* validez de un solo minuto
-    * clock sync
+	* clock sync
 	* no acepto repeticion dentro de ese minuto
 
 
@@ -80,7 +80,7 @@ Temas para la presentacion:
 
 	* Man in the Middle, con capacidad de suprimir trafico, podria dejar pasar el open knock, luego bloquear nuestro trafico y tomar nuestra identidad. El problema es que en portknocking no hay una asociación entre autenticacion y conexion.
 	* integridad y confidencialidad de la comunicación
-    * solucion: VPN
+	* solucion: VPN
 
 
 - Utilidad del userspace message.
@@ -88,7 +88,7 @@ Temas para la presentacion:
 	* Arquitectura de otras implementaciones de port knocking (asíncrono)
 	* Nuestra arquitectura (síncrono) -> mas efectiva.
 	* mensajes kernelspace -> userspace
-    * separacion de intereses.
+	* separacion de intereses.
 
 
 [FEDE]
