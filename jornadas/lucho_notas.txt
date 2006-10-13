@@ -1,19 +1,17 @@
 [LUCHO]
-- Cuestiones del Escenario 1:
+- Cuestiones de la 1ra aproximación:
 
-    {todo muy lindo, pero vimos que era necesario agregar algo de seguridad al mecanismo traficional, imaginemos esta posibilidad:}
+    {todo muy lindo, pero vimos que era necesario agregar algo de seguridad al mecanismo tradicional, imaginemos esta posibilidad:}
     
     Asumimos que un adversario podría:
 
-    * monitorear (sniffear) todo el trafico de red.
-    * enviar paquetes con direcciones de origen cambiadas.
-    * hacer "replay" ó repetir tráfico previo.
+    * Ver (sniffear) el trafico de red.
     
     * nuestro problema: con solo hacer replay desde otra IPsrc estaría abriendo el puerto.
     
     {y todo se vendria abajo... :(}
     
-- Escenario 2:
+- 2da Aproximación:
 
 	* autenticamos con el payload en un solo msj UDP
 	* payload: hmac(ipsrc, password)
@@ -30,10 +28,15 @@
     * podrian al repetir el msj, abrir la puerta a otra IP.
     {o lo que es peor...}
     
-    
-- Cuestiones del Escenario 2:
 
-	* roban nuestra identidad (impersonation, suplantación ó spoofing de nuestra IP), podrian repetir el open knock. {por ejemplo, luego que termino mi conexion, viene otro atrás y toma mi identidad con un ataque ARP spoof}
+- ...problema:
+
+	* roban nuestra identidad (impersonation, suplantación ó spoofing de nuestra IP), podrian repetir el knock. {por ejemplo, luego que termino mi conexion, viene otro atrás y toma mi identidad con un ataque ARP spoof}
+	{Es un riesgo latente que puede ocurrir}
+    
+	
+- 3ra Aproximación:
+
     * ¿Como logro evitar cualquier tipo de replay?
     * solucion: ISO 9798-4 one-pass unilateral authentication with hmac and timestamps:
 	* hmac(ipsrc, secreto, epoch_min)
