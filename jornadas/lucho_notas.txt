@@ -6,7 +6,7 @@
 - Forma tradicional:
 	* problema: alguien, en algun punto de la comunicacion entre las dos puntas está viendo el trafico, lo que normalmente se conoce como "sniffing"
 	[mostrar grafico]
-	[ejemplo] $ tcpdump -i lo -n -p tcp
+	[ejemplo] $ tcpdump -i lo -n -p tcp and not port 22
 
 - Forma "Segura":
 	* No se debe poder interpretar con alguien sniffeando
@@ -18,7 +18,7 @@
 	* antireplay -> "un knock por IP por minuto" (evito ser impersonado)
 	[ejemplo]	$ tcpdump -i lo -n -p udp -w packets.dump
 
-- Que no Resuelve:
+- PK no apunta a resolver:
 	* Man in the Middle (lack of association).
 	* integridad y confidencialidad de la conexión
     	* solucion: VPN
@@ -30,8 +30,10 @@
 - Testing:
 	* scripts ejecucion
 
-- Conclusion:
-	* ???
+- Para finalizar:
+	* release beta 1 en la web. http://portknocko.berlios.de
+	* invitacion a probarlo
+	* 2.6.15+
 	
 ######################################
 
