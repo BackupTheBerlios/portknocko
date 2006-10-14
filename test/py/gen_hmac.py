@@ -8,7 +8,7 @@ from time import time
 def gen_hmac(secret, ip):
     epoch_mins = (long)(time()/60)
     s = hmac.HMAC(secret, digestmod = SHA256)
-    s.update(socket.inet_aton(ip))
+    s.update(socket.inet_aton(socket.gethostbyname(ip)))
     s.update(struct.pack("i", epoch_mins)) # "i" is for integer
     print s.hexdigest()
 

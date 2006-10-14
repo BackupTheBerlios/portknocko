@@ -1,17 +1,15 @@
 #!/bin/bash
 # $1 -> IP src
-# $2 -> PORT dst
-# $3 -> secret
-# $4 -> IP dst
+# $2 -> IP dst
+# $3 -> PORT dst
+# $4 -> secret
 
 if [ -z $4 ]; then 
-    echo "usage: $0 <IP src> <PORT dst> <secret> <IP dst>"
+    echo "usage: $0 <IP src> <IP dst> <PORT dst> <secret>"
     exit 1
 fi
 
 digest_file="/tmp/digest.txt"
 
-cd ../test/
-scripts/build_digest.sh $3 $1 $digest_file
-scripts/knocker.sh $1 $2 $digest_file udp $4
-cd ../util
+python ../test/py/gen_hmac.py $4 $1 > $digest_file
+nemesis udp -S $1 -D $2 -y $3 -P $digest_file
