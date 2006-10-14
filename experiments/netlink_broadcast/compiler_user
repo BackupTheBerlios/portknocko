@@ -1,2 +1,0 @@
-#!/bin/bash
-gcc -I /usr/src/linux-$(uname -r)/include user.c -o user
