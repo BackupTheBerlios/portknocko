@@ -11,5 +11,7 @@ fi
 
 digest_file="/tmp/digest.txt"
 
+cd ../test/
 scripts/build_digest.sh $3 $1 $digest_file
 scripts/knocker.sh $1 $2 $digest_file udp $4
+cd ../util

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-scripts/reset.sh
+./reset.sh
 
 iptables -P INPUT DROP
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT

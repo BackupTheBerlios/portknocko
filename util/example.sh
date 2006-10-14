@@ -1,6 +1,6 @@
 #!/bin/sh
 
-scripts/init.sh
+./init.sh
 
 insmod ../kernel/ipt_pknock.ko
 		
