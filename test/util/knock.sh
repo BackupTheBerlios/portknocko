@@ -12,4 +12,4 @@ fi
 digest_file="cache/digest.txt"
 
 scripts/build_digest.sh $3 $1 $digest_file
-scripts/knocker.sh $1 $2 $digest_file -2 $4
+scripts/knocker.sh $1 $2 $digest_file udp $4

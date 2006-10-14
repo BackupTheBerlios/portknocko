@@ -643,7 +643,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 
 	hexa_size = crypt_size * 2;
 
-	if (payload_len != hexa_size) 
+	if (payload_len != hexa_size + 1) // + 1 cause we should add NULL in the payload
 		return 0;
 
 	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {

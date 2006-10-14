@@ -176,5 +176,3 @@ $ ~/portknocko/test/./testrunner.sh all.test
 ---------------------------------------------
 
 [icons=None, caption="Note"]
-NOTE: we use a modified hping version that does not wait 1 sec for each sent packet 
-as the original version, so tests can run much faster.
