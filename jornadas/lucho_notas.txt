@@ -16,8 +16,8 @@
 	* 2da aprox: hmac(ipsrc, secreto, epoch_min) -> para evitar el replay
 	* sync clock
 	* antireplay -> "un knock por IP por minuto" (evito ser impersonado)
-	[ejemplo]	$ tcpdump -i lo -n -p udp -w packets.dump
-	sudo nemesis udp -v -S 10.11.12.13 -D 172.16.96.135 -x 11111 -y 2000 -P cache/digest.txt
+	[ejemplo]	$ tcpdump -i lo -n -p udp -x -w packets.dump
+			$ vi packets.dump
 
 - PK no apunta a resolver:
 	* Man in the Middle (lack of association).
