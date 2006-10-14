@@ -5,17 +5,19 @@
 
 - Forma tradicional
 	* problema: alguien, en algun punto de la comunicacion entre las dos puntas está viendo el trafico, lo que normalmente se conoce como "sniffing"
-	[mostrar ejemplo]
+	[mostrar grafico]
     	$ tcpdump -i lo -n -p tcp
+	[ejemplo]
 
 - Forma "Segura"
 	* No se debe poder interpretar con alguien sniffeando
 	* 1 solo paquete UDP -> secreto en el payload
 	* 1ra aprox: hmac(ipsrc, secreto)
-		- impersonation: alguien viene luego de que nos desconectamos
+		- downside: impersonation: alguien viene luego de que nos desconectamos
 	* 2da aprox: hmac(ipsrc, secreto, epoch_min)
 	* sync clock
 	* antireplay -> "un knock por IP por minuto" (evito ser impersonado)
+	[ejemplo]
 	$ tcpdump -i lo -n -p udp -w packets.dump
 
 - Que no Resuelve:
@@ -34,7 +36,6 @@
 
 ######################################
 TODO:
-- mostrar el problema de NAT
 - estudiar netlink socket
 - conclusion!
 ######################################
