@@ -19,6 +19,8 @@ result_file="/tmp/result.txt"
 
 init $result_file $digest_file
 
+unload
+
 include $1
 
 python py/asserter.py $result_file
