@@ -3,34 +3,35 @@
 	* tradicional
 	* segura
 
-- Forma tradicional
+- Forma tradicional:
 	* problema: alguien, en algun punto de la comunicacion entre las dos puntas está viendo el trafico, lo que normalmente se conoce como "sniffing"
 	[mostrar grafico]
-    	$ tcpdump -i lo -n -p tcp
-	[ejemplo]
+	[ejemplo] $ tcpdump -i lo -n -p tcp
 
-- Forma "Segura"
+- Forma "Segura":
 	* No se debe poder interpretar con alguien sniffeando
 	* 1 solo paquete UDP -> secreto en el payload
 	* 1ra aprox: hmac(ipsrc, secreto)
-		- downside: impersonation: alguien viene luego de que nos desconectamos
-	* 2da aprox: hmac(ipsrc, secreto, epoch_min)
+		- downside -> impersonation: alguien viene luego de que nos desconectamos y toma nuestra IP y hace replay.
+	* 2da aprox: hmac(ipsrc, secreto, epoch_min) -> para evitar el replay
 	* sync clock
 	* antireplay -> "un knock por IP por minuto" (evito ser impersonado)
-	[ejemplo]
-	$ tcpdump -i lo -n -p udp -w packets.dump
+	[ejemplo]	$ tcpdump -i lo -n -p udp -w packets.dump
 
 - Que no Resuelve:
 	* Man in the Middle (lack of association).
 	* integridad y confidencialidad de la conexión
     	* solucion: VPN
 
-- Userspace -> Kernel
+- Userspace -> Kernel:
 	* separacion de intereses
 	* utilidad: escasos recursos quizas => levanto y bajo apache
 
-- Testing
+- Testing:
 	* scripts ejecucion
+
+- Conclusion:
+	* ???
 	
 ######################################
 
