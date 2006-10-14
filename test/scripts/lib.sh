@@ -6,7 +6,7 @@ function load() {
 }
 
 function unload() {
-	scripts/reset.sh
+	../util/reset.sh
 }
 
 function rule_only() {
@@ -40,7 +40,7 @@ function set_hmac() {
 }
 
 function init() {
-	scripts/init.sh 2> /dev/null 1> /dev/null
+	../util/init.sh 2> /dev/null 1> /dev/null
 	> $1
 	echo '' > $2
 }
