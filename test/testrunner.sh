@@ -14,8 +14,8 @@ if [ -z $1 ]; then
     exit 1
 fi
 
-digest_file="cache/digest.txt"
-result_file="cache/result.txt"
+digest_file="/tmp/digest.txt"
+result_file="/tmp/result.txt"
 
 init $result_file $digest_file
 

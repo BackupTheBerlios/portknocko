@@ -9,7 +9,7 @@ if [ -z $4 ]; then
     exit 1
 fi
 
-digest_file="cache/digest.txt"
+digest_file="/tmp/digest.txt"
 
 scripts/build_digest.sh $3 $1 $digest_file
 scripts/knocker.sh $1 $2 $digest_file udp $4
