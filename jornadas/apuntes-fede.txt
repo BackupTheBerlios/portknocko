@@ -8,6 +8,12 @@ Arvind provides a good description of port knocking here.
 Port knocking acts as an extra layer of security. It is also claimed to have the advantage of stealth: an attacker can't detect whether you're using port knocking or not. 
 
 
+(*) Otra definicion
+
+To eliminate the risk associated with publically open ports, port knocking
+provides an authentication system that works across closed ports. 
+
+
 (*) Una barrera mas de seguridad
 
 Port knocking relies on a secret - the secret knock. This fact does not make port knocking an obscure system. First, the knock should be encrypted to make it more difficult to deconstruct it and reassemble the knock information with a malevolent payload. Second, port knocking is fully compatible with the notion of access control. The knocking daemon monitors knock attempts by way of a firewall log file. Third, attempts at breaching the system through brute-force guessing can be easily detected.
@@ -32,3 +38,35 @@ This brings me to the point of what happens if a port knocking daemon is disable
 (*) Porqué no un demonio de port knocking
 
 Trusted users manipulate firewall rules by transmitting information across closed ports.
+
+Finally, any system that manipulates firewall rules in an automated fashion
+requires careful implementation. For the scenario in which no ports are
+initially open, if the listening dæmon fails or is not able to interpret the
+knocks correctly, it becomes impossible to connect remotely to the host.
+
+
+(*) Para funcionar, no necesita ...
+
+Port knocking does not require any open ports, and it can be extended to
+transmit any type of information encoded in a port sequence.
+
+
+(*) Beneficios
+
+One of the key features of port knocking is it provides a stealthy method of
+authentication and information transfer to a networked machine that has no
+open ports. It is not possible to determine successfully whether the machine
+is listening for knock sequences by using port probes. Thus, although a
+brute-force attack could be mounted to try to guess the ports and the form of
+the sequence, such breach attempts could be detected easily.
+
+Third, because the authentication is built into the port knock sequence,
+existing applications need not be changed.
+
+
+(*) Enlaces de interes:
+
+
+http://www.linuxjournal.com/article/6811
+
+http://www.portknocking.org/
