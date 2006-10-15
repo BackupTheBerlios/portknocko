@@ -9,6 +9,9 @@ fi
 
 insmod ../kernel/ipt_pknock.ko
 		
-iptables -A INPUT -m state --state NEW -m pknock --name SSH --opensecret $1 --closesecret $2 --time 10 --knockports 2000 -p udp -j DROP
+iptables -A INPUT -p udp -m state --state NEW \
+			-m pknock --opensecret $1 --closesecret $2 --knockports 2000 --name SSH -j DROP
 
-iptables -A INPUT -m state --state NEW -m pknock --name SSH --checkip -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp -m state --state NEW \
+			-m pknock --checkip --name SSH \
+			-m tcp --dport 22 -j ACCEPT
