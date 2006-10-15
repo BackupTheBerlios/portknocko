@@ -28,3 +28,7 @@ The stealthiness of port knocking is limited in scope, by design
 (*) Lo bueno de un módulo en kernel
 
 This brings me to the point of what happens if a port knocking daemon is disabled by a remote attacker. This is possible if the implementation contains bugs which cause unexpected behaviour for some combinations of port numbers, for example. If the daemon dies, then no further authentication is possible and the system is effectively knocked offline. The down side: nobody can connect. The up side: nobody can successfully attack, either.
+
+(*) Porqué no un demonio de port knocking
+
+Trusted users manipulate firewall rules by transmitting information across closed ports.
