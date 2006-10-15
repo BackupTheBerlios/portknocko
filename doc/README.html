@@ -355,7 +355,8 @@ $ iptables -A INPUT -p udp -m state --state NEW
 $ iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
-<p>this way you must send the UDP knock packet with a payload containing a sha256 hmac digest:</p>
+<p>this way you must send the UDP knock packet with a payload containing a sha256 hmac
+digest:</p>
 <div class="literalblock">
 <div class="content">
 <pre><tt>sha256_mac(your_opensecret, your_ip, epoch_min)</tt></pre>
@@ -412,7 +413,8 @@ hmac, letting you knock just once per minute (cause the epoch_min).</td>
 </tr></table>
 </div>
 <p>In case you are being NATed, just replace &lt;IP src&gt; with the NATed IP.</p>
-<p>The security protocol used in this module is based on a userspace implementation called Tumbler: http://tumbler.sourceforge.net/</p>
+<p>The security protocol used in this module is based on a userspace implementation
+called Tumbler: http://tumbler.sourceforge.net/</p>
 </div>
 <h2>COMUNICATION WITH THE USERSPACE:</h2>
 <div class="sectionbody">
@@ -446,7 +448,7 @@ $ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 15-Oct-2006 00:22:37 ART
+Last updated 15-Oct-2006 00:25:22 ART
 </div>
 </div>
 </body>
