@@ -5,8 +5,9 @@ The PortKnocko project is composed of two parts: an iptables module (user space)
 and a netfilter module (kernel space). The first one is an iptables extension, 
 and the other one is a netfilter extension.
 
-Both modules are used to implement the "port knocking" firewalling technique. For 
-instance, this can be used to avoid brute force attacks to ssh or ftp services.
+Both modules are used to implement the "port knocking", a stealthy system for 
+network authentication across closed ports. For instance, this can be used to 
+avoid brute force attacks to ssh or ftp services.
 
 
 INSTALLATION

@@ -266,8 +266,9 @@ div.exampleblock-content {
 <p>The PortKnocko project is composed of two parts: an iptables module (user space)
 and a netfilter module (kernel space). The first one is an iptables extension,
 and the other one is a netfilter extension.</p>
-<p>Both modules are used to implement the "port knocking" firewalling technique. For
-instance, this can be used to avoid brute force attacks to ssh or ftp services.</p>
+<p>Both modules are used to implement the "port knocking", a stealthy system for
+network authentication across closed ports. For instance, this can be used to
+avoid brute force attacks to ssh or ftp services.</p>
 </div>
 </div>
 <h2>INSTALLATION</h2>
@@ -354,19 +355,18 @@ $ iptables -A INPUT -p udp -m state --state NEW
 $ iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
-<p>this way you must send the UDP knock packet with a payload containing a md5
-(or sha256) hmac digest:</p>
+<p>this way you must send the UDP knock packet with a payload containing a sha256 hmac digest:</p>
 <div class="literalblock">
 <div class="content">
-<pre><tt>md5_hmac(your_opensecret, your_ip, epoch_min)</tt></pre>
+<pre><tt>sha256_mac(your_opensecret, your_ip, epoch_min)</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">"epoch_min" is the UTC min since January 1st 1970 (unix time), so you must
-keep you hardware clock sync. You can do it this way:</td>
+<td class="content">"epoch_min" is the min since January 1st 1970, so you must
+keep you hardware clocks sync. You can do it this way:</td>
 </tr></table>
 </div>
 <div class="listingblock">
@@ -383,6 +383,14 @@ use your same IP to log-in.</p>
 <pre><tt>$ cd test
 $ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</tt></pre>
 </div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">you must have python-crypto installed</td>
+</tr></table>
+</div>
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
@@ -435,19 +443,10 @@ sequence.</p>
 <pre><tt>$ ~/portknocko/cd test
 $ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div></div>
-<div class="admonitionblock">
-<table><tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">we use a modified hping version that does not wait 1 sec for each sent packet
-as the original version, so tests can run much faster.</td>
-</tr></table>
-</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 11-Oct-2006 17:11:07 ART
+Last updated 15-Oct-2006 00:22:37 ART
 </div>
 </div>
 </body>
