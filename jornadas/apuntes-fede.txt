@@ -68,5 +68,4 @@ existing applications need not be changed.
 
 
 http://www.linuxjournal.com/article/6811
-
 http://www.portknocking.org/
