@@ -190,14 +190,14 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		break;
 	
 	case 'c': /* --checkip */
-		if (*flags & IPT_PKNOCK_CHECK)
+		if (*flags & IPT_PKNOCK_CHECKIP)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't use --checkip twice.\n");
 
 		if(invert)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
 
-		*flags |= IPT_PKNOCK_CHECK;
-		info->option |= IPT_PKNOCK_CHECK;
+		*flags |= IPT_PKNOCK_CHECKIP;
+		info->option |= IPT_PKNOCK_CHECKIP;
 		break;
 
 	case 'x': /* --strict */
@@ -223,8 +223,14 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
  */
 static void final_check(unsigned int flags) { 
 	if (!flags)
-		exit_error(PARAMETER_PROBLEM, MOD "you must specify an option.\n");
-	
+		exit_error(PARAMETER_PROBLEM, MOD "You must specify an option.\n");
+		
+	if (!(flags & IPT_PKNOCK_NAME))
+		exit_error(PARAMETER_PROBLEM, MOD "You must specify --name option.\n");
+
+	if ((flags & IPT_PKNOCK_KNOCKPORT) & (flags & IPT_PKNOCK_CHECKIP))
+		exit_error(PARAMETER_PROBLEM, MOD "Can't specify --knockports and --checkip together.\n");
+
 	/* --opensecret & --closesecret must be together */
 	if (!((flags & IPT_PKNOCK_OPENSECRET) && (flags & IPT_PKNOCK_CLOSESECRET)))
 		if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)) != 0)
@@ -271,7 +277,7 @@ static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match) {
 	if (info->option & IPT_PKNOCK_OPENSECRET) printf("--opensecret ");
 	if (info->option & IPT_PKNOCK_CLOSESECRET) printf("--closesecret ");
 	if (info->option & IPT_PKNOCK_STRICT) printf("--strict ");
-	if (info->option & IPT_PKNOCK_CHECK) printf("--checkip ");
+	if (info->option & IPT_PKNOCK_CHECKIP) printf("--checkip ");
 }
 
 static struct iptables_match pknock = {
