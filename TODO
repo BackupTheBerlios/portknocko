@@ -4,16 +4,16 @@ TODO:
 - For Fede. Soporte para x_tables y para IPV6.
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
 - For Lucho. Usando el módulo en la manera "segura", definir si se van a permitir varios knocks o solo uno.
-- For Anyone. Tratar de reproducir el escenario en el que explota el módulo (explota cuando lo usamos con la opción de anti-replay).
 - For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
 
 
 DONE:
 -----
 
-- By Fender. Memory leak fixed.
+- By Lucho & Fender. Kernel freeze with SHA256 (crypto_alloc_tfm() issue). MD5 by default, for a while.
+- By Fender. Memory leak fixed in has_secret() function.
 - By Fender. Validación de parametros en espacio de kernel y espacio de usuario.
-- By Lucho. SHA256 by default
+- By Lucho. SHA256 by default.
 - By Fender. Kernel panic fixed.
 - By Lucho. Ahora se envía un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
 	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP está como ALLOWED)".
