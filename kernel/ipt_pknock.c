@@ -585,10 +585,10 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
  * Prints any sequence of characters as hexadecimal.
  *
  * @buf
- * @len
+ * @len: for sha256 is 32
  */
-#if 0
-static void hexdump(unsigned char *buf, unsigned int len /*sha256: 32*/) {
+#if 1
+static void hexdump(unsigned char *buf, unsigned int len) {
 	while (len--)
 		printk("%02x", *buf++);
 	printk("\n");
