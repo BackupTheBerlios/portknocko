@@ -3,21 +3,21 @@ TODO:
 
 - For Fede. Soporte para x_tables y para IPV6.
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
-- For Lucho. Usando el modulo en la manera "segura", definir si se van a permitir varios knocks Û solo uno.
-- For Anyone. Tratar de reproducir el escenario en el que explota el mÛdulo (explota cuando lo usamos con la opciÛn de anti-replay).
-- For Anyone. El comportamiento --strict deberÌa ser por defecto (si alguien hace port scanning podrÌa quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observaciÛn.
+- For Lucho. Usando el modulo en la manera "segura", definir si se van a permitir varios knocks o solo uno.
+- For Anyone. Tratar de reproducir el escenario en el que explota el m√≥dulo (explota cuando lo usamos con la opci√≥n de anti-replay).
+- For Anyone. El comportamiento --strict deber√≠a ser por defecto (si alguien hace port scanning podr√≠a quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observaci√≥n.
 
 
 DONE:
 -----
 
-- By Fender. ValidaciÛn de parametros en espacio de kernel y espacio de usuario.
+- By Fender. Validaci√≥n de parametros en espacio de kernel y espacio de usuario.
 - By Lucho. SHA256 by default
 - By Fender. Kernel panic fixed.
-- By Lucho. Ahora se envÌa un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
-	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP est· como ALLOWED)".
-- By Lucho. Un hmac no puede usarse m·s de una vez en un mismo minuto.
-- By Lucho. Bug fixed: la ejecuciÛn del garbage collector se postergaba cada vez que se llamaba a match(). Ahora solo se posterga cada vez que hay un cambio en alg˙n peer.
+- By Lucho. Ahora se env√≠a un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
+	"alguien se loguea, se desloguea en el mismo minuto y otro que tome esa IP antes que corra el garbage collector puede conectarse sin necesidad de knockear (porque esa IP est√° como ALLOWED)".
+- By Lucho. Un hmac no puede usarse m√°s de una vez en un mismo minuto.
+- By Lucho. Bug fixed: la ejecuci√≥n del garbage collector se postergaba cada vez que se llamaba a match(). Ahora solo se posterga cada vez que hay un cambio en alg√∫n peer.
 - By Lucho. Cada hmac tiene una validez de 1min, ahora se incorpora en el hmac el epoch minute.
 - By Fender. Funcion parse() de libipt_pknock.c completa.
 - By Fender & Lucho. Posibilidad de knockear con udp por ejemplo y habilitar el trafico tcp. Para esto se utilizan 2 reglas de iptables.
