@@ -1,15 +1,17 @@
 TODO:
 -----
 
-- For Fede. Validar parametros en espacio de kernel.
-- For Fede. Soporte para x_tables y posiblemente para IPV6.
+- For Fede. Soporte para x_tables y para IPV6.
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
 - For Lucho. Usando el modulo en la manera "segura", definir si se van a permitir varios knocks ó solo uno.
-- For Anyone. Tratar de reproducir el escenario en el que explota el módulo para tratar de descubrir el bug.
-- For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED).
+- For Anyone. Tratar de reproducir el escenario en el que explota el módulo (explota cuando lo usamos con la opción de anti-replay).
+- For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
+
 
 DONE:
 -----
+
+- By Fender. Validación de parametros en espacio de kernel y espacio de usuario.
 - By Lucho. SHA256 by default
 - By Fender. Kernel panic fixed.
 - By Lucho. Ahora se envía un paquete con un nuevo payload (y secreto) que indica que se debe eliminar el peer de la lista de ALLOWED, esto para evitar el siguiente escenario:
