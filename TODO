@@ -6,7 +6,7 @@ TODO:
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
 - For Lucho. Usando el modulo en la manera "segura", definir si se van a permitir varios knocks ó solo uno.
 - For Anyone. Tratar de reproducir el escenario en el que explota el módulo para tratar de descubrir el bug.
-
+- For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED).
 
 DONE:
 -----
