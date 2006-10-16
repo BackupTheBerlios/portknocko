@@ -319,7 +319,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 			if (rulecmp(info, rule) == 0) {
 				rule->ref_count++;
 			#if DEBUG				
-				if (info->option & IPT_PKNOCK_CHECK) {
+				if (info->option & IPT_PKNOCK_CHECKIP) {
 					printk(KERN_DEBUG MOD "add_rule() (AC) rule found: %s - ref_count: %d\n", 
 						rule->rule_name, rule->ref_count);
 				}
@@ -837,7 +837,7 @@ static int match(const struct sk_buff *skb,
 	/* Gives the peer matching status added to rule depending on ip source. */
 	peer = get_peer(rule, iph->saddr);
 
-	if (info->option & IPT_PKNOCK_CHECK) {
+	if (info->option & IPT_PKNOCK_CHECKIP) {
 		ret = is_allowed(peer);
 		goto end;
 	}
@@ -895,6 +895,16 @@ static int checkentry(const char *tablename,
 
 	if (!add_rule(info)) {
 		printk(KERN_ERR MOD "add_rule() error in checkentry() function.\n");
+		return 0;
+	}
+
+	if (!(info->option & IPT_PKNOCK_NAME)) {
+		printk(KERN_ERR MOD "You must specify --name option.\n");
+		return 0;
+	}
+
+	if ((info->option & IPT_PKNOCK_KNOCKPORT) & (info->option & IPT_PKNOCK_CHECKIP)) {
+		printk(KERN_ERR MOD "Can't specify --knockports and --checkip together.\n");
 		return 0;
 	}
 
