@@ -903,9 +903,22 @@ static int checkentry(const char *tablename,
 		return 0;
 	}
 
-	if ((info->option & IPT_PKNOCK_KNOCKPORT) && (info->option & IPT_PKNOCK_CHECKIP)) {
-		printk(KERN_ERR MOD "Can't specify --knockports and --checkip together.\n");
-		return 0;
+	if (info->option & IPT_PKNOCK_KNOCKPORT) {
+		if (info->option & IP_PKNOCK_CHECKIP)
+			printk(KERN_ERR MOD "Can't specify --knockports with --checkip.\n");
+		if ((info->option & IPT_PKNOCK_OPENSECRET) && !(info->option & IPT_PKNOCK_CLOSESECRET))
+			printk(KERN_ERR MOD "--opensecret must go with --closesecret.\n");
+		if ((info->option & IPT_PKNOCK_CLOSESECRET) && !(info->option & IPT_PKNOCK_OPENSECRET))
+			printk(KERN_ERR MOD "--closesecret must go with --opensecret.\n");
+	}
+
+	if (info->option & IPT_PKNOCK_CHECKIP) {
+		if (info->option & IPT_PKNOCK_KNOCKPORT)
+			printk(KERN_ERR MOD "Can't specify --checkip with --knockports.\n");
+		if ((info->option & IPT_PKNOCK_OPENSECRET) || (info->option & IPT_PKNOCK_CLOSESECRET))
+			printk(KERN_ERR MOD "Can't specify --opensecret and --closesecret with --checkip.\n");
+		if (info->option & IPT_PKNOCK_TIME)
+			printk(KERN_ERR MOD "Can't specify --time with --checkip.\n");
 	}
 
 	if (info->option & IPT_PKNOCK_OPENSECRET) {

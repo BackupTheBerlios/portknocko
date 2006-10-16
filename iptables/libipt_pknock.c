@@ -228,11 +228,22 @@ static void final_check(unsigned int flags) {
 	if (!(flags & IPT_PKNOCK_NAME))
 		exit_error(PARAMETER_PROBLEM, MOD "You must specify --name option.\n");
 
-	if ((flags & IPT_PKNOCK_KNOCKPORT) && (flags & IPT_PKNOCK_CHECKIP))
-		exit_error(PARAMETER_PROBLEM, MOD "Can't specify --knockports and --checkip together.\n");
-
 	if (flags & IPT_PKNOCK_KNOCKPORT) {
+		if (flags & IP_PKNOCK_CHECKIP)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify --knockports with --checkip.\n");
+		if ((flags & IPT_PKNOCK_OPENSECRET) && !(flags & IPT_PKNOCK_CLOSESECRET))
+			exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
+		if ((flags & IPT_PKNOCK_CLOSESECRET) && !(flags & IPT_PKNOCK_OPENSECRET))
+			exit_error(PARAMETER_PROBLEM, MOD "--closesecret must go with --opensecret.\n");
+	}
 
+	if (flags & IPT_PKNOCK_CHECKIP) {
+		if (flags & IPT_PKNOCK_KNOCKPORT)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify --checkip with --knockports.\n");
+		if ((flags & IPT_PKNOCK_OPENSECRET) || (flags & IPT_PKNOCK_CLOSESECRET))
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify --opensecret and --closesecret with --checkip.\n");
+		if (flags & IPT_PKNOCK_TIME)
+			exit_error(PARAMETER_PROBLEM, MOD "Can't specify --time with --checkip.\n");
 	}
 }
 
