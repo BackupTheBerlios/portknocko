@@ -3,7 +3,7 @@ TODO:
 
 - For Fede. Soporte para x_tables y para IPV6.
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
-- For Lucho. Usando el modulo en la manera "segura", definir si se van a permitir varios knocks o solo uno.
+- For Lucho. Usando el módulo en la manera "segura", definir si se van a permitir varios knocks o solo uno.
 - For Anyone. Tratar de reproducir el escenario en el que explota el módulo (explota cuando lo usamos con la opción de anti-replay).
 - For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
 
@@ -23,11 +23,11 @@ DONE:
 - By Fender & Lucho. Posibilidad de knockear con udp por ejemplo y habilitar el trafico tcp. Para esto se utilizan 2 reglas de iptables.
 - By Lucho. Agregada macro hashtable_for_each()
 - By Lucho. Bug fixed al setear el buffer de la regla a menos de 256 (y hacia explotar los timers).
-- By Fender. Nuevo parametro 'gc_expir_time' para setear el tiempo de expiracion del garbage collector.
-- By Lucho. Se envia al userspace una estructura que contiene rule_name + peer_ip
+- By Fender. Nuevo parametro 'gc_expir_time' para setear el tiempo de expiración del garbage collector.
+- By Lucho. Se envía al userspace una estructura que contiene rule_name + peer_ip
 - By Lucho. u32 y u_int32_t terminan siendo typedef del mismo dato de 32 bits. Usaremos u_int32_t.
 - Useless. revisar read_proc() y mostrar la lista de puertos y su estado.
-- By Lucho. Comunicacion kernel/user con "netlink"
+- By Lucho. Comunicación kernel/user con "netlink"
 - By Lucho. Pasar el password en la regla de iptables.
 - By Lucho & Fender. Timer problem fixed.
 - By Lucho. --strict option added so the peer must match the exact sequence without any miss
@@ -37,8 +37,8 @@ DONE:
 - By Lucho. auth with hmac, --secure option
 - By Lucho. hash tables for peers and rules.
 - By Fender. Entrada en /proc/net/ipt_pknock para ver, por regla, el estado de los peers.
-- By Fender. Imlementacion de un garbage collector para eliminar estados de peers automaticamente.
+- By Fender. Imlementacion de un garbage collector para eliminar estados de peers automáticamente.
 - By Fender. Tiempo max permitido para golpear cada puerto especificado.
-- By Fender. Implementacion de listas a traves de la linux/list.h.
-- By Fender. Implementacion de portknocking como una extension de netfilter y
-  su correspondiente modulo iptables para espacio de usuario.
+- By Fender. Implementación de listas a traves de la linux/list.h.
+- By Fender. Implementación de portknocking como una extension de netfilter y
+  su correspondiente módulo iptables para espacio de usuario.
