@@ -623,9 +623,8 @@ static void crypt_to_hex(char *out, char *crypt, int size) {
 static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char *payload, int payload_len) {
 	struct scatterlist sg[2];
 	char result[64];
-	char *hexresult;
-	struct crypto_tfm *tfm;
-
+	char *hexresult = NULL;
+	struct crypto_tfm *tfm = NULL;
 	int hexa_size;
 	int crypt_size;
 	int ret = 1;
@@ -648,7 +647,8 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 
 	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in has_secret() function.\n");
-		return -EINVAL;
+		ret = 0;
+		goto end;
 	}
 
 	epoch_min = get_epoch_minute();
@@ -673,8 +673,8 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	}
 
 end:	
-	kfree(hexresult);
-	crypto_free_tfm(tfm);	
+	if (hexresult != NULL) kfree(hexresult);
+	if (tfm != NULL) crypto_free_tfm(tfm);	
 	return ret;
 }
 
@@ -903,12 +903,12 @@ static int checkentry(const char *tablename,
 		return 0;
 	}
 
-	if ((info->option & IPT_PKNOCK_KNOCKPORT) & (info->option & IPT_PKNOCK_CHECKIP)) {
+	if ((info->option & IPT_PKNOCK_KNOCKPORT) && (info->option & IPT_PKNOCK_CHECKIP)) {
 		printk(KERN_ERR MOD "Can't specify --knockports and --checkip together.\n");
 		return 0;
 	}
 
-	if (info->option & IPT_PKNOCK_OPENSECRET) { 
+	if (info->option & IPT_PKNOCK_OPENSECRET) {
 		if (info->open_secret_len == info->close_secret_len) {
 			if (memcmp(info->open_secret, info->close_secret, info->open_secret_len) == 0) {
 				printk(KERN_ERR MOD "opensecret & closesecret cannot be equal.\n");
