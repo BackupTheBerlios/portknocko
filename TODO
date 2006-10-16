@@ -11,6 +11,7 @@ TODO:
 DONE:
 -----
 
+- By Fender. Memory leak fixed.
 - By Fender. Validación de parametros en espacio de kernel y espacio de usuario.
 - By Lucho. SHA256 by default
 - By Fender. Kernel panic fixed.

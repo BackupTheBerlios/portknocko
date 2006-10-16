@@ -228,13 +228,12 @@ static void final_check(unsigned int flags) {
 	if (!(flags & IPT_PKNOCK_NAME))
 		exit_error(PARAMETER_PROBLEM, MOD "You must specify --name option.\n");
 
-	if ((flags & IPT_PKNOCK_KNOCKPORT) & (flags & IPT_PKNOCK_CHECKIP))
+	if ((flags & IPT_PKNOCK_KNOCKPORT) && (flags & IPT_PKNOCK_CHECKIP))
 		exit_error(PARAMETER_PROBLEM, MOD "Can't specify --knockports and --checkip together.\n");
 
-	/* --opensecret & --closesecret must be together */
-	if (!((flags & IPT_PKNOCK_OPENSECRET) && (flags & IPT_PKNOCK_CLOSESECRET)))
-		if (((flags & IPT_PKNOCK_OPENSECRET) ^ (flags & IPT_PKNOCK_CLOSESECRET)) != 0)
-			exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
+	if (flags & IPT_PKNOCK_KNOCKPORT) {
+
+	}
 }
 
 /*
