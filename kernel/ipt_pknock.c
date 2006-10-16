@@ -66,7 +66,7 @@ static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
 //static char *algo = "sha256"; /* WARNING: KERNEL FREEZE WITH THIS ALGO. */
-static char *algo = "md5";
+static char *algo = "sha256";
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -628,7 +628,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 	struct crypto_tfm *tfm = NULL;
 	int hexa_size;
 	int crypt_size;
-	int ret = 1;
+	int ret = 0;
 	int epoch_min;
 
 	if (payload_len == 0)
@@ -643,12 +643,13 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 
 	hexa_size = crypt_size * 2;
 
-	if (payload_len != hexa_size + 1) /* + 1 cause we should add NULL in the payload */
-		return 0;
+	/* + 1 cause we should add NULL in the payload */
+	if (payload_len != hexa_size + 1) {
+		goto end;	
+	}
 
 	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in has_secret() function.\n");
-		ret = 0;
 		goto end;
 	}
 
@@ -669,10 +670,11 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
 #endif
-		ret = 0;
 		goto end;
 	}
-
+	
+	ret = 1;
+	
 end:	
 	if (hexresult != NULL) kfree(hexresult);
 	if (tfm != NULL) crypto_free_tfm(tfm);	
@@ -905,7 +907,7 @@ static int checkentry(const char *tablename,
 	}
 
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
-		if (info->option & IP_PKNOCK_CHECKIP)
+		if (info->option & IPT_PKNOCK_CHECKIP)
 			printk(KERN_ERR MOD "Can't specify --knockports with --checkip.\n");
 		if ((info->option & IPT_PKNOCK_OPENSECRET) && !(info->option & IPT_PKNOCK_CLOSESECRET))
 			printk(KERN_ERR MOD "--opensecret must go with --closesecret.\n");

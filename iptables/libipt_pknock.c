@@ -229,7 +229,7 @@ static void final_check(unsigned int flags) {
 		exit_error(PARAMETER_PROBLEM, MOD "You must specify --name option.\n");
 
 	if (flags & IPT_PKNOCK_KNOCKPORT) {
-		if (flags & IP_PKNOCK_CHECKIP)
+		if (flags & IPT_PKNOCK_CHECKIP)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't specify --knockports with --checkip.\n");
 		if ((flags & IPT_PKNOCK_OPENSECRET) && !(flags & IPT_PKNOCK_CLOSESECRET))
 			exit_error(PARAMETER_PROBLEM, MOD "--opensecret must go with --closesecret.\n");
