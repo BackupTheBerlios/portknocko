@@ -66,7 +66,7 @@ static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
 //static char *algo = "sha256"; /* WARNING: KERNEL FREEZE WITH THIS ALGO. */
-static char *algo = "sha256";
+static char *algo = "md5";
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -587,7 +587,7 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
  * @buf
  * @len: for sha256 is 32
  */
-#if 1
+#if 0
 static void hexdump(unsigned char *buf, unsigned int len) {
 	while (len--)
 		printk("%02x", *buf++);
