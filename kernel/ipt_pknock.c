@@ -65,8 +65,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-//static char *algo = "sha256"; /* WARNING: KERNEL FREEZE WITH THIS ALGO. */
-static char *algo = "md5";
+static char *algo = "sha256";
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.

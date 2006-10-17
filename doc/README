@@ -35,7 +35,7 @@ $ depmod -Ae
 
 [icons=None, caption="Note"]
 NOTE: if you use: "insmod ./ipt_pknock.ko", first you should do "modprobe cn" to 
-load the netlink connector.
+load the netlink connector and "modprobe sha256".
 
 
 USAGE:
