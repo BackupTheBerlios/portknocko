@@ -10,6 +10,7 @@ TODO:
 DONE:
 -----
 
+- By Lucho. Antes de usar el módulo pknock debe hacerse "modprobe sha256", sino el módulo pknock explota.
 - By Lucho & Fender. Kernel freeze with SHA256 (crypto_alloc_tfm() issue). MD5 by default, for a while.
 - By Fender. Memory leak fixed in has_secret() function.
 - By Fender. Validación de parametros en espacio de kernel y espacio de usuario.
