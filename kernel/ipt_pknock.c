@@ -394,7 +394,6 @@ static void remove_rule(struct ipt_pknock_info *info) {
 	}
 #if DEBUG	
 	if (!found) {
-
 		printk(KERN_INFO MOD "(N) rule not found: %s.\n", info->rule_name);
 		return;
 	}
@@ -556,27 +555,27 @@ static inline int is_allowed(struct peer *peer) {
  */
 #if NETLINK_MSG
 static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) {
-	struct cn_msg *m;
-    	struct cb_id cn_test_id = { 0x123, 0x345 };
-	struct ipt_pknock_nl_msg nlmsg;
-    
-    	m = kmalloc(sizeof(*m) + sizeof(nlmsg), GFP_ATOMIC);
-    	if (m) {
-        	memset(m, 0, sizeof(*m) + sizeof(nlmsg));
-	        memcpy(&m->id, &cn_test_id, sizeof(m->id));
-
-        	m->seq = 0;		
-		m->len = sizeof(nlmsg);
-
-		nlmsg.peer_ip = peer->ip;
-		scnprintf(nlmsg.rule_name, info->rule_name_len + 1, info->rule_name);
-		
-	        memcpy(m + 1, (char *)&nlmsg, m->len);
-        
-	        cn_netlink_send(m, NL_MULTICAST_GROUP, gfp_any());
-        
-		kfree(m);
-	} 
+	 struct cn_msg *m;
+	 struct cb_id cn_test_id = { 0x123, 0x345 };
+	 struct ipt_pknock_nl_msg nlmsg;
+	 
+	 m = kmalloc(sizeof(*m) + sizeof(nlmsg), GFP_ATOMIC);
+	 if (m) {
+		 memset(m, 0, sizeof(*m) + sizeof(nlmsg));
+		 memcpy(&m->id, &cn_test_id, sizeof(m->id));
+		 
+		 m->seq = 0;		
+		 m->len = sizeof(nlmsg);
+		 
+		 nlmsg.peer_ip = peer->ip;
+		 scnprintf(nlmsg.rule_name, info->rule_name_len + 1, info->rule_name);
+		 
+		 memcpy(m + 1, (char *)&nlmsg, m->len);
+		 
+		 cn_netlink_send(m, NL_MULTICAST_GROUP, gfp_any());
+		 
+		 kfree(m);
+	 } 
 }
 #endif
 
@@ -798,8 +797,8 @@ static int match(const struct sk_buff *skb,
 		const struct net_device *out,
 		const void *matchinfo,
 		int offset,
-		int *hotdrop) 
-{
+		int *hotdrop) {
+			
 	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
@@ -882,8 +881,8 @@ static int checkentry(const char *tablename,
 		const struct ipt_ip *ip,
 		void *matchinfo,
 		unsigned int matchinfosize,
-		unsigned int hook_mask) 
-{
+		unsigned int hook_mask) {
+
 	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
 
 	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
@@ -935,8 +934,7 @@ static int checkentry(const char *tablename,
 	return 1;
 }
 
-static void destroy(void *matchinfo, unsigned int matchinfosize) 
-{
+static void destroy(void *matchinfo, unsigned int matchinfosize) {
 	struct ipt_pknock_info *info = (void *)matchinfo;
 
 	/* Removes a rule only if it exits and ref_count is equal to 0. */
@@ -991,8 +989,7 @@ module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, &ipt_pknock_
 module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, &ipt_pknock_peer_htable_size, 0600);
 module_param_call(gc_expir_time, set_gc_expir_time, param_get_uint, &ipt_pknock_gc_expir_time, 0600); 
 
-static int __init ipt_pknock_init(void) 
-{
+static int __init ipt_pknock_init(void) {
 	printk(KERN_INFO MOD "register.\n");
 
 	if (!(proc_net_ipt_pknock = proc_mkdir("ipt_pknock", proc_net))) {
@@ -1002,8 +999,7 @@ static int __init ipt_pknock_init(void)
 	return ipt_register_match(&ipt_pknock_match);
 }
 
-static void __exit ipt_pknock_fini(void)
-{
+static void __exit ipt_pknock_fini(void) {
 	printk(KERN_INFO MOD "unregister.\n");
 	remove_proc_entry("ipt_pknock", proc_net);
 	ipt_unregister_match(&ipt_pknock_match);
