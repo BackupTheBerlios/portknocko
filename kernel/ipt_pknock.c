@@ -65,7 +65,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-static char *algo = "sha256";
+static char *algo = NULL;
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -580,20 +580,6 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 #endif
 
 /**
- * Prints any sequence of characters as hexadecimal.
- *
- * @buf
- * @len: for sha256 is 32
- */
-#if 0
-static void hexdump(unsigned char *buf, unsigned int len) {
-	while (len--)
-		printk("%02x", *buf++);
-	printk("\n");
-}
-#endif
-
-/**
  * Transforms a sequence of characters to hexadecimal.
  *
  * @out: the hexadecimal result
@@ -992,6 +978,12 @@ module_param_call(gc_expir_time, set_gc_expir_time, param_get_uint, &ipt_pknock_
 static int __init ipt_pknock_init(void) {
 	printk(KERN_INFO MOD "register.\n");
 
+	algo="sha256";
+	if (request_module("sha256") < 0) {
+		printk(KERN_ERR MOD "request_module('sha256') error.\n");
+		algo="md5";
+	}
+	
 	if (!(proc_net_ipt_pknock = proc_mkdir("ipt_pknock", proc_net))) {
 		printk(KERN_ERR MOD "proc_mkdir() error in function init().\n");
 		return -1;
