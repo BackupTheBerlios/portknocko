@@ -65,7 +65,7 @@ static struct list_head *rule_hashtable = NULL;
 static DEFINE_SPINLOCK(rule_list_lock);
 static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
 
-static char *algo = NULL;
+static char *algo = "sha256";
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -978,9 +978,8 @@ module_param_call(gc_expir_time, set_gc_expir_time, param_get_uint, &ipt_pknock_
 static int __init ipt_pknock_init(void) {
 	printk(KERN_INFO MOD "register.\n");
 
-	algo="sha256";
-	if (request_module("sha256") < 0) {
-		printk(KERN_ERR MOD "request_module('sha256') error.\n");
+	if (request_module(algo) < 0) {
+		printk(KERN_ERR MOD "request_module('%s') error.\n", algo);
 		algo="md5";
 	}
 	
