@@ -1,15 +1,18 @@
 TODO:
 -----
 
-- For Fede. Soporte para x_tables y para IPV6.
+- For Fender. Soporte para x_tables y para IPV6.
 - For Lucho. timestamp con jiffies, be careful! (ver escenarios SMP).
 - For Lucho. Usando el módulo en la manera "segura", definir si se van a permitir varios knocks o solo uno.
 - For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
+- For Fender. Con el método tradicional para hacer port knocking, existe el problema de un DoS (corregirlo).
+- For Fender. Corregir el posible problema de fragmentación de memoria al recibir un ataque de DoS.
 
 
 DONE:
 -----
 
+- By Fender. request_module('sha256') para cargar el módulo sha256 al inicio del módulo pknock. Sino se puede cargar usa md5.
 - By Lucho. Antes de usar el módulo pknock debe hacerse "modprobe sha256", sino el módulo pknock explota.
 - By Lucho & Fender. Kernel freeze with SHA256 (crypto_alloc_tfm() issue). MD5 by default, for a while.
 - By Fender. Memory leak fixed in has_secret() function.
