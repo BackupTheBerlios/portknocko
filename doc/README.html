@@ -355,6 +355,14 @@ $ iptables -A INPUT -p udp -m state --state NEW
 $ iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Attention</div>
+</td>
+<td class="content">You must have the sha256 module loaded (modprobe sha256).</td>
+</tr></table>
+</div>
 <p>this way you must send the UDP knock packet with a payload containing a sha256 hmac
 digest:</p>
 <div class="literalblock">
@@ -389,7 +397,7 @@ $ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</t
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">you must have python-crypto installed</td>
+<td class="content">You must have python-crypto installed.</td>
 </tr></table>
 </div>
 <p>e.g:</p>
@@ -448,7 +456,7 @@ $ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 17-Oct-2006 17:53:31 EDT
+Last updated 29-Oct-2006 16:42:33 ART
 </div>
 </div>
 </body>
