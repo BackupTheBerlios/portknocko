@@ -980,7 +980,7 @@ static int __init ipt_pknock_init(void) {
 
 	if (request_module(algo) < 0) {
 		printk(KERN_ERR MOD "request_module('%s') error.\n", algo);
-		algo="md5";
+		return -1;
 	}
 	
 	if (!(proc_net_ipt_pknock = proc_mkdir("ipt_pknock", proc_net))) {
