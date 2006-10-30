@@ -4,15 +4,13 @@ CLOSESECRET="theclosesecret"
 
 load
 
-rule_only "SSH" "2000,2001" "22" "--opensecret $OPENSECRET --closesecret $CLOSESECRET"
+rule_only "SSH" "2000" "22" "--opensecret $OPENSECRET --closesecret $CLOSESECRET"
 expect "SSH,(A)" 
 
 knock_udp "11.10.0.1" "22"  
 expect "!PASS OK"
 knock_udp "11.10.0.1" "2000"
 expect "!MATCHING"
-knock_udp "11.10.0.1" "2001"
-expect "!MATCHING,!ALLOWED"
 knock_udp "11.10.0.1" "22"
 expect "!PASS OK"
 
@@ -32,8 +30,6 @@ expect "!MATCHING"
 set_hmac $OPENSECRET "11.10.0.1" 
 
 knock_udp "11.10.0.1" "2000"
-expect "MATCHING"
-knock_udp "11.10.0.1" "2001"
 expect "ALLOWED"
 knock_udp "11.10.0.1" "22"
 expect "PASS OK"
@@ -48,8 +44,6 @@ expect "RESET"
 # verify it is closed
 knock_udp "11.10.0.1" "2000"
 expect "!MATCHING,!ALLOWED,!PASS OK, BLOCKED"
-knock_udp "11.10.0.1" "2001"
-expect "!MATCHING,!ALLOWED,!PASS OK, DIDN'T MATCH"
 knock_udp "11.10.0.1" "22"
 expect "!MATCHING,!ALLOWED,!PASS OK"
 

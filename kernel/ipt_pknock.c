@@ -890,6 +890,11 @@ static int checkentry(const char *tablename,
 		return 0;
 	}
 
+	if ((info->option & IPT_PKNOCK_OPENSECRET) && (info->count_ports != 1)) {
+		printk(KERN_ERR MOD "--opensecret must have just one knock port\n");
+		return 0;
+	}
+	
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if (info->option & IPT_PKNOCK_CHECKIP)
 			printk(KERN_ERR MOD "Can't specify --knockports with --checkip.\n");
