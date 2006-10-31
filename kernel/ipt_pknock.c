@@ -863,6 +863,8 @@ end:
 	return ret;
 }
 
+#define RETURN_ERR(err) do { printk(KERN_ERR MOD err); return 0; } while (0)
+
 static int checkentry(const char *tablename,
 		const struct ipt_ip *ip,
 		void *matchinfo,
@@ -874,51 +876,43 @@ static int checkentry(const char *tablename,
 	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
 		return 0;
 
-	/* singleton */
+	/* Singleton. */
 	if (!rule_hashtable) {
 		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
 		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (ipt_pknock_hash_rnd));
 	}
 
-	if (!add_rule(info)) {
-		printk(KERN_ERR MOD "add_rule() error in checkentry() function.\n");
-		return 0;
-	}
+	if (!add_rule(info))
+		RETURN_ERR("add_rule() error in checkentry() function.\n");
 
-	if (!(info->option & IPT_PKNOCK_NAME)) {
-		printk(KERN_ERR MOD "You must specify --name option.\n");
-		return 0;
-	}
+	if (!(info->option & IPT_PKNOCK_NAME))
+		RETURN_ERR("You must specify --name option.\n");
 
-	if ((info->option & IPT_PKNOCK_OPENSECRET) && (info->count_ports != 1)) {
-		printk(KERN_ERR MOD "--opensecret must have just one knock port\n");
-		return 0;
-	}
+	if ((info->option & IPT_PKNOCK_OPENSECRET) && (info->count_ports != 1))
+		RETURN_ERR("--opensecret must have just one knock port\n");
 	
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if (info->option & IPT_PKNOCK_CHECKIP)
-			printk(KERN_ERR MOD "Can't specify --knockports with --checkip.\n");
+			RETURN_ERR("Can't specify --knockports with --checkip.\n");
 		if ((info->option & IPT_PKNOCK_OPENSECRET) && !(info->option & IPT_PKNOCK_CLOSESECRET))
-			printk(KERN_ERR MOD "--opensecret must go with --closesecret.\n");
+			RETURN_ERR("--opensecret must go with --closesecret.\n");
 		if ((info->option & IPT_PKNOCK_CLOSESECRET) && !(info->option & IPT_PKNOCK_OPENSECRET))
-			printk(KERN_ERR MOD "--closesecret must go with --opensecret.\n");
+			RETURN_ERR("--closesecret must go with --opensecret.\n");
 	}
 
 	if (info->option & IPT_PKNOCK_CHECKIP) {
 		if (info->option & IPT_PKNOCK_KNOCKPORT)
-			printk(KERN_ERR MOD "Can't specify --checkip with --knockports.\n");
+			RETURN_ERR("Can't specify --checkip with --knockports.\n");
 		if ((info->option & IPT_PKNOCK_OPENSECRET) || (info->option & IPT_PKNOCK_CLOSESECRET))
-			printk(KERN_ERR MOD "Can't specify --opensecret and --closesecret with --checkip.\n");
+			RETURN_ERR("Can't specify --opensecret and --closesecret with --checkip.\n");
 		if (info->option & IPT_PKNOCK_TIME)
-			printk(KERN_ERR MOD "Can't specify --time with --checkip.\n");
+			RETURN_ERR("Can't specify --time with --checkip.\n");
 	}
 
 	if (info->option & IPT_PKNOCK_OPENSECRET) {
 		if (info->open_secret_len == info->close_secret_len) {
-			if (memcmp(info->open_secret, info->close_secret, info->open_secret_len) == 0) {
-				printk(KERN_ERR MOD "opensecret & closesecret cannot be equal.\n");
-				return 0;
-			}
+			if (memcmp(info->open_secret, info->close_secret, info->open_secret_len) == 0)
+				RETURN_ERR("opensecret & closesecret cannot be equal.\n");
 		}
 	}
 	
