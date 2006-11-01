@@ -13,7 +13,7 @@ DONE:
 
 - By Lucho. GFP_ATOMIC en kmalloc cuando estamos dentro de un spin_lock
 - By Lucho. Restriccion para usar el modo seguro con un solo knock.
-- By Fender. request_module('sha256') para cargar el módulo sha256 al inicio del módulo pknock. Sino se puede cargar usa md5.
+- By Fender. request_module('sha256') para cargar el módulo sha256 al inicio del módulo pknock.
 - By Lucho. Antes de usar el módulo pknock debe hacerse "modprobe sha256", sino el módulo pknock explota.
 - By Lucho & Fender. Kernel freeze with SHA256 (crypto_alloc_tfm() issue). MD5 by default, for a while.
 - By Fender. Memory leak fixed in has_secret() function.
