@@ -11,6 +11,7 @@ TODO:
 DONE:
 -----
 
+- By Fender. Optimización realizada sobre el uso de la crypto API. Antes se realizaba un malloc de tfm por cada paquete que llegaba al móulo. Ahora sólo se hace un malloc al cargarse el módulo y tfm se libera al descargarse el mismo.
 - By Lucho. GFP_ATOMIC en kmalloc cuando estamos dentro de un spin_lock
 - By Lucho. Restriccion para usar el modo seguro con un solo knock.
 - By Fender. request_module('sha256') para cargar el módulo sha256 al inicio del módulo pknock.
