@@ -329,7 +329,7 @@ static int add_rule(struct ipt_pknock_info *info) {
 		}
 	}
 	/*  If it doesn't exist. */
-	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_KERNEL)) == NULL) {
+	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in add_rule() function.\n");
 		return 0;
 	}
@@ -469,7 +469,7 @@ static inline void reset_knock_status(struct peer *peer) {
 static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) {
 	struct peer *peer = NULL;
 
-	if ((peer = (struct peer *)kmalloc(sizeof (*peer), GFP_KERNEL)) == NULL) {
+	if ((peer = (struct peer *)kmalloc(sizeof (*peer), GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in new_peer() function.\n");
 		return NULL;
 	}
@@ -572,7 +572,7 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 		 
 		 memcpy(m + 1, (char *)&nlmsg, m->len);
 		 
-		 cn_netlink_send(m, NL_MULTICAST_GROUP, gfp_any());
+		 cn_netlink_send(m, NL_MULTICAST_GROUP, GFP_ATOMIC);
 		 
 		 kfree(m);
 	 } 
@@ -632,7 +632,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 		goto end;	
 	}
 
-	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_KERNEL)) == NULL) {
+	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in has_secret() function.\n");
 		goto end;
 	}
