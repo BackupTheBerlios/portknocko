@@ -76,5 +76,14 @@ struct ipt_pknock_rule {
 	unsigned long		max_time;	/* max matching time between ports */
 };
 
+
+#include <linux/crypto.h>
+
+struct ipt_pknock_crypto {
+	char 			*algo;
+	struct crypto_tfm 	*tfm;
+	int 			size;
+};
+
 #endif /* __KERNEL__ */
 #endif /* _IPT_PKNOCK_H */
