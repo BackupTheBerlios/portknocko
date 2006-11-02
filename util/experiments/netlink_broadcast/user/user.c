@@ -7,7 +7,7 @@
 #include <linux/netlink.h>
 #include <linux/connector.h>
 
-#include "../../../kernel/ipt_pknock.h"
+#include "../../../../kernel/ipt_pknock.h"
 
 #define GROUP 1
 
