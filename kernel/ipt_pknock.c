@@ -560,13 +560,11 @@ static inline int is_allowed(struct peer *peer) {
 #if NETLINK_MSG
 static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) {
 	struct cn_msg *m;
-	struct cb_id cn_test_id = { 0x123, 0x345 };
 	struct ipt_pknock_nl_msg nlmsg;
 
 	m = kmalloc(sizeof(*m) + sizeof(nlmsg), GFP_ATOMIC);
 	if (m) {
 		memset(m, 0, sizeof(*m) + sizeof(nlmsg));
-		memcpy(&m->id, &cn_test_id, sizeof(m->id));
 
 		m->seq = 0;		
 		m->len = sizeof(nlmsg);
