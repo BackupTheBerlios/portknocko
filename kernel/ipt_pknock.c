@@ -29,7 +29,7 @@
 #include "ipt_pknock.h"
 
 #if NETLINK_MSG
-#include <linux/connector.h>
+	#include <linux/connector.h>
 #endif
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
@@ -45,12 +45,12 @@ enum {
 
 #define hashtable_for_each_safe(pos, n, head, size, i) \
 	for ((i) = 0; (i) < (size); (i)++) \
-list_for_each_safe((pos), (n), (&head[(i)]))
+		list_for_each_safe((pos), (n), (&head[(i)]))
 
 #if DEBUG
-#define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
+	#define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
 #else
-#define DEBUG_MSG(msg, peer)
+	#define DEBUG_MSG(msg, peer)
 #endif
 
 static u_int32_t ipt_pknock_hash_rnd;
@@ -85,7 +85,7 @@ static u_int32_t pknock_hash(const void *key, u_int32_t length, u_int32_t initva
 }
 
 /**
- * return: the epoch minute
+ * @return: the epoch minute
  */
 static int get_epoch_minute(void) {
 	struct timespec t;
@@ -97,7 +97,7 @@ static int get_epoch_minute(void) {
  * Alloc a hashtable with n buckets.
  * 
  * @size
- * return: hash
+ * @return: hashtable
  */
 static struct list_head *alloc_hashtable(int size) {
 	struct list_head *hash = NULL;
@@ -243,7 +243,7 @@ static int has_logged_during_this_minute(struct peer *peer) {
 }
 
 /**
- * Garbage collector. It removes the old entries after that the timer has expired.
+ * Garbage collector. It removes the old entries after timer has expired.
  *
  * @r: rule
  */
@@ -270,14 +270,14 @@ static void peer_gc(unsigned long r) {
  * @rule
  * @return: 0 equals, 1 otherwise
  */
-	static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule) {
-		if (info->rule_name_len != rule->rule_name_len)
-			return 1;
-		if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
-			return 1;
+static inline int rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule) {
+	if (info->rule_name_len != rule->rule_name_len)
+		return 1;
+	if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
+		return 1;
 
-		return 0;
-	}
+	return 0;
+}
 
 /**
  * Search the rule and returns a pointer if it exists.
@@ -442,11 +442,11 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 
 	hash = pknock_hash(&ip, sizeof(ip), ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
 
-	if (list_empty(&rule->peer_head[hash])) return NULL;
-
-	list_for_each_safe(pos, n, &rule->peer_head[hash]) {
-		peer = list_entry(pos, struct peer, head);
-		if (peer->ip == ip) return peer;
+	if (!list_empty(&rule->peer_head[hash])) {
+		list_for_each_safe(pos, n, &rule->peer_head[hash]) {
+			peer = list_entry(pos, struct peer, head);
+			if (peer->ip == ip) return peer;
+		}
 	}
 	return NULL;
 }
@@ -458,8 +458,8 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
  * @peer
  */
 static inline void reset_knock_status(struct peer *peer) {
-	peer->id_port_knocked = 1;
-	peer->status 	= ST_INIT;
+	peer->id_port_knocked 	= 1;
+	peer->status 		= ST_INIT;
 }
 
 /**
@@ -530,7 +530,7 @@ static inline int is_first_knock(struct peer *peer, struct ipt_pknock_info *info
  * @return: 1 success, 0 failure
  */
 static inline int is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) {
-	return info->port[peer->id_port_knocked-1] != port;
+	return peer && (info->port[peer->id_port_knocked-1] != port);
 }
 
 /**
@@ -539,7 +539,7 @@ static inline int is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info
  * @return: 1 success, 0 failure
  */
 static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info) {
-	return peer->id_port_knocked-1 == info->count_ports;
+	return peer && (peer->id_port_knocked-1 == info->count_ports);
 }
 
 /**
@@ -547,7 +547,7 @@ static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
  * @return: 1 success, 0 failure
  */
 static inline int is_allowed(struct peer *peer) {
-	return (peer && peer->status == ST_ALLOWED) ? 1 : 0;
+	return peer && (peer->status == ST_ALLOWED);
 }
 
 
@@ -623,7 +623,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, un
 
 	hexa_size = crypto.size * 2;
 
-	/* + 1 cause we should add NULL in the payload */
+	/* + 1 cause we MUST add NULL in the payload */
 	if (payload_len != hexa_size + 1) {
 		goto end;	
 	}
@@ -670,21 +670,21 @@ end:
  * @payload_len
  * @return: 1 if pass security, 0 otherwise
  */
-	static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
-		if (is_allowed(peer))
-			return 1;
-
-		/* The peer can't log more than once during the same minute. */
-		if (has_logged_during_this_minute(peer)) {
-			DEBUG_MSG("BLOCKED", peer);			
-			return 0;
-		}
-		/* Check for OPEN secret */
-		if (!has_secret(info->open_secret, info->open_secret_len, htonl(peer->ip), payload, payload_len))
-			return 0;
-
+static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
+	if (is_allowed(peer))
 		return 1;
+
+	/* The peer can't log more than once during the same minute. */
+	if (has_logged_during_this_minute(peer)) {
+		DEBUG_MSG("BLOCKED", peer);			
+		return 0;
 	}
+	/* Check for OPEN secret */
+	if (!has_secret(info->open_secret, info->open_secret_len, htonl(peer->ip), payload, payload_len))
+		return 0;
+
+	return 1;
+}
 
 /**
  * It updates the peer matching status.
