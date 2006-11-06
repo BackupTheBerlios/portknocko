@@ -48,9 +48,9 @@ enum {
 		list_for_each_safe((pos), (n), (&head[(i)]))
 
 #if DEBUG
-	#define DEBUG_MSG(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
+	#define DEBUGP(msg, peer) printk(KERN_INFO MOD "(S) peer: %u.%u.%u.%u - %s.\n",  NIPQUAD((peer)->ip), msg)
 #else
-	#define DEBUG_MSG(msg, peer)
+	#define DEBUGP(msg, peer)
 #endif
 
 static u_int32_t ipt_pknock_hash_rnd;
@@ -256,7 +256,7 @@ static void peer_gc(unsigned long r) {
 	hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 		peer = list_entry(pos, struct peer, head);
 		if (!has_logged_during_this_minute(peer) && is_time_exceeded(peer, rule->max_time)) {
-			DEBUG_MSG("DESTROYED", peer);	
+			DEBUGP("DESTROYED", peer);	
 			list_del(pos);
 			kfree(peer);
 		}
@@ -406,7 +406,7 @@ static void remove_rule(struct ipt_pknock_info *info) {
 		hashtable_for_each_safe(pos, n, rule->peer_head, ipt_pknock_peer_htable_size, i) {
 			peer = list_entry(pos, struct peer, head);
 			if (peer != NULL) {
-				DEBUG_MSG("DELETED", peer);			
+				DEBUGP("DELETED", peer);			
 				list_del(pos);
 				kfree(peer);
 			}
@@ -674,7 +674,7 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsign
 
 	/* The peer can't log more than once during the same minute. */
 	if (has_logged_during_this_minute(peer)) {
-		DEBUG_MSG("BLOCKED", peer);			
+		DEBUGP("BLOCKED", peer);			
 		return 0;
 	}
 	/* Check for OPEN secret */
@@ -700,7 +700,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	unsigned long time;
 
 	if (is_wrong_knock(peer, info, port)) {
-		DEBUG_MSG("DIDN'T MATCH", peer);
+		DEBUGP("DIDN'T MATCH", peer);
 
 		/* Peer must start the sequence from scratch. */
 		if (info->option & IPT_PKNOCK_STRICT)
@@ -721,7 +721,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	if (is_last_knock(peer, info)) {
 		peer->status = ST_ALLOWED;
 
-		DEBUG_MSG("ALLOWED", peer);
+		DEBUGP("ALLOWED", peer);
 #if NETLINK_MSG		
 		/* Send a msg to userspace saying the peer knocked all the sequence correcty! */
 		msg_to_userspace_nl(info, peer);
@@ -736,8 +736,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		/* Returns true if the time a is after time b. */
 		if (is_time_exceeded(peer, info->max_time)) {
 #if DEBUG
-			DEBUG_MSG("TIME EXCEEDED", peer);
-			DEBUG_MSG("DESTROYED", peer);
+			DEBUGP("TIME EXCEEDED", peer);
+			DEBUGP("DESTROYED", peer);
 			printk(KERN_INFO MOD "max_time: %ld - time: %ld\n", 
 					peer->timestamp + info->max_time, time);
 #endif
@@ -746,7 +746,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 		}
 		peer->timestamp = time;		
 	}
-	DEBUG_MSG("MATCHING", peer);
+	DEBUGP("MATCHING", peer);
 	peer->status = ST_MATCHING;
 	return 0;
 }
@@ -764,7 +764,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, unsigned char *payload, int payload_len) {
 	/* Check for CLOSE secret. */
 	if (has_secret(info->close_secret, info->close_secret_len, htonl(peer->ip), payload, payload_len)) {
-		DEBUG_MSG("RESET", peer);
+		DEBUGP("RESET", peer);
 		return 1;
 	}
 	return 0;
@@ -850,7 +850,7 @@ static int match(const struct sk_buff *skb,
 end:
 #if DEBUG
 	if (ret)
-		DEBUG_MSG("PASS OK", peer);
+		DEBUGP("PASS OK", peer);
 #endif		
 	spin_unlock_bh(&rule_list_lock);
 	return ret;
