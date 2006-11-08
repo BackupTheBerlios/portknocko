@@ -2,7 +2,7 @@ TODO:
 -----
 
 - For Fender. Soporte para x_tables y para IPV6.
-- For Anyone. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
+- For Lucho. El comportamiento --strict debería ser por defecto (si alguien hace port scanning podría quedar en estado ALLOWED). -> Gracias a Fede Roitman por la observación.
 - For Fender. Con el método tradicional para hacer port knocking, existe el problema de un DoS (corregirlo).
 - For Fender. Corregir el posible problema de fragmentación de memoria al recibir un ataque de DoS.
 
