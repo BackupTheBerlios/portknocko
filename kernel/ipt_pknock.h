@@ -36,10 +36,10 @@ struct ipt_pknock_info {
 	int		open_secret_len;
 	char		close_secret[IPT_PKNOCK_MAX_PASSWD_LEN];
 	int		close_secret_len;
-	u_int8_t 	count_ports;			/* number of ports */
-	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS];	/* port[,port,port,...] */
-	unsigned long 	max_time;			/* max matching time between ports */
-	u_int8_t 	option;				/* --time, --knock-port, ... */
+	u_int8_t 	count_ports;		/* number of ports */
+	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS]; /* port[,port,port,...] */
+	unsigned long 	max_time;	/* max matching time between ports */
+	u_int8_t 	option;		/* --time, --knock-port, ... */
 };
 
 struct ipt_pknock_nl_msg {
@@ -73,7 +73,7 @@ struct ipt_pknock_rule {
 	struct timer_list 	timer;		/* garbage collector timer */
 	struct list_head 	*peer_head;
 	struct proc_dir_entry  	*status_proc;
-	unsigned long		max_time;	/* max matching time between ports */
+	unsigned long		max_time; /* max matching time between ports */
 };
 
 
@@ -83,6 +83,14 @@ struct ipt_pknock_crypto {
 	char 			*algo;
 	struct crypto_tfm 	*tfm;
 	int 			size;
+};
+
+
+struct transport_data {
+	u_int8_t	proto;
+	u_int16_t	port;
+	int		payload_len;
+	unsigned char	*payload;	
 };
 
 #endif /* __KERNEL__ */
