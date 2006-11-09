@@ -4,7 +4,8 @@ TODO:
 - For Fender. Support for x_tables and IPV6.
 - For Lucho. --strict behavior should be set by default.
 - For Fender. Possible DoS attack with the traditional port knocking mode.
-- For Fedder. Possible memory fragmentation when receiving a DoS attack.
+- For Fender. Possible memory fragmentation when receiving a DoS attack.
+- /usr/src/linux-2.6.x.x/Documentation/CodingStyle
 
 
 DONE:
