@@ -696,7 +696,7 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info, unsign
  * @return: 1 if allowed, 0 otherwise
  */
 static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct ipt_pknock_rule *rule, 
-		u_int16_t port, unsigned char *payload, int payload_len) {
+		u_int16_t port, unsigned char *payload, int payload_len, u_int8_t proto) {
 	unsigned long time;
 
 	if (is_wrong_knock(peer, info, port)) {
@@ -709,7 +709,7 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info, struct i
 	}
 
 	/* If security is needed. */
-	if (info->option & IPT_PKNOCK_OPENSECRET)
+	if (info->option & IPT_PKNOCK_OPENSECRET && proto == IPPROTO_UDP)
 		if (!pass_security(peer, info, payload, payload_len))
 			return 0;
 
@@ -786,14 +786,13 @@ static int match(const struct sk_buff *skb,
 	void *transph = (void *)iph + iphl;	/* tranport protocol header */
 	u_int16_t port = 0;
 	u_int8_t proto = 0;
-	int ret=0;	
-	unsigned char *payload;
-	int payload_len, headers_len;
+	int ret = 0;	
+	unsigned char *payload = NULL;
+	int payload_len = 0, headers_len = 0;
 
 	switch ((proto = iph->protocol)) {
 		case IPPROTO_TCP:
 			port = ntohs(((struct tcphdr *)transph)->dest); 
-			headers_len = iphl + sizeof(struct tcphdr);
 			break;
 
 		case IPPROTO_UDP:
@@ -828,7 +827,7 @@ static int match(const struct sk_buff *skb,
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
-			if (info->option & IPT_PKNOCK_CLOSESECRET) {
+			if (info->option & IPT_PKNOCK_CLOSESECRET && proto == IPPROTO_UDP) {
 				if (is_close_knock(peer, info, payload, payload_len)) {
 					reset_knock_status(peer);
 					ret = 0;
@@ -844,7 +843,7 @@ static int match(const struct sk_buff *skb,
 
 		if (peer == NULL) goto end;
 
-		update_peer(peer, info, rule, port, payload, payload_len);
+		update_peer(peer, info, rule, port, payload, payload_len, proto);
 	}
 
 end:
