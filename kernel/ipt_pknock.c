@@ -29,7 +29,7 @@
 #include "ipt_pknock.h"
 
 #if NETLINK_MSG
-	#include <linux/connector.h>
+#include <linux/connector.h>
 #endif
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
@@ -82,8 +82,10 @@ static struct ipt_pknock_crypto crypto = {
  * @max
  * @return: a 32 bits index
  */
-static u_int32_t pknock_hash(const void *key, u_int32_t length, 
-		u_int32_t initval, u_int32_t max) 
+static u_int32_t pknock_hash(const void *key, 
+			u_int32_t length, 
+			u_int32_t initval, 
+			u_int32_t max) 
 {
 	return jhash(key, length, initval) % max;
 }
@@ -109,7 +111,7 @@ static struct list_head *alloc_hashtable(int size)
 	struct list_head *hash = NULL;
 	unsigned int i;
 
-	if ((hash = kmalloc(sizeof(struct list_head) * size, GFP_KERNEL)) == NULL) {
+	if ((hash = kmalloc(sizeof(*list_head) * size, GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable()"
 				" function.\n");
 		return NULL;
@@ -167,8 +169,8 @@ static inline const char *status_itoa(enum status status)
  * @eof
  * @data
  */
-static int read_proc(char *buf, char **start, off_t offset, int count, 
-		int *eof, void *data) 
+static int read_proc(char *buf, char **start, off_t offset, 
+			int count, int *eof, void *data)
 {
 	int limit = count, len = 0, i;
 	off_t pos = 0, begin = 0;
@@ -177,7 +179,7 @@ static int read_proc(char *buf, char **start, off_t offset, int count,
 	struct list_head *p = NULL, *n = NULL;
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
-	unsigned long expiration_time = 0, max_time = 0;
+	unsigned long expir_time = 0, max_time = 0;
 
 	*eof=0;
 
@@ -196,15 +198,15 @@ static int read_proc(char *buf, char **start, off_t offset, int count,
 		proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
 		ip = htonl(peer->ip);
 
-		expiration_time = time_before(jiffies/HZ, peer->timestamp + max_time) ?
-			((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
+		expir_time = time_before(jiffies/HZ, peer->timestamp + max_time)
+			? ((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
 
 		len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", 
 				NIPQUAD(ip));
 		len += snprintf(buf+len, limit-len, "proto=%s ", proto);
 		len += snprintf(buf+len, limit-len, "status=%s ", status);
-		len += snprintf(buf+len, limit-len, "expiration_time=%ld ", 
-				expiration_time);
+		len += snprintf(buf+len, limit-len, "expir_time=%ld ", 
+				expir_time);
 		len += snprintf(buf+len, limit-len, "next_port_id=%d ",
 				peer->id_port_knocked-1);
 		len += snprintf(buf+len, limit-len, "\n");
@@ -212,10 +214,17 @@ static int read_proc(char *buf, char **start, off_t offset, int count,
 		limit -= len;
 
 		pos = begin + len;
-		if(pos < offset) { len = 0; begin = pos; }
-		if(pos > offset + count) { len = 0; break; }
+		
+		if(pos < offset) { 
+			len = 0; 
+			begin = pos; 
+		}
+		
+		if(pos > offset + count) { 
+			len = 0; 
+			break; 
+		}
 	}
-
 	*start = buf + (offset - begin);
 	len -= (offset - begin);
 	if(len > count) len = count;
@@ -244,7 +253,7 @@ static inline void update_rule_timer(struct ipt_pknock_rule *rule)
  * @max_time
  * @return: 1 time exceeded, 0 still valid
  */ 
-static inline int is_time_exceeded(struct peer *peer, int max_time) 
+static inline int is_time_exceeded(struct peer *peer, int max_time)
 {
 	return time_after(jiffies/HZ, peer->timestamp + max_time);
 }
@@ -272,7 +281,9 @@ static void peer_gc(unsigned long r)
 
 	hashtable_for_each_safe(pos, n, rule->peer_head, 
 			ipt_pknock_peer_htable_size, i) {
+		
 		peer = list_entry(pos, struct peer, head);
+		
 		if (!has_logged_during_this_minute(peer) && 
 				is_time_exceeded(peer, rule->max_time)) {
 			DEBUGP("DESTROYED", peer);	
@@ -290,14 +301,11 @@ static void peer_gc(unsigned long r)
  * @return: 0 equals, 1 otherwise
  */
 static inline int rulecmp(struct ipt_pknock_info *info, 
-		struct ipt_pknock_rule *rule) 
+			struct ipt_pknock_rule *rule)
 {
-	if (info->rule_name_len != rule->rule_name_len)
-		return 1;
+	if (info->rule_name_len != rule->rule_name_len) return 1;
 	if (strncmp(info->rule_name, rule->rule_name, 
-				info->rule_name_len) != 0)
-		return 1;
-
+				info->rule_name_len) != 0) return 1;
 	return 0;
 }
 
@@ -307,7 +315,7 @@ static inline int rulecmp(struct ipt_pknock_info *info,
  * @info
  * @return: rule or NULL
  */
-static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info) 
+static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
 {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -359,7 +367,7 @@ static int add_rule(struct ipt_pknock_info *info)
 	}
 	
 	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_ATOMIC)) == NULL) {
-		printk(KERN_ERR MOD "kmalloc() error in add_rule() function.\n");
+		printk(KERN_ERR MOD "kmalloc() error in add_rule().\n");
 		return 0;
 	}
 
@@ -465,7 +473,8 @@ static void remove_rule(struct ipt_pknock_info *info)
  * @ip
  * @return: peer or NULL
  */
-static inline struct peer * get_peer(struct ipt_pknock_rule *rule, u_int32_t ip) 
+static inline struct peer * get_peer(struct ipt_pknock_rule *rule, 
+				u_int32_t ip) 
 {
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -532,7 +541,7 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto)
  * @peer
  * @rule
  */
-static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule) 
+static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule)
 {
 	int hash = pknock_hash(&peer->ip, sizeof(peer->ip), 
 			ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
@@ -557,7 +566,8 @@ static inline void remove_peer(struct peer *peer)
  * @port
  * @return: 1 success, 0 failure
  */
-static inline int is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port) 
+static inline int is_first_knock(struct peer *peer, 
+				struct ipt_pknock_info *info, u_int16_t port)
 {
 	return (peer == NULL && info->port[0] == port) ? 1 : 0;
 }
@@ -569,7 +579,8 @@ static inline int is_first_knock(struct peer *peer, struct ipt_pknock_info *info
  * @return: 1 success, 0 failure
  */
 static inline int is_wrong_knock(struct peer *peer, 
-		struct ipt_pknock_info *info, u_int16_t port)
+				struct ipt_pknock_info *info,
+				u_int16_t port)
 {
 	return peer && (info->port[peer->id_port_knocked-1] != port);
 }
@@ -601,7 +612,7 @@ static inline int is_allowed(struct peer *peer)
  * @peer
  */
 #if NETLINK_MSG
-static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer) 
+static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 {
 	struct cn_msg *m;
 	struct ipt_pknock_nl_msg nlmsg;
@@ -614,7 +625,8 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 		m->len = sizeof(nlmsg);
 
 		nlmsg.peer_ip = peer->ip;
-		scnprintf(nlmsg.rule_name, info->rule_name_len + 1, info->rule_name);
+		scnprintf(nlmsg.rule_name, info->rule_name_len + 1, 
+				info->rule_name);
 
 		memcpy(m + 1, (char *)&nlmsg, m->len);
 
@@ -652,8 +664,10 @@ static void crypt_to_hex(char *out, char *crypt, int size)
  * @payload_len
  * @return: 1 success, 0 failure 
  */
-static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc,
-		unsigned char *payload, int payload_len)
+static int has_secret(unsigned char *secret, 
+		int secret_len, u_int32_t ipsrc, 
+		unsigned char *payload, 
+		int payload_len)
 {
 	struct scatterlist sg[2];
 	char result[64];
@@ -674,8 +688,7 @@ static int has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc,
 	}
 
 	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_ATOMIC)) == NULL) {
-		printk(KERN_ERR MOD "kmalloc() error in "
-				"has_secret() function.\n");
+		printk(KERN_ERR MOD "kmalloc() error in has_secret().\n");
 		goto end;
 	}
 
@@ -716,8 +729,10 @@ end:
  * @payload_len
  * @return: 1 if pass security, 0 otherwise
  */
-static int pass_security(struct peer *peer, struct ipt_pknock_info *info, 
-		unsigned char *payload, int payload_len) 
+static int pass_security(struct peer *peer, 
+		struct ipt_pknock_info *info, 
+		unsigned char *payload, 
+		int payload_len) 
 {
 	if (is_allowed(peer))
 		return 1;
@@ -741,13 +756,13 @@ static int pass_security(struct peer *peer, struct ipt_pknock_info *info,
  * @peer
  * @info
  * @rule
- * @port
- * @payload
- * @pauload_len
+ * @transp
  * @return: 1 if allowed, 0 otherwise
  */
-static int update_peer(struct peer *peer, struct ipt_pknock_info *info, 
-		struct ipt_pknock_rule *rule, struct transport_data *transp)
+static int update_peer(struct peer *peer, 
+		struct ipt_pknock_info *info, 
+		struct ipt_pknock_rule *rule, 
+		struct transport_data *transp)
 {
 	unsigned long time;
 
@@ -761,8 +776,10 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info,
 	}
 
 	/* If security is needed. */
-	if (info->option & IPT_PKNOCK_OPENSECRET && transp->proto == IPPROTO_UDP)
-		if (!pass_security(peer, info, transp->payload, transp->payload_len))
+	if (info->option & IPT_PKNOCK_OPENSECRET && 
+			transp->proto == IPPROTO_UDP)
+		if (!pass_security(peer, info, transp->payload, 
+					transp->payload_len))
 			return 0;
 
 	/* Just update the timer when there is a state change. */
@@ -792,7 +809,8 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info,
 			DEBUGP("TIME EXCEEDED", peer);
 			DEBUGP("DESTROYED", peer);
 			printk(KERN_INFO MOD "max_time: %ld - time: %ld\n", 
-					peer->timestamp + info->max_time, time);
+					peer->timestamp + info->max_time, 
+					time);
 #endif
 			remove_peer(peer);
 			return 0;
@@ -814,8 +832,10 @@ static int update_peer(struct peer *peer, struct ipt_pknock_info *info,
  * @payload_len
  * @return: 1 if close knock, 0 otherwise
  */
-static int is_close_knock(struct peer *peer, struct ipt_pknock_info *info, 
-		unsigned char *payload, int payload_len) 
+static int is_close_knock(struct peer *peer, 
+		struct ipt_pknock_info *info, 
+		unsigned char *payload, 
+		int payload_len) 
 {
 	/* Check for CLOSE secret. */
 	if (has_secret(info->close_secret, info->close_secret_len, 
@@ -851,7 +871,7 @@ static int match(const struct sk_buff *skb,
 
 	switch ((transp.proto = iph->protocol)) {
 		case IPPROTO_TCP:
-			transp.port = ntohs(((struct tcphdr *)transp_h)->dest); 
+			transp.port = ntohs(((struct tcphdr *)transp_h)->dest);
 			break;
 
 		case IPPROTO_UDP:
