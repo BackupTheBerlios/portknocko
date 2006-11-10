@@ -13,7 +13,7 @@
 #include <linux/ip.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
-#include <linux/in.h>	/* standard well-defined ip protocols */
+#include <linux/in.h>
 #include <linux/list.h>
 #include <linux/proc_fs.h>
 #include <linux/spinlock.h>
@@ -77,23 +77,22 @@ static struct ipt_pknock_crypto crypto = {
  * Calculates a value from 0 to max from a hash of the arguments.
  * 
  * @key
- * @length
+ * @len: length
  * @initval
  * @max
  * @return: a 32 bits index
  */
-static u_int32_t pknock_hash(const void *key, 
-			u_int32_t length, 
-			u_int32_t initval, 
-			u_int32_t max) 
+static u_int32_t 
+pknock_hash(const void *key, u_int32_t len, u_int32_t initval, u_int32_t max)
 {
-	return jhash(key, length, initval) % max;
+	return jhash(key, len, initval) % max;
 }
 
 /**
  * @return: the epoch minute
  */
-static int get_epoch_minute(void) 
+static int 
+get_epoch_minute(void) 
 {
 	struct timespec t;
 	t = CURRENT_TIME;
@@ -106,12 +105,13 @@ static int get_epoch_minute(void)
  * @size
  * @return: hashtable
  */
-static struct list_head *alloc_hashtable(int size) 
+static struct list_head *
+alloc_hashtable(int size) 
 {
 	struct list_head *hash = NULL;
 	unsigned int i;
 
-	if ((hash = kmalloc(sizeof(*list_head) * size, GFP_ATOMIC)) == NULL) {
+		if ((hash = kmalloc(sizeof(*hash) * size, GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable()"
 				" function.\n");
 		return NULL;
@@ -127,7 +127,8 @@ static struct list_head *alloc_hashtable(int size)
 /**
  * @iph
  */
-static inline void print_ip_packet(struct iphdr *iph) 
+static inline void 
+print_ip_packet(struct iphdr *iph) 
 {
 	printk(KERN_INFO MOD "\nIP packet:\n"
 			"VER=%d | IHL=%d | TOS=0x%02X | LEN=%d\n"
@@ -149,7 +150,8 @@ static inline void print_ip_packet(struct iphdr *iph)
  * @status
  * @return: status
  */
-static inline const char *status_itoa(enum status status) 
+static inline const char *
+status_itoa(enum status status) 
 {
 	switch (status) {
 		case ST_INIT: return "INIT";
@@ -169,8 +171,9 @@ static inline const char *status_itoa(enum status status)
  * @eof
  * @data
  */
-static int read_proc(char *buf, char **start, off_t offset, 
-			int count, int *eof, void *data)
+static int 
+read_proc(char *buf, char **start, off_t offset, int count, int *eof, 
+	void *data)
 {
 	int limit = count, len = 0, i;
 	off_t pos = 0, begin = 0;
@@ -239,11 +242,12 @@ static int read_proc(char *buf, char **start, off_t offset,
  *
  * @rule
  */
-static inline void update_rule_timer(struct ipt_pknock_rule *rule) 
+static inline void 
+update_rule_timer(struct ipt_pknock_rule *rule) 
 {
-	if (timer_pending(&rule->timer)) {
+	if (timer_pending(&rule->timer))
 		del_timer(&rule->timer);
-	}
+
 	rule->timer.expires = jiffies + msecs_to_jiffies(ipt_pknock_gc_expir_time);
 	add_timer(&rule->timer);
 }
@@ -253,7 +257,8 @@ static inline void update_rule_timer(struct ipt_pknock_rule *rule)
  * @max_time
  * @return: 1 time exceeded, 0 still valid
  */ 
-static inline int is_time_exceeded(struct peer *peer, int max_time)
+static inline int 
+is_time_exceeded(struct peer *peer, int max_time)
 {
 	return time_after(jiffies/HZ, peer->timestamp + max_time);
 }
@@ -262,7 +267,8 @@ static inline int is_time_exceeded(struct peer *peer, int max_time)
  * @peer
  * @return: 1 has logged, 0 otherwise
  */
-static int has_logged_during_this_minute(struct peer *peer) 
+static int 
+has_logged_during_this_minute(struct peer *peer) 
 {
 	return peer && (peer->login_min == get_epoch_minute());
 }
@@ -272,7 +278,8 @@ static int has_logged_during_this_minute(struct peer *peer)
  *
  * @r: rule
  */
-static void peer_gc(unsigned long r) 
+static void 
+peer_gc(unsigned long r) 
 {
 	int i;
 	struct ipt_pknock_rule *rule = (struct ipt_pknock_rule *)r;
@@ -300,12 +307,13 @@ static void peer_gc(unsigned long r)
  * @rule
  * @return: 0 equals, 1 otherwise
  */
-static inline int rulecmp(struct ipt_pknock_info *info, 
-			struct ipt_pknock_rule *rule)
+static inline int 
+rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule)
 {
-	if (info->rule_name_len != rule->rule_name_len) return 1;
-	if (strncmp(info->rule_name, rule->rule_name, 
-				info->rule_name_len) != 0) return 1;
+	if (info->rule_name_len != rule->rule_name_len) 
+		return 1;
+	if (strncmp(info->rule_name, rule->rule_name, info->rule_name_len) != 0)
+		return 1;
 	return 0;
 }
 
@@ -315,7 +323,8 @@ static inline int rulecmp(struct ipt_pknock_info *info,
  * @info
  * @return: rule or NULL
  */
-static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
+static inline struct ipt_pknock_rule * 
+search_rule(struct ipt_pknock_info *info)
 {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -340,7 +349,8 @@ static inline struct ipt_pknock_rule * search_rule(struct ipt_pknock_info *info)
  * @info
  * @return: 1 success, 0 failure
  */
-static int add_rule(struct ipt_pknock_info *info) 
+static int 
+add_rule(struct ipt_pknock_info *info) 
 {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -357,8 +367,10 @@ static int add_rule(struct ipt_pknock_info *info)
 #if DEBUG				
 				if (info->option & IPT_PKNOCK_CHECKIP) {
 					printk(KERN_DEBUG MOD "add_rule() (AC)"
-						" rule found: %s - ref_count: %d\n",
-						rule->rule_name, rule->ref_count);
+						" rule found: %s - "
+						"ref_count: %d\n",
+						rule->rule_name, 
+						rule->ref_count);
 				}
 #endif
 				return 1;
@@ -366,7 +378,7 @@ static int add_rule(struct ipt_pknock_info *info)
 		}
 	}
 	
-	if ((rule = (struct ipt_pknock_rule *)kmalloc(sizeof (*rule), GFP_ATOMIC)) == NULL) {
+	if ((rule = kmalloc(sizeof (*rule), GFP_ATOMIC)) == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in add_rule().\n");
 		return 0;
 	}
@@ -407,7 +419,8 @@ static int add_rule(struct ipt_pknock_info *info)
  *
  * @info
  */
-static void remove_rule(struct ipt_pknock_info *info) 
+static void 
+remove_rule(struct ipt_pknock_info *info) 
 {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -455,15 +468,13 @@ static void remove_rule(struct ipt_pknock_info *info)
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", 
 				rule->rule_name);
 #endif
-		if (timer_pending(&rule->timer)) {
+		if (timer_pending(&rule->timer))
 			del_timer(&rule->timer);
-		}
 
 		list_del(&rule->head);
 		kfree(rule->peer_head);
 		kfree(rule);
 	}
-
 }
 
 /**
@@ -473,8 +484,8 @@ static void remove_rule(struct ipt_pknock_info *info)
  * @ip
  * @return: peer or NULL
  */
-static inline struct peer * get_peer(struct ipt_pknock_rule *rule, 
-				u_int32_t ip) 
+static inline struct peer * 
+get_peer(struct ipt_pknock_rule *rule, u_int32_t ip) 
 {
 	struct peer *peer = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -500,7 +511,8 @@ static inline struct peer * get_peer(struct ipt_pknock_rule *rule,
  * 
  * @peer
  */
-static inline void reset_knock_status(struct peer *peer) 
+static inline void 
+reset_knock_status(struct peer *peer) 
 {
 	peer->id_port_knocked 	= 1;
 	peer->status 		= ST_INIT;
@@ -514,12 +526,13 @@ static inline void reset_knock_status(struct peer *peer)
  * @proto
  * @return: peer or NULL
  */
-static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto) 
+static inline struct peer * 
+new_peer(u_int32_t ip, u_int8_t proto) 
 {
 	struct peer *peer = NULL;
 
-	if ((peer = (struct peer *)kmalloc(sizeof (*peer), GFP_ATOMIC)) == NULL) {
-		printk(KERN_ERR MOD "kmalloc() error in new_peer() function.\n");
+	if ((peer = kmalloc(sizeof (*peer), GFP_ATOMIC)) == NULL) {
+		printk(KERN_ERR MOD "kmalloc() error in new_peer().\n");
 		return NULL;
 	}
 
@@ -541,7 +554,8 @@ static inline struct peer * new_peer(u_int32_t ip, u_int8_t proto)
  * @peer
  * @rule
  */
-static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule)
+static inline void 
+add_peer(struct peer *peer, struct ipt_pknock_rule *rule)
 {
 	int hash = pknock_hash(&peer->ip, sizeof(peer->ip), 
 			ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
@@ -554,7 +568,8 @@ static inline void add_peer(struct peer *peer, struct ipt_pknock_rule *rule)
  *
  * @peer
  */
-static inline void remove_peer(struct peer *peer) 
+static inline void 
+remove_peer(struct peer *peer)
 {
 	list_del(&peer->head);
 	if (peer) kfree(peer);
@@ -566,8 +581,8 @@ static inline void remove_peer(struct peer *peer)
  * @port
  * @return: 1 success, 0 failure
  */
-static inline int is_first_knock(struct peer *peer, 
-				struct ipt_pknock_info *info, u_int16_t port)
+static inline int 
+is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
 {
 	return (peer == NULL && info->port[0] == port) ? 1 : 0;
 }
@@ -578,9 +593,8 @@ static inline int is_first_knock(struct peer *peer,
  * @port
  * @return: 1 success, 0 failure
  */
-static inline int is_wrong_knock(struct peer *peer, 
-				struct ipt_pknock_info *info,
-				u_int16_t port)
+static inline int 
+is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
 {
 	return peer && (info->port[peer->id_port_knocked-1] != port);
 }
@@ -590,7 +604,8 @@ static inline int is_wrong_knock(struct peer *peer,
  * @info
  * @return: 1 success, 0 failure
  */
-static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
+static inline int 
+is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
 {
 	return peer && (peer->id_port_knocked-1 == info->count_ports);
 }
@@ -599,7 +614,8 @@ static inline int is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
  * @peer
  * @return: 1 success, 0 failure
  */
-static inline int is_allowed(struct peer *peer) 
+static inline int 
+is_allowed(struct peer *peer) 
 {
 	return peer && (peer->status == ST_ALLOWED);
 }
@@ -612,7 +628,8 @@ static inline int is_allowed(struct peer *peer)
  * @peer
  */
 #if NETLINK_MSG
-static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
+static void 
+msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
 {
 	struct cn_msg *m;
 	struct ipt_pknock_nl_msg nlmsg;
@@ -644,7 +661,8 @@ static void msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
  * @crypt: the original sequence
  * @size
  */
-static void crypt_to_hex(char *out, char *crypt, int size) 
+static void 
+crypt_to_hex(char *out, char *crypt, int size) 
 {
 	int i;
 	for (i=0; i < size; i++) {
@@ -664,10 +682,9 @@ static void crypt_to_hex(char *out, char *crypt, int size)
  * @payload_len
  * @return: 1 success, 0 failure 
  */
-static int has_secret(unsigned char *secret, 
-		int secret_len, u_int32_t ipsrc, 
-		unsigned char *payload, 
-		int payload_len)
+static int 
+has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, 
+		unsigned char *payload, int payload_len)
 {
 	struct scatterlist sg[2];
 	char result[64];
@@ -679,17 +696,16 @@ static int has_secret(unsigned char *secret,
 	if (payload_len == 0)
 		return 0;
 
-
 	hexa_size = crypto.size * 2;
 
 	/* + 1 cause we MUST add NULL in the payload */
-	if (payload_len != hexa_size + 1) {
-		goto end;	
-	}
+	if (payload_len != hexa_size + 1)
+		goto out;	
 
-	if ((hexresult = kmalloc((sizeof(char) * hexa_size), GFP_ATOMIC)) == NULL) {
+	hexresult = kmalloc(sizeof(char) * hexa_size, GFP_ATOMIC);
+	if (hexresult == NULL) {
 		printk(KERN_ERR MOD "kmalloc() error in has_secret().\n");
-		goto end;
+		goto out;
 	}
 
 	epoch_min = get_epoch_minute();
@@ -709,12 +725,12 @@ static int has_secret(unsigned char *secret,
 		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
 #endif
-		goto end;
+		goto out;
 	}
 
 	ret = 1;
 
-end:	
+out:	
 	if (hexresult != NULL) kfree(hexresult);
 	return ret;
 }
@@ -729,10 +745,9 @@ end:
  * @payload_len
  * @return: 1 if pass security, 0 otherwise
  */
-static int pass_security(struct peer *peer, 
-		struct ipt_pknock_info *info, 
-		unsigned char *payload, 
-		int payload_len) 
+static int 
+pass_security(struct peer *peer, struct ipt_pknock_info *info, 
+		unsigned char *payload, int payload_len) 
 {
 	if (is_allowed(peer))
 		return 1;
@@ -759,28 +774,29 @@ static int pass_security(struct peer *peer,
  * @transp
  * @return: 1 if allowed, 0 otherwise
  */
-static int update_peer(struct peer *peer, 
-		struct ipt_pknock_info *info, 
-		struct ipt_pknock_rule *rule, 
-		struct transport_data *transp)
+static int 
+update_peer(struct peer *peer, struct ipt_pknock_info *info, 
+		struct ipt_pknock_rule *rule, struct transport_data *transp)
 {
 	unsigned long time;
 
 	if (is_wrong_knock(peer, info, transp->port)) {
 		DEBUGP("DIDN'T MATCH", peer);
-
 		/* Peer must start the sequence from scratch. */
 		if (info->option & IPT_PKNOCK_STRICT)
 			reset_knock_status(peer);
+
 		return 0;
 	}
 
 	/* If security is needed. */
 	if (info->option & IPT_PKNOCK_OPENSECRET && 
-			transp->proto == IPPROTO_UDP)
+			transp->proto == IPPROTO_UDP) {
 		if (!pass_security(peer, info, transp->payload, 
-					transp->payload_len))
+					transp->payload_len)) {
 			return 0;
+		}
+	}
 
 	/* Just update the timer when there is a state change. */
 	update_rule_timer(rule);
@@ -824,7 +840,8 @@ static int update_peer(struct peer *peer,
 
 
 /**
- * Make the peer no more ALLOWED sending a payload with a special secret for closure
+ * Make the peer no more ALLOWED sending a payload with a special secret for 
+ * closure.
  *
  * @peer
  * @info
@@ -832,10 +849,9 @@ static int update_peer(struct peer *peer,
  * @payload_len
  * @return: 1 if close knock, 0 otherwise
  */
-static int is_close_knock(struct peer *peer, 
-		struct ipt_pknock_info *info, 
-		unsigned char *payload, 
-		int payload_len) 
+static int 
+is_close_knock(struct peer *peer, struct ipt_pknock_info *info, 
+		unsigned char *payload, int payload_len) 
 {
 	/* Check for CLOSE secret. */
 	if (has_secret(info->close_secret, info->close_secret_len, 
@@ -847,12 +863,13 @@ static int is_close_knock(struct peer *peer,
 }
 
 
-static int match(const struct sk_buff *skb,
-		const struct net_device *in,
-		const struct net_device *out,
-		const void *matchinfo,
-		int offset,
-		int *hotdrop) 
+static int 
+match(const struct sk_buff *skb,
+	const struct net_device *in,
+	const struct net_device *out,
+	const void *matchinfo,
+	int offset,
+	int *hotdrop) 
 {
 	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
 	struct ipt_pknock_rule *rule = NULL;
@@ -860,14 +877,9 @@ static int match(const struct sk_buff *skb,
 	struct iphdr *iph = skb->nh.iph;
 	int iphl = iph->ihl * 4;
 	void *transp_h = (void *)iph + iphl;	/* tranport protocol header */
-	struct transport_data transp = { 
-		.port = 0,
-		.proto = 0,
-		.payload_len = 0,
-		.payload = NULL
-	};
-	int ret = 0;	
 	int headers_len = 0;
+	struct transport_data transp = {0, 0, 0, NULL};
+	int ret = 0;	
 
 	switch ((transp.proto = iph->protocol)) {
 		case IPPROTO_TCP:
@@ -891,7 +903,7 @@ static int match(const struct sk_buff *skb,
 	if ((rule = search_rule(info)) == NULL) {
 		printk(KERN_INFO MOD "The rule %s doesn't exist.\n", 
 				info->rule_name);
-		goto end;
+		goto out;
 	}
 
 	/* Gives the peer matching status added to rule depending on ip source. */
@@ -899,7 +911,7 @@ static int match(const struct sk_buff *skb,
 
 	if (info->option & IPT_PKNOCK_CHECKIP) {
 		ret = is_allowed(peer);
-		goto end;
+		goto out;
 	}
 
 	transp.payload = (void *)iph + headers_len;
@@ -916,7 +928,7 @@ static int match(const struct sk_buff *skb,
 					ret = 0;
 				}
 			}            
-			goto end;
+			goto out;
 		}
 
 		if (is_first_knock(peer, info, transp.port)) {
@@ -924,13 +936,12 @@ static int match(const struct sk_buff *skb,
 			add_peer(peer, rule);
 		}
 
-		if (peer == NULL) goto end;
+		if (peer == NULL) goto out;
 
-//		update_peer(peer, info, rule, port, payload, payload_len, proto);
 		update_peer(peer, info, rule, &transp);
 	}
 
-end:
+out:
 #if DEBUG
 	if (ret)
 		DEBUGP("PASS OK", peer);
@@ -941,11 +952,12 @@ end:
 
 #define RETURN_ERR(err) do { printk(KERN_ERR MOD err); return 0; } while (0)
 
-static int checkentry(const char *tablename,
-		const struct ipt_ip *ip,
-		void *matchinfo,
-		unsigned int matchinfosize,
-		unsigned int hook_mask) 
+static int 
+checkentry(const char *tablename,
+	const struct ipt_ip *ip,
+	void *matchinfo,
+	unsigned int matchinfosize,
+	unsigned int hook_mask) 
 {
 	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
 
@@ -955,7 +967,8 @@ static int checkentry(const char *tablename,
 	/* Singleton. */
 	if (!rule_hashtable) {
 		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
-		get_random_bytes(&ipt_pknock_hash_rnd, sizeof (ipt_pknock_hash_rnd));
+		get_random_bytes(&ipt_pknock_hash_rnd, 
+				sizeof (ipt_pknock_hash_rnd));
 	}
 
 	if (!add_rule(info))
@@ -968,19 +981,26 @@ static int checkentry(const char *tablename,
 		RETURN_ERR("--opensecret must have just one knock port\n");
 
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
-		if (info->option & IPT_PKNOCK_CHECKIP)
-			RETURN_ERR("Can't specify --knockports with --checkip.\n");
+		if (info->option & IPT_PKNOCK_CHECKIP) {
+			RETURN_ERR("Can't specify --knockports with "
+					"--checkip.\n");
+		}
 		if ((info->option & IPT_PKNOCK_OPENSECRET) && 
-				!(info->option & IPT_PKNOCK_CLOSESECRET))
-			RETURN_ERR("--opensecret must go with --closesecret.\n");
+				!(info->option & IPT_PKNOCK_CLOSESECRET)) {
+			RETURN_ERR("--opensecret must go with "
+					"--closesecret.\n");
+		}
 		if ((info->option & IPT_PKNOCK_CLOSESECRET) && 
-				!(info->option & IPT_PKNOCK_OPENSECRET))
-			RETURN_ERR("--closesecret must go with --opensecret.\n");
+				!(info->option & IPT_PKNOCK_OPENSECRET)) {
+			RETURN_ERR("--closesecret must go with "
+					"--opensecret.\n");
+		}
 	}
 
 	if (info->option & IPT_PKNOCK_CHECKIP) {
 		if (info->option & IPT_PKNOCK_KNOCKPORT)
-			RETURN_ERR("Can't specify --checkip with --knockports.\n");
+			RETURN_ERR("Can't specify --checkip with "
+					"--knockports.\n");
 		if ((info->option & IPT_PKNOCK_OPENSECRET) || 
 				(info->option & IPT_PKNOCK_CLOSESECRET))
 			RETURN_ERR("Can't specify --opensecret and "
@@ -992,15 +1012,18 @@ static int checkentry(const char *tablename,
 	if (info->option & IPT_PKNOCK_OPENSECRET) {
 		if (info->open_secret_len == info->close_secret_len) {
 			if (memcmp(info->open_secret, info->close_secret, 
-						info->open_secret_len) == 0)
-				RETURN_ERR("opensecret & closesecret cannot be equal.\n");
+						info->open_secret_len) == 0) {
+				RETURN_ERR("opensecret & closesecret cannot "
+						"be equal.\n");
+			}
 		}
 	}
 
 	return 1;
 }
 
-static void destroy(void *matchinfo, unsigned int matchinfosize) 
+static void 
+destroy(void *matchinfo, unsigned int matchinfosize)
 {
 	struct ipt_pknock_info *info = (void *)matchinfo;
 
@@ -1016,38 +1039,34 @@ static struct ipt_match ipt_pknock_match = {
 	.me 		= THIS_MODULE
 };
 
-static int set_rule_hashsize(const char *val, struct kernel_param *kp) 
+static int 
+set_rule_hashsize(const char *val, struct kernel_param *kp) 
 {
-	unsigned int hashsize;
-
-	hashsize = simple_strtol(val, NULL, 0);
-
+	unsigned int hashsize = hashsize = simple_strtol(val, NULL, 0);
+	
 	if (!hashsize) return -EINVAL;
-
 	ipt_pknock_rule_htable_size = hashsize;
 
 	return 0;
 }
 
-static int set_peer_hashsize(const char *val, struct kernel_param *kp) 
+static int 
+set_peer_hashsize(const char *val, struct kernel_param *kp) 
 {
-	unsigned int hashsize;
-
-	hashsize = simple_strtol(val, NULL, 0);
+	unsigned int hashsize = hashsize = simple_strtol(val, NULL, 0);
 
 	if (!hashsize) return -EINVAL;
-
 	ipt_pknock_peer_htable_size = hashsize;
 
 	return 0;
 }	
 
-static int set_gc_expir_time(const char *val, struct kernel_param *kp)
+static int 
+set_gc_expir_time(const char *val, struct kernel_param *kp)
 {
-	unsigned int gc_expir_time simple_strtol(val, NULL, 0); /* seconds */
+	unsigned int gc_expir_time = simple_strtol(val, NULL, 0); /* seconds */
 
 	if (!gc_expir_time) return -EINVAL;
-
 	ipt_pknock_gc_expir_time = gc_expir_time * 1000;
 
 	return 0;
@@ -1071,7 +1090,7 @@ static int __init ipt_pknock_init(void)
 	}
 
 	if ((crypto.tfm = crypto_alloc_tfm(crypto.algo, 0)) == NULL) {
-		printk(KERN_ERR MOD "failed to load transform for %s\n", 
+		printk(KERN_ERR MOD "failed to load transform for %s\n",
 				crypto.algo);
 		return -1;
 	}
