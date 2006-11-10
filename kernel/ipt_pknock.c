@@ -268,7 +268,7 @@ is_time_exceeded(struct peer *peer, int max_time)
  * @return: 1 has logged, 0 otherwise
  */
 static int 
-has_logged_during_this_minute(struct peer *peer) 
+has_logged_during_this_minute(const struct peer *peer) 
 {
 	return peer && (peer->login_min == get_epoch_minute());
 }
@@ -308,7 +308,7 @@ peer_gc(unsigned long r)
  * @return: 0 equals, 1 otherwise
  */
 static inline int 
-rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule)
+rulecmp(const struct ipt_pknock_info *info, const struct ipt_pknock_rule *rule)
 {
 	if (info->rule_name_len != rule->rule_name_len) 
 		return 1;
@@ -324,7 +324,7 @@ rulecmp(struct ipt_pknock_info *info, struct ipt_pknock_rule *rule)
  * @return: rule or NULL
  */
 static inline struct ipt_pknock_rule * 
-search_rule(struct ipt_pknock_info *info)
+search_rule(const struct ipt_pknock_info *info)
 {
 	struct ipt_pknock_rule *rule = NULL;
 	struct list_head *pos = NULL, *n = NULL;
@@ -582,7 +582,8 @@ remove_peer(struct peer *peer)
  * @return: 1 success, 0 failure
  */
 static inline int 
-is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
+is_first_knock(const struct peer *peer, const struct ipt_pknock_info *info, 
+		u_int16_t port)
 {
 	return (peer == NULL && info->port[0] == port) ? 1 : 0;
 }
@@ -594,7 +595,8 @@ is_first_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
  * @return: 1 success, 0 failure
  */
 static inline int 
-is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
+is_wrong_knock(const struct peer *peer, const struct ipt_pknock_info *info, 
+		u_int16_t port)
 {
 	return peer && (info->port[peer->id_port_knocked-1] != port);
 }
@@ -605,7 +607,7 @@ is_wrong_knock(struct peer *peer, struct ipt_pknock_info *info, u_int16_t port)
  * @return: 1 success, 0 failure
  */
 static inline int 
-is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
+is_last_knock(const struct peer *peer, const struct ipt_pknock_info *info)
 {
 	return peer && (peer->id_port_knocked-1 == info->count_ports);
 }
@@ -615,7 +617,7 @@ is_last_knock(struct peer *peer, struct ipt_pknock_info *info)
  * @return: 1 success, 0 failure
  */
 static inline int 
-is_allowed(struct peer *peer) 
+is_allowed(const struct peer *peer) 
 {
 	return peer && (peer->status == ST_ALLOWED);
 }
@@ -629,7 +631,7 @@ is_allowed(struct peer *peer)
  */
 #if NETLINK_MSG
 static void 
-msg_to_userspace_nl(struct ipt_pknock_info *info, struct peer *peer)
+msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer)
 {
 	struct cn_msg *m;
 	struct ipt_pknock_nl_msg nlmsg;
@@ -746,7 +748,7 @@ out:
  * @return: 1 if pass security, 0 otherwise
  */
 static int 
-pass_security(struct peer *peer, struct ipt_pknock_info *info, 
+pass_security(struct peer *peer, const struct ipt_pknock_info *info, 
 		unsigned char *payload, int payload_len) 
 {
 	if (is_allowed(peer))
@@ -758,8 +760,9 @@ pass_security(struct peer *peer, struct ipt_pknock_info *info,
 		return 0;
 	}
 	/* Check for OPEN secret */
-	if (!has_secret(info->open_secret, info->open_secret_len, 
-				htonl(peer->ip), payload, payload_len))
+	if (!has_secret((unsigned char *)info->open_secret, 
+				(int)info->open_secret_len, htonl(peer->ip), 
+				payload, payload_len))
 		return 0;
 
 	return 1;
@@ -775,8 +778,9 @@ pass_security(struct peer *peer, struct ipt_pknock_info *info,
  * @return: 1 if allowed, 0 otherwise
  */
 static int 
-update_peer(struct peer *peer, struct ipt_pknock_info *info, 
-		struct ipt_pknock_rule *rule, struct transport_data *transp)
+update_peer(struct peer *peer, const struct ipt_pknock_info *info, 
+		struct ipt_pknock_rule *rule, 
+		const struct transport_data *transp)
 {
 	unsigned long time;
 
@@ -849,13 +853,14 @@ update_peer(struct peer *peer, struct ipt_pknock_info *info,
  * @payload_len
  * @return: 1 if close knock, 0 otherwise
  */
-static int 
-is_close_knock(struct peer *peer, struct ipt_pknock_info *info, 
+static inline int 
+is_close_knock(const struct peer *peer, const struct ipt_pknock_info *info, 
 		unsigned char *payload, int payload_len) 
 {
 	/* Check for CLOSE secret. */
-	if (has_secret(info->close_secret, info->close_secret_len, 
-				htonl(peer->ip), payload, payload_len)) {
+	if (has_secret((unsigned char *)info->close_secret, 
+				(int)info->close_secret_len, htonl(peer->ip), 
+				payload, payload_len)) {
 		DEBUGP("RESET", peer);
 		return 1;
 	}
@@ -871,12 +876,11 @@ match(const struct sk_buff *skb,
 	int offset,
 	int *hotdrop) 
 {
-	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
+	const struct ipt_pknock_info *info = matchinfo;
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
 	struct iphdr *iph = skb->nh.iph;
-	int iphl = iph->ihl * 4;
-	void *transp_h = (void *)iph + iphl;	/* tranport protocol header */
+	void *transp_h = (void *)iph + (iph->ihl * 4);	/* tranport header */
 	int headers_len = 0;
 	struct transport_data transp = {0, 0, 0, NULL};
 	int ret = 0;	
@@ -888,7 +892,7 @@ match(const struct sk_buff *skb,
 
 		case IPPROTO_UDP:
 			transp.port = ntohs(((struct udphdr *)transp_h)->dest);
-			headers_len = iphl + sizeof(struct udphdr);
+			headers_len = (iph->ihl * 4) + sizeof(struct udphdr);
 			break;
 
 		default:
@@ -959,7 +963,7 @@ checkentry(const char *tablename,
 	unsigned int matchinfosize,
 	unsigned int hook_mask) 
 {
-	struct ipt_pknock_info *info = (struct ipt_pknock_info *)matchinfo;
+	struct ipt_pknock_info *info = matchinfo;
 
 	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
 		return 0;
@@ -1025,7 +1029,7 @@ checkentry(const char *tablename,
 static void 
 destroy(void *matchinfo, unsigned int matchinfosize)
 {
-	struct ipt_pknock_info *info = (void *)matchinfo;
+	struct ipt_pknock_info *info = matchinfo;
 
 	/* Removes a rule only if it exits and ref_count is equal to 0. */
 	remove_rule(info);
