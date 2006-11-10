@@ -30,7 +30,7 @@
 #define NETLINK_MSG 1
 
 struct ipt_pknock_info {
-	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN]; /* rule name */
+	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN];
 	int		rule_name_len;
 	char		open_secret[IPT_PKNOCK_MAX_PASSWD_LEN]; 
 	int		open_secret_len;
