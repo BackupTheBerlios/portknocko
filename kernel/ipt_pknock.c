@@ -1042,11 +1042,9 @@ static int set_peer_hashsize(const char *val, struct kernel_param *kp)
 	return 0;
 }	
 
-static int set_gc_expir_time(const char *val, struct kernel_param *kp) 
+static int set_gc_expir_time(const char *val, struct kernel_param *kp)
 {
-	unsigned int gc_expir_time;	/* in seconds */
-
-	gc_expir_time = simple_strtol(val, NULL, 0);
+	unsigned int gc_expir_time simple_strtol(val, NULL, 0); /* seconds */
 
 	if (!gc_expir_time) return -EINVAL;
 
@@ -1067,18 +1065,20 @@ static int __init ipt_pknock_init(void)
 	printk(KERN_INFO MOD "register.\n");
 
 	if (request_module(crypto.algo) < 0) {
-		printk(KERN_ERR MOD "request_module('%s') error.\n", crypto.algo);
+		printk(KERN_ERR MOD "request_module('%s') error.\n", 
+				crypto.algo);
 		return -1;
 	}
 
 	if ((crypto.tfm = crypto_alloc_tfm(crypto.algo, 0)) == NULL) {
-		printk(KERN_ERR MOD "failed to load transform for %s\n", crypto.algo);
+		printk(KERN_ERR MOD "failed to load transform for %s\n", 
+				crypto.algo);
 		return -1;
 	}
 	crypto.size = crypto_tfm_alg_digestsize(crypto.tfm);
 
 	if (!(proc_net_ipt_pknock = proc_mkdir("ipt_pknock", proc_net))) {
-		printk(KERN_ERR MOD "proc_mkdir() error in function init().\n");
+		printk(KERN_ERR MOD "proc_mkdir() error in _init().\n");
 		return -1;
 	}
 	return ipt_register_match(&ipt_pknock_match);
