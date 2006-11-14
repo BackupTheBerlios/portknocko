@@ -164,12 +164,12 @@ status_itoa(enum status status)
 /**
  * This function produces the peer matching status data when the file is read.
  *
- * @buf
- * @start
- * @offset
- * @count
- * @eof
- * @data
+ * @buf: buffer to write data
+ * @start: number of "parts" returned 
+ * @offset: previous value of "start" var
+ * @count: size of requested data 
+ * @eof: 1 if there is no more data to write
+ * @data: custom data
  */
 static int 
 read_proc(char *buf, char **start, off_t offset, int count, int *eof, 
