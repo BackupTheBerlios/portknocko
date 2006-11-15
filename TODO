@@ -3,9 +3,9 @@ TODO:
 
 - For Fender. Support for x_tables and IPV6.
 - For Lucho. --strict behavior should be set by default.
-- For Fender. Possible memory fragmentation when receiving a DoS attack.
-- /usr/src/linux-2.6.x.x/Documentation/CodingStyle
-- /usr/src/linux-2.6.x.x/Documentation/kernel-doc-nano-HOWTO.txt
+- For Fender. Possible memory fragmentation when receiving a DoS attack. Slab allocation 
+solves the problem of internal memory fragmentation.
+
 
 
 DONE:
