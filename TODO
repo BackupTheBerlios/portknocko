@@ -11,6 +11,7 @@ TODO:
 DONE:
 -----
 
+- By Lucho. seq_file instead of read_proc
 - By Fender. Memory leak fixed in has_secret() function.
 - By Fender. Input parameters validation at user and kernel space.
 - By Lucho. SHA256 by default.
