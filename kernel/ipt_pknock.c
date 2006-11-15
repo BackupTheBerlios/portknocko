@@ -162,6 +162,11 @@ status_itoa(enum status status)
 	return "UNKNOWN";
 }
 
+/**
+ * @s
+ * @pos
+ * @return: private value used by the iterator
+ */
 static void *
 pknock_seq_start(struct seq_file *s, loff_t *pos)
 {
@@ -180,8 +185,15 @@ pknock_seq_start(struct seq_file *s, loff_t *pos)
         return bucket;
 }
 
+/**
+ * @s
+ * @v
+ * @pos
+ * @return: next value for the iterator
+ */
 static void *
-pknock_seq_next(struct seq_file *s, void *v, loff_t *pos) {
+pknock_seq_next(struct seq_file *s, void *v, loff_t *pos) 
+{
 	unsigned int *bucket = (unsigned int *)v;
 
 	*pos = ++(*bucket);	
@@ -193,17 +205,28 @@ pknock_seq_next(struct seq_file *s, void *v, loff_t *pos) {
 	return bucket;
 }
 
+/**
+ * @s
+ * @v
+ */
 static void 
-pknock_seq_stop(struct seq_file *s, void *v) {
-	
+pknock_seq_stop(struct seq_file *s, void *v) 
+{	
         unsigned int *bucket = (unsigned int *)v;
         kfree(bucket);
 	
 	spin_unlock_bh(&rule_list_lock);
 }
 
+
+/**
+ * @s
+ * @v
+ * @return: 0 if OK
+ */
 static int 
-pknock_seq_show(struct seq_file *s, void *v) {
+pknock_seq_show(struct seq_file *s, void *v) 
+{
 	struct list_head *pos = NULL, *n = NULL;
         unsigned int *bucket = (unsigned int *)v;
 	struct peer *peer = NULL;
@@ -218,23 +241,20 @@ pknock_seq_show(struct seq_file *s, void *v) {
 	if (!list_empty(&rule->peer_head[*bucket])) {
 		list_for_each_safe(pos, n, &rule->peer_head[*bucket]) {
 			peer = list_entry(pos, struct peer, head);
-			if (peer) {
-				ip = htonl(peer->ip);
-				status = status_itoa(peer->status);
+			ip = htonl(peer->ip);
+			status = status_itoa(peer->status);
 
-				proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
+			proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
 
-				expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
-					? ((peer->timestamp + rule->max_time)-(jiffies/HZ)) : 0;
+			expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
+				? ((peer->timestamp + rule->max_time)-(jiffies/HZ)) : 0;
 
-				seq_printf(s, "src=%u.%u.%u.%u ", NIPQUAD(ip));
-				seq_printf(s, "proto=%s ", proto);
-				seq_printf(s, "status=%s ", status);
-				seq_printf(s, "expir_time=%ld ", expir_time);
-				seq_printf(s, "next_port_id=%d ", peer->id_port_knocked-1);
-				seq_printf(s, "\n");
-
-			}	
+			seq_printf(s, "src=%u.%u.%u.%u ", NIPQUAD(ip));
+			seq_printf(s, "proto=%s ", proto);
+			seq_printf(s, "status=%s ", status);
+			seq_printf(s, "expir_time=%ld ", expir_time);
+			seq_printf(s, "next_port_id=%d ", peer->id_port_knocked-1);
+			seq_printf(s, "\n");
 		}
 	
 	}
@@ -249,6 +269,10 @@ static struct seq_operations pknock_seq_ops = {
 	.show = pknock_seq_show
 };
 
+/**
+ * @inode
+ * @file
+ */
 static int 
 pknock_proc_open(struct inode *inode, struct file *file)
 {
@@ -267,85 +291,6 @@ static struct file_operations pknock_proc_ops = {
 	.llseek = seq_lseek,
 	.release = seq_release
 };
-
-
-/**
- * This function produces the peer matching status data when the file is read.
- *
- * @buf: buffer to write data
- * @start: number of "parts" returned 
- * @offset: previous value of "start" var
- * @count: size of requested data 
- * @eof: 1 if there is no more data to write
- * @data: custom data
- */
-/*
-static int 
-read_proc(char *buf, char **start, off_t offset, int count, int *eof, 
-	void *data)
-{
-	int limit = count, len = 0, i;
-	off_t pos = 0, begin = 0;
-	u_int32_t ip;
-	const char *status = NULL, *proto = NULL;
-	struct list_head *p = NULL, *n = NULL;
-	struct ipt_pknock_rule *rule = NULL;
-	struct peer *peer = NULL;
-	unsigned long expir_time = 0, max_time = 0;
-
-	*eof=0;
-
-	spin_lock_bh(&rule_list_lock);
-
-	rule = (struct ipt_pknock_rule *)data;
-
-	max_time = rule->max_time;
-
-	hashtable_for_each_safe(p, n, rule->peer_head, 
-			ipt_pknock_peer_htable_size, i) {
-		peer = list_entry(p, struct peer, head);
-
-		status = status_itoa(peer->status);
-
-		proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
-		ip = htonl(peer->ip);
-
-		expir_time = time_before(jiffies/HZ, peer->timestamp + max_time)
-			? ((peer->timestamp + max_time)-(jiffies/HZ)) : 0;
-
-		len += snprintf(buf+len, limit-len, "src=%u.%u.%u.%u ", 
-				NIPQUAD(ip));
-		len += snprintf(buf+len, limit-len, "proto=%s ", proto);
-		len += snprintf(buf+len, limit-len, "status=%s ", status);
-		len += snprintf(buf+len, limit-len, "expir_time=%ld ", 
-				expir_time);
-		len += snprintf(buf+len, limit-len, "next_port_id=%d ",
-				peer->id_port_knocked-1);
-		len += snprintf(buf+len, limit-len, "\n");
-
-		limit -= len;
-
-		pos = begin + len;
-		
-		if(pos < offset) { 
-			len = 0; 
-			begin = pos; 
-		}
-		
-		if(pos > offset + count) { 
-			len = 0; 
-			break; 
-		}
-	}
-	*start = buf + (offset - begin);
-	len -= (offset - begin);
-	if(len > count) len = count;
-	*eof=1;
-
-	spin_unlock_bh(&rule_list_lock);
-	return len;
-}
-*/
 
 /**
  * It updates the rule timer to execute garbage collector.
@@ -506,17 +451,9 @@ add_rule(struct ipt_pknock_info *info)
 	rule->timer.function 	= peer_gc;
 	rule->timer.data	= (unsigned long)rule;
 
-/*	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
-					proc_net_ipt_pknock, read_proc, rule))) {
-		printk(KERN_ERR MOD "create_proc_entry() error in "
-				"add_rule() function.\n");
-		if (rule) kfree(rule);
-		return 0;
-	}
-*/
-	
 	rule->status_proc = create_proc_entry(info->rule_name, 0, proc_net_ipt_pknock);
 	if (!rule->status_proc) {
+		printk(KERN_ERR MOD "create_proc_entry() error in add_rule() function.\n");
                 kfree(rule);
                 return -1;		
 	}
