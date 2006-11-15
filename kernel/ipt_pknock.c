@@ -23,6 +23,7 @@
 #include <linux/scatterlist.h>
 #include <linux/jiffies.h>
 #include <linux/timer.h>
+#include <linux/seq_file.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
@@ -161,6 +162,113 @@ status_itoa(enum status status)
 	return "UNKNOWN";
 }
 
+static void *
+pknock_seq_start(struct seq_file *s, loff_t *pos)
+{
+	unsigned int *bucket;
+
+	spin_lock_bh(&rule_list_lock);
+	
+	if (*pos >= ipt_pknock_peer_htable_size)
+		return NULL;
+
+	bucket = kmalloc(sizeof(unsigned int), GFP_ATOMIC);
+        if (!bucket)
+                return ERR_PTR(-ENOMEM);
+
+        *bucket = *pos;
+        return bucket;
+}
+
+static void *
+pknock_seq_next(struct seq_file *s, void *v, loff_t *pos) {
+	unsigned int *bucket = (unsigned int *)v;
+
+	*pos = ++(*bucket);	
+	if (*pos >= ipt_pknock_peer_htable_size) {
+		kfree(v);
+		return NULL;
+	}
+	
+	return bucket;
+}
+
+static void 
+pknock_seq_stop(struct seq_file *s, void *v) {
+	
+        unsigned int *bucket = (unsigned int *)v;
+        kfree(bucket);
+	
+	spin_unlock_bh(&rule_list_lock);
+}
+
+static int 
+pknock_seq_show(struct seq_file *s, void *v) {
+	struct list_head *pos = NULL, *n = NULL;
+        unsigned int *bucket = (unsigned int *)v;
+	struct peer *peer = NULL;
+	const char *status = NULL;
+        const char *proto = NULL;
+	unsigned long expir_time = 0;	
+        u_int32_t ip;
+
+	struct proc_dir_entry *pde = s->private;
+	struct ipt_pknock_rule *rule = pde->data;
+
+	if (!list_empty(&rule->peer_head[*bucket])) {
+		list_for_each_safe(pos, n, &rule->peer_head[*bucket]) {
+			peer = list_entry(pos, struct peer, head);
+			if (peer) {
+				ip = htonl(peer->ip);
+				status = status_itoa(peer->status);
+
+				proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
+
+				expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
+					? ((peer->timestamp + rule->max_time)-(jiffies/HZ)) : 0;
+
+				seq_printf(s, "src=%u.%u.%u.%u ", NIPQUAD(ip));
+				seq_printf(s, "proto=%s ", proto);
+				seq_printf(s, "status=%s ", status);
+				seq_printf(s, "expir_time=%ld ", expir_time);
+				seq_printf(s, "next_port_id=%d ", peer->id_port_knocked-1);
+				seq_printf(s, "\n");
+
+			}	
+		}
+	
+	}
+	
+	return 0;
+}
+
+static struct seq_operations pknock_seq_ops = {
+	.start = pknock_seq_start,
+	.next = pknock_seq_next,
+	.stop = pknock_seq_stop,
+	.show = pknock_seq_show
+};
+
+static int 
+pknock_proc_open(struct inode *inode, struct file *file)
+{
+	int ret = seq_open(file, &pknock_seq_ops);
+	if (!ret) {
+        	struct seq_file *sf = file->private_data;
+		sf->private = PDE(inode);
+	}
+	return ret;	
+}
+
+static struct file_operations pknock_proc_ops = {
+	.owner = THIS_MODULE,
+	.open = pknock_proc_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = seq_release
+};
+
+
 /**
  * This function produces the peer matching status data when the file is read.
  *
@@ -171,6 +279,7 @@ status_itoa(enum status status)
  * @eof: 1 if there is no more data to write
  * @data: custom data
  */
+/*
 static int 
 read_proc(char *buf, char **start, off_t offset, int count, int *eof, 
 	void *data)
@@ -236,6 +345,7 @@ read_proc(char *buf, char **start, off_t offset, int count, int *eof,
 	spin_unlock_bh(&rule_list_lock);
 	return len;
 }
+*/
 
 /**
  * It updates the rule timer to execute garbage collector.
@@ -396,14 +506,24 @@ add_rule(struct ipt_pknock_info *info)
 	rule->timer.function 	= peer_gc;
 	rule->timer.data	= (unsigned long)rule;
 
-	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
+/*	if (!(rule->status_proc = create_proc_read_entry(info->rule_name, 0, 
 					proc_net_ipt_pknock, read_proc, rule))) {
 		printk(KERN_ERR MOD "create_proc_entry() error in "
 				"add_rule() function.\n");
 		if (rule) kfree(rule);
 		return 0;
 	}
+*/
+	
+	rule->status_proc = create_proc_entry(info->rule_name, 0, proc_net_ipt_pknock);
+	if (!rule->status_proc) {
+                kfree(rule);
+                return -1;		
+	}
 
+	rule->status_proc->proc_fops = &pknock_proc_ops;
+	rule->status_proc->data = rule;
+	
 	list_add(&rule->head, &rule_hashtable[hash]);
 #if DEBUG
 	printk(KERN_INFO MOD "(A) rule_name: %s - created.\n", 
