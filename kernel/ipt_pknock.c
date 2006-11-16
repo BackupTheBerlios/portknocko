@@ -112,14 +112,14 @@ alloc_hashtable(int size)
 	struct list_head *hash = NULL;
 	unsigned int i;
 
-		if ((hash = kmalloc(sizeof(*hash) * size, GFP_ATOMIC)) == NULL) {
-		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable()"
-				" function.\n");
+	if ((hash = kmalloc(sizeof(*hash) * size, GFP_ATOMIC)) == NULL) {
+		printk(KERN_ERR MOD "kmalloc() error in alloc_hashtable() function.\n");
 		return NULL;
 	}
 
-	for (i = 0; i < size; i++)
+	for (i = 0; i < size; i++) {
 		INIT_LIST_HEAD(&hash[i]);
+	}
 
 	return hash;
 }
