@@ -230,33 +230,24 @@ pknock_seq_show(struct seq_file *s, void *v)
 	struct list_head *pos = NULL, *n = NULL;
         unsigned int *bucket = (unsigned int *)v;
 	struct peer *peer = NULL;
-	const char *status = NULL;
-        const char *proto = NULL;
 	unsigned long expir_time = 0;	
         u_int32_t ip;
 
 	struct proc_dir_entry *pde = s->private;
 	struct ipt_pknock_rule *rule = pde->data;
 
-	if (!list_empty(&rule->peer_head[*bucket])) {
-		list_for_each_safe(pos, n, &rule->peer_head[*bucket]) {
-			peer = list_entry(pos, struct peer, head);
-			ip = htonl(peer->ip);
-			status = status_itoa(peer->status);
+	list_for_each_safe(pos, n, &rule->peer_head[*bucket]) {
+		peer = list_entry(pos, struct peer, head);
+		ip = htonl(peer->ip);
+		expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
+			? ((peer->timestamp + rule->max_time)-(jiffies/HZ)) : 0;
 
-			proto = (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP";
-
-			expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
-				? ((peer->timestamp + rule->max_time)-(jiffies/HZ)) : 0;
-
-			seq_printf(s, "src=%u.%u.%u.%u ", NIPQUAD(ip));
-			seq_printf(s, "proto=%s ", proto);
-			seq_printf(s, "status=%s ", status);
-			seq_printf(s, "expir_time=%ld ", expir_time);
-			seq_printf(s, "next_port_id=%d ", peer->id_port_knocked-1);
-			seq_printf(s, "\n");
-		}
-	
+		seq_printf(s, "src=%u.%u.%u.%u ", NIPQUAD(ip));
+		seq_printf(s, "proto=%s ", (peer->proto == IPPROTO_TCP) ? "TCP" : "UDP");
+		seq_printf(s, "status=%s ", status_itoa(peer->status));
+		seq_printf(s, "expir_time=%ld ", expir_time);
+		seq_printf(s, "next_port_id=%d ", peer->id_port_knocked-1);
+		seq_printf(s, "\n");
 	}
 	
 	return 0;
