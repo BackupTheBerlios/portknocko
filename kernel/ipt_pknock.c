@@ -24,14 +24,11 @@
 #include <linux/jiffies.h>
 #include <linux/timer.h>
 #include <linux/seq_file.h>
+#include <linux/connector.h>
 
 #include <linux/netfilter_ipv4/ip_tables.h>
 //#include <linux/netfilter_ipv4/ipt_pknock.h>
 #include "ipt_pknock.h"
-
-#if NETLINK_MSG
-#include <linux/connector.h>
-#endif
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
 MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
@@ -677,7 +674,6 @@ is_allowed(const struct peer *peer)
  * @info
  * @peer
  */
-#if NETLINK_MSG
 static void 
 msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer, int multicast_group)
 {
@@ -702,7 +698,6 @@ msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer,
 		kfree(m);
 	} 
 }
-#endif
 
 /**
  * Transforms a sequence of characters to hexadecimal.
