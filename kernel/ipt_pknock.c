@@ -1,3 +1,4 @@
+/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 /*
  * Kernel module to implement port knocking matching support.
  * 
@@ -715,7 +716,7 @@ static int
 has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char *payload, int payload_len)
 {
 	struct scatterlist sg[2];
-	char result[64];
+	char result[64]; // 64 bytes * 8 = 512 bits
 	char *hexresult = NULL;
 	int hexa_size;
 	int ret = 0;
@@ -725,6 +726,11 @@ has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char
 		return 0;
 	}
 
+	/* 
+	hexa:  4bits
+	ascii: 8bits
+	hexa = ascii * 2
+	*/
 	hexa_size = crypto.size * 2;
 
 	/* + 1 cause we MUST add NULL in the payload */
@@ -738,10 +744,10 @@ has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc, unsigned char
 		return 0;
 	}
 
-	epoch_min = get_epoch_minute();
-
 	memset(result, 0, 64);
 	memset(hexresult, 0, (sizeof(char) * hexa_size));
+	
+	epoch_min = get_epoch_minute();
 
 	sg_set_buf(&sg[0], &ipsrc, sizeof(ipsrc));
 	sg_set_buf(&sg[1], &epoch_min, sizeof(epoch_min));
@@ -775,8 +781,7 @@ out:
  * @return: 1 if pass security, 0 otherwise
  */
 static int 
-pass_security(struct peer *peer, const struct ipt_pknock_info *info, 
-		unsigned char *payload, int payload_len) 
+pass_security(struct peer *peer, const struct ipt_pknock_info *info, unsigned char *payload, int payload_len) 
 {
 	if (is_allowed(peer))
 		return 1;
@@ -787,9 +792,7 @@ pass_security(struct peer *peer, const struct ipt_pknock_info *info,
 		return 0;
 	}
 	/* Check for OPEN secret */
-	if (!has_secret((unsigned char *)info->open_secret, 
-				(int)info->open_secret_len, htonl(peer->ip), 
-				payload, payload_len))
+	if (!has_secret((unsigned char *)info->open_secret, (int)info->open_secret_len, htonl(peer->ip), payload, payload_len))
 		return 0;
 
 	return 1;
@@ -821,10 +824,11 @@ update_peer(struct peer *peer, const struct ipt_pknock_info *info,
 	}
 
 	/* If security is needed. */
-	if (info->option & IPT_PKNOCK_OPENSECRET && 
-			transp->proto == IPPROTO_UDP) {
-		if (!pass_security(peer, info, transp->payload, 
-					transp->payload_len)) {
+	if (info->option & IPT_PKNOCK_OPENSECRET ) {
+        if (transp->proto != IPPROTO_UDP)
+            return 0;
+
+		if (!pass_security(peer, info, transp->payload,	transp->payload_len)) {
 			return 0;
 		}
 	}
@@ -951,10 +955,8 @@ match(const struct sk_buff *skb,
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
-			if (info->option & IPT_PKNOCK_CLOSESECRET && 
-					transp.proto == IPPROTO_UDP) {
-				if (is_close_knock(peer, info, transp.payload, 
-							transp.payload_len)) {
+			if (info->option & IPT_PKNOCK_CLOSESECRET && transp.proto == IPPROTO_UDP) {
+				if (is_close_knock(peer, info, transp.payload, transp.payload_len)) {
 					reset_knock_status(peer);
 					ret = 0;
 				}
