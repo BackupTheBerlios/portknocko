@@ -66,7 +66,7 @@ static unsigned int ipt_pknock_gc_expir_time 	= GC_EXPIRATION_TIME;
 static struct list_head *rule_hashtable = NULL;
 
 static DEFINE_SPINLOCK(rule_list_lock);
-static struct proc_dir_entry *proc_net_ipt_pknock = NULL;
+static struct proc_dir_entry *pde = NULL;
 
 static struct ipt_pknock_crypto crypto = { 
 	.algo 	= "sha256",
@@ -170,19 +170,15 @@ status_itoa(enum status status)
 static void *
 pknock_seq_start(struct seq_file *s, loff_t *pos)
 {
-	unsigned int *bucket;
+	struct proc_dir_entry *pde = s->private;
+	struct ipt_pknock_rule *rule = pde->data;
 
 	spin_lock_bh(&rule_list_lock);
 	
 	if (*pos >= ipt_pknock_peer_htable_size)
 		return NULL;
 
-	bucket = kmalloc(sizeof(unsigned int), GFP_ATOMIC);
-        if (!bucket)
-                return ERR_PTR(-ENOMEM);
-
-        *bucket = *pos;
-        return bucket;
+	return rule->peer_head + *pos;
 }
 
 /**
@@ -194,15 +190,15 @@ pknock_seq_start(struct seq_file *s, loff_t *pos)
 static void *
 pknock_seq_next(struct seq_file *s, void *v, loff_t *pos) 
 {
-	unsigned int *bucket = (unsigned int *)v;
+	struct proc_dir_entry *pde = s->private;
+	struct ipt_pknock_rule *rule = pde->data;
 
-	*pos = ++(*bucket);	
+	(*pos)++;
 	if (*pos >= ipt_pknock_peer_htable_size) {
-		kfree(v);
 		return NULL;
 	}
 	
-	return bucket;
+	return rule->peer_head + *pos;
 }
 
 /**
@@ -212,9 +208,6 @@ pknock_seq_next(struct seq_file *s, void *v, loff_t *pos)
 static void 
 pknock_seq_stop(struct seq_file *s, void *v) 
 {	
-        unsigned int *bucket = (unsigned int *)v;
-        kfree(bucket);
-	
 	spin_unlock_bh(&rule_list_lock);
 }
 
@@ -228,15 +221,16 @@ static int
 pknock_seq_show(struct seq_file *s, void *v) 
 {
 	struct list_head *pos = NULL, *n = NULL;
-        unsigned int *bucket = (unsigned int *)v;
 	struct peer *peer = NULL;
 	unsigned long expir_time = 0;	
         u_int32_t ip;
+	
+	struct list_head *peer_head = (struct list_head *)v;
 
 	struct proc_dir_entry *pde = s->private;
 	struct ipt_pknock_rule *rule = pde->data;
 
-	list_for_each_safe(pos, n, &rule->peer_head[*bucket]) {
+	list_for_each_safe(pos, n, peer_head) {
 		peer = list_entry(pos, struct peer, head);
 		ip = htonl(peer->ip);
 		expir_time = time_before(jiffies/HZ, peer->timestamp + rule->max_time)
@@ -442,7 +436,7 @@ add_rule(struct ipt_pknock_info *info)
 	rule->timer.function 	= peer_gc;
 	rule->timer.data	= (unsigned long)rule;
 
-	rule->status_proc = create_proc_entry(info->rule_name, 0, proc_net_ipt_pknock);
+	rule->status_proc = create_proc_entry(info->rule_name, 0, pde);
 	if (!rule->status_proc) {
 		printk(KERN_ERR MOD "create_proc_entry() error in add_rule() function.\n");
                 kfree(rule);
@@ -511,7 +505,7 @@ remove_rule(struct ipt_pknock_info *info)
 			}
 		}
 		if (rule->status_proc) 
-			remove_proc_entry(info->rule_name, proc_net_ipt_pknock);
+			remove_proc_entry(info->rule_name, pde);
 #if DEBUG
 		printk(KERN_INFO MOD "(D) rule deleted: %s.\n", 
 				rule->rule_name);
@@ -1148,7 +1142,7 @@ static int __init ipt_pknock_init(void)
 	}
 	crypto.size = crypto_tfm_alg_digestsize(crypto.tfm);
 
-	if (!(proc_net_ipt_pknock = proc_mkdir("ipt_pknock", proc_net))) {
+	if (!(pde = proc_mkdir("ipt_pknock", proc_net))) {
 		printk(KERN_ERR MOD "proc_mkdir() error in _init().\n");
 		return -1;
 	}
