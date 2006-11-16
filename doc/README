@@ -164,8 +164,8 @@ etc. everything in a smooth and efficient way.
 
 step by step:
 
-1) edit ipt_pknock.h and set #define NETLINK_MSG 1
-2) compile and load the module
+1) compile the module
+2) load the module insmod ./ipt_pknock.ko nl_multicast_group=<value>
 3) load the server. There is a minimal userspace implementation in 
 experiments/netlink_broadcast that prints a msg each time someone matches the 
 sequence.

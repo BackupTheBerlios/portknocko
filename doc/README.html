@@ -431,8 +431,8 @@ someone matches the sequence, the server receives a msg allowing you to do
 whatever you want. e.g: you could start a webserver, add the peer to a whilelist,
 etc. everything in a smooth and efficient way.</p>
 <p>step by step:</p>
-<p>1) edit ipt_pknock.h and set #define NETLINK_MSG 1
-2) compile and load the module
+<p>1) compile the module
+2) load the module insmod ./ipt_pknock.ko nl_multicast_group=&lt;value&gt;
 3) load the server. There is a minimal userspace implementation in
 experiments/netlink_broadcast that prints a msg each time someone matches the
 sequence.</p>
@@ -448,7 +448,7 @@ $ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 30-Oct-2006 17:03:43 EDT
+Last updated 16-Nov-2006 16:04:56 EDT
 </div>
 </div>
 </body>

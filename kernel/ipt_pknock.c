@@ -41,7 +41,6 @@ enum {
 	GC_EXPIRATION_TIME = 65000, /* in msecs */
 	DEFAULT_RULE_HASH_SIZE = 8,
 	DEFAULT_PEER_HASH_SIZE = 16,
-	NL_MULTICAST_GROUP = 1
 };
 
 #define hashtable_for_each_safe(pos, n, head, size, i) \
@@ -58,14 +57,15 @@ enum {
 
 static u_int32_t ipt_pknock_hash_rnd;
 
-static unsigned int ipt_pknock_rule_htable_size = DEFAULT_RULE_HASH_SIZE;
-static unsigned int ipt_pknock_peer_htable_size = DEFAULT_PEER_HASH_SIZE;
+static unsigned int rule_hashsize = DEFAULT_RULE_HASH_SIZE;
+static unsigned int peer_hashsize = DEFAULT_PEER_HASH_SIZE;
+static int nl_multicast_group = -1;
 
 static unsigned int ipt_pknock_gc_expir_time 	= GC_EXPIRATION_TIME;
 
 static struct list_head *rule_hashtable = NULL;
 
-static DEFINE_SPINLOCK(rule_list_lock);
+static DEFINE_SPINLOCK(list_lock);
 static struct proc_dir_entry *pde = NULL;
 
 static struct ipt_pknock_crypto crypto = { 
@@ -73,6 +73,12 @@ static struct ipt_pknock_crypto crypto = {
 	.tfm 	= NULL,
 	.size 	= 0
 };
+
+module_param(rule_hashsize, int, S_IRUGO);
+module_param(peer_hashsize, int, S_IRUGO);
+module_param(ipt_pknock_gc_expir_time, int, S_IRUGO);
+module_param(nl_multicast_group, int, S_IRUGO);
+
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -173,9 +179,9 @@ pknock_seq_start(struct seq_file *s, loff_t *pos)
 	struct proc_dir_entry *pde = s->private;
 	struct ipt_pknock_rule *rule = pde->data;
 
-	spin_lock_bh(&rule_list_lock);
+	spin_lock_bh(&list_lock);
 	
-	if (*pos >= ipt_pknock_peer_htable_size)
+	if (*pos >= peer_hashsize)
 		return NULL;
 
 	return rule->peer_head + *pos;
@@ -194,7 +200,7 @@ pknock_seq_next(struct seq_file *s, void *v, loff_t *pos)
 	struct ipt_pknock_rule *rule = pde->data;
 
 	(*pos)++;
-	if (*pos >= ipt_pknock_peer_htable_size) {
+	if (*pos >= peer_hashsize) {
 		return NULL;
 	}
 	
@@ -208,7 +214,7 @@ pknock_seq_next(struct seq_file *s, void *v, loff_t *pos)
 static void 
 pknock_seq_stop(struct seq_file *s, void *v) 
 {	
-	spin_unlock_bh(&rule_list_lock);
+	spin_unlock_bh(&list_lock);
 }
 
 
@@ -327,7 +333,7 @@ peer_gc(unsigned long r)
 	struct list_head *pos = NULL, *n = NULL;
 
 	hashtable_for_each_safe(pos, n, rule->peer_head, 
-			ipt_pknock_peer_htable_size, i) {
+			peer_hashsize, i) {
 		
 		peer = list_entry(pos, struct peer, head);
 		
@@ -370,7 +376,7 @@ search_rule(const struct ipt_pknock_info *info)
 	struct list_head *pos = NULL, *n = NULL;
 
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, 
-			ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
+			ipt_pknock_hash_rnd, rule_hashsize);
 
 	if (!list_empty(&rule_hashtable[hash])) {
 		list_for_each_safe(pos, n, &rule_hashtable[hash]) {
@@ -396,7 +402,7 @@ add_rule(struct ipt_pknock_info *info)
 	struct list_head *pos = NULL, *n = NULL;
 
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, 
-			ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
+			ipt_pknock_hash_rnd, rule_hashsize);
 
 	if (!list_empty(&rule_hashtable[hash])) {
 		list_for_each_safe(pos, n, &rule_hashtable[hash]) {
@@ -430,7 +436,7 @@ add_rule(struct ipt_pknock_info *info)
 	rule->ref_count	= 1;
 	rule->max_time 	= info->max_time;
 
-	rule->peer_head = alloc_hashtable(ipt_pknock_peer_htable_size);
+	rule->peer_head = alloc_hashtable(peer_hashsize);
 
 	init_timer(&rule->timer);
 	rule->timer.function 	= peer_gc;
@@ -472,7 +478,7 @@ remove_rule(struct ipt_pknock_info *info)
 	int found = 0;
 #endif
 	int hash = pknock_hash(info->rule_name, info->rule_name_len, 
-			ipt_pknock_hash_rnd, ipt_pknock_rule_htable_size);
+			ipt_pknock_hash_rnd, rule_hashsize);
 
 	if (list_empty(&rule_hashtable[hash])) return;
 
@@ -496,7 +502,7 @@ remove_rule(struct ipt_pknock_info *info)
 #endif
 	if (rule != NULL && rule->ref_count == 0) {
 		hashtable_for_each_safe(pos, n, rule->peer_head, 
-				ipt_pknock_peer_htable_size, i) {
+				peer_hashsize, i) {
 			peer = list_entry(pos, struct peer, head);
 			if (peer != NULL) {
 				DEBUGP("DELETED", peer);			
@@ -536,7 +542,7 @@ get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 	ip = ntohl(ip);
 
 	hash = pknock_hash(&ip, sizeof(ip), ipt_pknock_hash_rnd, 
-			ipt_pknock_peer_htable_size);
+			peer_hashsize);
 
 	if (!list_empty(&rule->peer_head[hash])) {
 		list_for_each_safe(pos, n, &rule->peer_head[hash]) {
@@ -600,7 +606,7 @@ static inline void
 add_peer(struct peer *peer, struct ipt_pknock_rule *rule)
 {
 	int hash = pknock_hash(&peer->ip, sizeof(peer->ip), 
-			ipt_pknock_hash_rnd, ipt_pknock_peer_htable_size);
+			ipt_pknock_hash_rnd, peer_hashsize);
 
 	list_add(&peer->head, &rule->peer_head[hash]);
 }
@@ -673,7 +679,7 @@ is_allowed(const struct peer *peer)
  */
 #if NETLINK_MSG
 static void 
-msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer)
+msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer, int multicast_group)
 {
 	struct cn_msg *m;
 	struct ipt_pknock_nl_msg nlmsg;
@@ -691,7 +697,7 @@ msg_to_userspace_nl(const struct ipt_pknock_info *info, const struct peer *peer)
 
 		memcpy(m + 1, (char *)&nlmsg, m->len);
 
-		cn_netlink_send(m, NL_MULTICAST_GROUP, GFP_ATOMIC);
+		cn_netlink_send(m, multicast_group, GFP_ATOMIC);
 
 		kfree(m);
 	} 
@@ -766,7 +772,6 @@ has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc,
 
 	if (memcmp(hexresult, payload, hexa_size) != 0) { 
 #if DEBUG
-		printk(KERN_INFO MOD "payload len: %d\n", payload_len);
 		printk(KERN_INFO MOD "secret match failed\n");
 #endif
 		goto out;
@@ -853,11 +858,11 @@ update_peer(struct peer *peer, const struct ipt_pknock_info *info,
 		peer->status = ST_ALLOWED;
 
 		DEBUGP("ALLOWED", peer);
-#if NETLINK_MSG		
-		/* Send a msg to userspace saying the peer knocked all the 
-		 * sequence correcty! */
-		msg_to_userspace_nl(info, peer);
-#endif
+		
+		if (nl_multicast_group > 0) {	
+			msg_to_userspace_nl(info, peer, nl_multicast_group);
+		}
+
 		peer->login_min = get_epoch_minute(); 
 		return 1;
 	}
@@ -943,7 +948,7 @@ match(const struct sk_buff *skb,
 			return 0;
 	}
 
-	spin_lock_bh(&rule_list_lock);
+	spin_lock_bh(&list_lock);
 
 	/* Searches a rule from the list depending on info structure options. */
 	if ((rule = search_rule(info)) == NULL) {
@@ -992,7 +997,7 @@ out:
 	if (ret)
 		DEBUGP("PASS OK", peer);
 #endif		
-	spin_unlock_bh(&rule_list_lock);
+	spin_unlock_bh(&list_lock);
 	return ret;
 }
 
@@ -1012,7 +1017,7 @@ checkentry(const char *tablename,
 
 	/* Singleton. */
 	if (!rule_hashtable) {
-		rule_hashtable = alloc_hashtable(ipt_pknock_rule_htable_size);
+		rule_hashtable = alloc_hashtable(rule_hashsize);
 		get_random_bytes(&ipt_pknock_hash_rnd, 
 				sizeof (ipt_pknock_hash_rnd));
 	}
@@ -1084,46 +1089,6 @@ static struct ipt_match ipt_pknock_match = {
 	.destroy	= destroy,
 	.me 		= THIS_MODULE
 };
-
-static int 
-set_rule_hashsize(const char *val, struct kernel_param *kp) 
-{
-	unsigned int hashsize = hashsize = simple_strtol(val, NULL, 0);
-	
-	if (!hashsize) return -EINVAL;
-	ipt_pknock_rule_htable_size = hashsize;
-
-	return 0;
-}
-
-static int 
-set_peer_hashsize(const char *val, struct kernel_param *kp) 
-{
-	unsigned int hashsize = hashsize = simple_strtol(val, NULL, 0);
-
-	if (!hashsize) return -EINVAL;
-	ipt_pknock_peer_htable_size = hashsize;
-
-	return 0;
-}	
-
-static int 
-set_gc_expir_time(const char *val, struct kernel_param *kp)
-{
-	unsigned int gc_expir_time = simple_strtol(val, NULL, 0); /* seconds */
-
-	if (!gc_expir_time) return -EINVAL;
-	ipt_pknock_gc_expir_time = gc_expir_time * 1000;
-
-	return 0;
-}	
-
-module_param_call(rule_hashsize, set_rule_hashsize, param_get_uint, 
-		&ipt_pknock_rule_htable_size, 0600);
-module_param_call(peer_hashsize, set_peer_hashsize, param_get_uint, 
-		&ipt_pknock_peer_htable_size, 0600);
-module_param_call(gc_expir_time, set_gc_expir_time, param_get_uint, 
-		&ipt_pknock_gc_expir_time, 0600); 
 
 static int __init ipt_pknock_init(void) 
 {
