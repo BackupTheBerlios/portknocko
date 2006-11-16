@@ -54,16 +54,15 @@ enum {
 
 static u_int32_t ipt_pknock_hash_rnd;
 
-static unsigned int rule_hashsize = DEFAULT_RULE_HASH_SIZE;
-static unsigned int peer_hashsize = DEFAULT_PEER_HASH_SIZE;
-static int nl_multicast_group = -1;
-
+static unsigned int rule_hashsize 		= DEFAULT_RULE_HASH_SIZE;
+static unsigned int peer_hashsize 		= DEFAULT_PEER_HASH_SIZE;
 static unsigned int ipt_pknock_gc_expir_time 	= GC_EXPIRATION_TIME;
+static int nl_multicast_group 			= -1;
 
-static struct list_head *rule_hashtable = NULL;
+static struct list_head *rule_hashtable 	= NULL;
+static struct proc_dir_entry *pde 		= NULL;
 
 static DEFINE_SPINLOCK(list_lock);
-static struct proc_dir_entry *pde = NULL;
 
 static struct ipt_pknock_crypto crypto = { 
 	.algo 	= "sha256",
@@ -738,14 +737,16 @@ has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc,
 	int ret = 0;
 	int epoch_min;
 
-	if (payload_len == 0)
+	if (payload_len == 0) {
 		return 0;
+	}
 
 	hexa_size = crypto.size * 2;
 
 	/* + 1 cause we MUST add NULL in the payload */
-	if (payload_len != hexa_size + 1)
-		goto out;	
+	if (payload_len != hexa_size + 1) {	
+		return 0;	
+	}
 
 	hexresult = kmalloc(sizeof(char) * hexa_size, GFP_ATOMIC);
 	if (hexresult == NULL) {
