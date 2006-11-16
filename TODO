@@ -11,7 +11,7 @@ solves the problem of internal memory fragmentation.
 DONE:
 -----
 
-- By Lucho. seq_file instead of read_proc
+- By Lucho. seq_file instead of read_proc (try dd if=/proc/net/ipt_pknock/SSH ibs=5)
 - By Fender. Memory leak fixed in has_secret() function.
 - By Fender. Input parameters validation at user and kernel space.
 - By Lucho. SHA256 by default.
