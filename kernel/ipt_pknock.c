@@ -1,4 +1,4 @@
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/* vim: set expandtab tabstop=8 shiftwidth=8 softtabstop=8: */
 /*
  * Kernel module to implement port knocking matching support.
  * 
