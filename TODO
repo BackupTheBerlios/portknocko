@@ -5,7 +5,10 @@ TODO:
 - For Lucho. --strict behavior should be set by default.
 - For Fender. Possible memory fragmentation when receiving a DoS attack. Slab allocation 
 solves the problem of internal memory fragmentation.
-
+- To check:
+	* rcu (for locking linked lists and avoid large blocks of spinlocks)
+	* tfm per CPU
+	* config... check if the netlink extension is available at compilation time
 
 
 DONE:
