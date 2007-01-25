@@ -31,15 +31,8 @@ knock_udp "10.10.0.3" "9992"
 expect "DIDN'T MATCH"
 
 knock_udp "10.10.0.3" "9991"
-expect "DIDN'T MATCH"
+expect "PENALIZED"
 
-# start again
-
-knock_udp "10.10.0.3" "9990"
-expect "MATCHING"
-
-knock_udp "10.10.0.3" "9991"
-expect "ALLOWED"
 ########################
 
 unload
