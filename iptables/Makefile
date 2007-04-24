@@ -1,9 +1,9 @@
-KERNEL_DIR_INC=/usr/src/linux/include
+KERNEL_DIR_INC=/usr/src/linux
 IPT_LIB_DIR=/lib/iptables/
 
 CC=gcc
 LD=ld
-CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -Iinclude/ -DIPTABLES_VERSION=\"1.3.3\"  -fPIC
+CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -Iinclude/ -DIPTABLES_VERSION=\"1.3.7\"  -fPIC
 LDFLAGS=-shared
 
 OBJS=libipt_pknock_sh.o

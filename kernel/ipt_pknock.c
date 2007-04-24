@@ -903,8 +903,10 @@ static int
 match(const struct sk_buff *skb,
 	const struct net_device *in,
 	const struct net_device *out,
+        const struct xt_match *match,
 	const void *matchinfo,
 	int offset,
+        unsigned int protoff,
 	int *hotdrop) 
 {
 	const struct ipt_pknock_info *info = matchinfo;
@@ -987,14 +989,15 @@ out:
 
 static int 
 checkentry(const char *tablename,
-	const struct ipt_ip *ip,
+	const void *ip,
+        const struct xt_match *match,
 	void *matchinfo,
-	unsigned int matchinfosize,
+	unsigned int matchsize,
 	unsigned int hook_mask) 
 {
 	struct ipt_pknock_info *info = matchinfo;
 
-	if (matchinfosize != IPT_ALIGN(sizeof (*info)))
+	if (matchsize != IPT_ALIGN(sizeof (*info)))
 		return 0;
 
 	/* Singleton. */
@@ -1057,16 +1060,16 @@ checkentry(const char *tablename,
 }
 
 static void 
-destroy(void *matchinfo, unsigned int matchinfosize)
+destroy(const struct xt_match *match, void *matchinfo, unsigned int matchsize)
 {
 	struct ipt_pknock_info *info = matchinfo;
-
 	/* Removes a rule only if it exits and ref_count is equal to 0. */
 	remove_rule(info);
 }
 
 static struct ipt_match ipt_pknock_match = {
 	.name 		= "pknock",
+        .matchsize      = sizeof (struct ipt_pknock_info),
 	.match 		= match,
 	.checkentry 	= checkentry,
 	.destroy	= destroy,
