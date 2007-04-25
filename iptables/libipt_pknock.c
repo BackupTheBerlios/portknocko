@@ -18,36 +18,43 @@
 #include "../kernel/ipt_pknock.h"
 
 static struct option opts[] = {
-	{ .name = "knockports", 	.has_arg = 1,	.flag = 0,	.val = 'k' },
-	{ .name = "t",			.has_arg = 1, 	.flag = 0, 	.val = 't' },
-	{ .name = "time",		.has_arg = 1, 	.flag = 0,	.val = 't' }, /* synonym */
-	{ .name = "name", 		.has_arg = 1, 	.flag = 0, 	.val = 'n' },
-	{ .name = "opensecret", 	.has_arg = 1, 	.flag = 0, 	.val = 'a' },
-	{ .name = "closesecret", 	.has_arg = 1, 	.flag = 0, 	.val = 'z' },
-	{ .name = "strict", 		.has_arg = 0, 	.flag = 0, 	.val = 'x' },
-	{ .name = "checkip", 		.has_arg = 0, 	.flag = 0, 	.val = 'c' },
-	{ .name = "chkip", 		.has_arg = 0, 	.flag = 0, 	.val = 'c' }, /* synonym */
+	{ .name = "knockports", 	.has_arg = 1,	.flag = 0, .val = 'k' },
+	{ .name = "t",			.has_arg = 1, 	.flag = 0, .val = 't' },
+	{ .name = "time",		.has_arg = 1, 	.flag = 0, .val = 't' },
+	{ .name = "name", 		.has_arg = 1, 	.flag = 0, .val = 'n' },
+	{ .name = "opensecret", 	.has_arg = 1, 	.flag = 0, .val = 'a' },
+	{ .name = "closesecret", 	.has_arg = 1, 	.flag = 0, .val = 'z' },
+	{ .name = "strict", 		.has_arg = 0, 	.flag = 0, .val = 'x' },
+	{ .name = "checkip", 		.has_arg = 0, 	.flag = 0, .val = 'c' },
+	{ .name = "chkip", 		.has_arg = 0, 	.flag = 0, .val = 'c' },
 	{ .name = 0 }
 };
 
-static void help(void) {
+static void help(void) 
+{
 	printf("Port Knocking match v%s options:\n"
-		" --knockports port[,port,port,...] 	Matches destination port(s).\n"
+		" --knockports port[,port,port,...] 	"
+			"Matches destination port(s).\n"
 		" --time seconds\n"
-		" --t ...				Time between port match.\n"
-		" --secure 				hmac must be in the packets.\n"
-		" --strict				Knocks sequence must be exact.\n"
-		" --name rule_name			Rule name.\n"
-		" --checkip				Matches if the source ip is in the list.\n"
-		" --chkip\n",
-		IPTABLES_VERSION);
+		" --t ...				"
+			"Time between port match.\n"
+		" --secure 				"
+			"hmac must be in the packets.\n"
+		" --strict				"
+			"Knocks sequence must be exact.\n"
+		" --name rule_name			"
+			"Rule name.\n"
+		" --checkip				"
+			"Matches if the source ip is in the list.\n"
+		" --chkip\n", IPTABLES_VERSION);
 }
 
 /*
  * Se llama al cargarse el módulo. Inicializa el match (se setean
  * valores por defecto y el cacheo de netfilter.
  */
-static void init(struct ipt_entry_match *m, unsigned int *nfcache) {
+static void init(struct ipt_entry_match *m, unsigned int *nfcache) 
+{
 	*nfcache |= NFC_UNKNOWN;
 }
 
