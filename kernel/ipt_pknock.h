@@ -80,8 +80,9 @@ struct ipt_pknock_rule {
 
 struct ipt_pknock_crypto {
 	char 			*algo;
-	struct crypto_tfm 	*tfm;
+	struct crypto_hash 	*tfm;
 	int 			size;
+	struct hash_desc	desc;
 };
 
 

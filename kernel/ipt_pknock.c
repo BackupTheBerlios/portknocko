@@ -1,4 +1,3 @@
-/* vim: set expandtab tabstop=8 shiftwidth=8 softtabstop=8: */
 /*
  * Kernel module to implement port knocking matching support.
  * 
@@ -27,8 +26,7 @@
 #include <linux/seq_file.h>
 #include <linux/connector.h>
 
-#include <linux/netfilter_ipv4/ip_tables.h>
-//#include <linux/netfilter_ipv4/ipt_pknock.h>
+#include <linux/netfilter/x_tables.h>
 #include "ipt_pknock.h"
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
@@ -66,7 +64,7 @@ static struct proc_dir_entry *pde 		= NULL;
 static DEFINE_SPINLOCK(list_lock);
 
 static struct ipt_pknock_crypto crypto = { 
-	.algo 	= "sha256",
+	.algo 	= "hmac(sha256)",
 	.tfm 	= NULL,
 	.size 	= 0
 };
@@ -770,7 +768,22 @@ has_secret(unsigned char *secret, int secret_len, u_int32_t ipsrc,
 	sg_set_buf(&sg[0], &ipsrc, sizeof(ipsrc));
 	sg_set_buf(&sg[1], &epoch_min, sizeof(epoch_min));
 
-	crypto_hmac(crypto.tfm, secret, &secret_len, sg, 2, result);
+	ret = crypto_hash_setkey(crypto.tfm, secret, secret_len);
+	if (ret) {
+		printk("crypto_hash_setkey() failed ret=%d\n", ret);
+		return ret;
+	}
+
+	/*
+	 * The third parameter is the number of bytes INSIDE the sg!
+	 * 4 bytes IP (32 bits) +
+	 * 4 bytes int epoch_min (32 bits)
+	 */
+	ret = crypto_hash_digest(&crypto.desc, sg, 8, result);
+	if (ret) {
+		printk("crypto_hash_digest() failed ret=%d\n", ret);
+		return ret;
+	}
 
 	crypt_to_hex(hexresult, result, crypto.size);
 
@@ -1018,13 +1031,9 @@ checkentry(const char *tablename,
 	const void *ip,
         const struct xt_match *match,
 	void *matchinfo,
-	unsigned int matchsize,
 	unsigned int hook_mask) 
 {
 	struct ipt_pknock_info *info = matchinfo;
-
-	if (matchsize != IPT_ALIGN(sizeof (*info)))
-		return 0;
 
 	/* Singleton. */
 	if (!rule_hashtable) {
@@ -1087,15 +1096,16 @@ checkentry(const char *tablename,
 }
 
 static void 
-destroy(const struct xt_match *match, void *matchinfo, unsigned int matchsize)
+destroy(const struct xt_match *match, void *matchinfo)
 {
 	struct ipt_pknock_info *info = matchinfo;
 	/* Removes a rule only if it exits and ref_count is equal to 0. */
 	remove_rule(info);
 }
 
-static struct ipt_match ipt_pknock_match = {
+static struct xt_match ipt_pknock_match = {
 	.name 		= "pknock",
+	.family		= AF_INET,
         .matchsize      = sizeof (struct ipt_pknock_info),
 	.match 		= match,
 	.checkentry 	= checkentry,
@@ -1113,29 +1123,32 @@ static int __init ipt_pknock_init(void)
 		return -1;
 	}
 
-	if ((crypto.tfm = crypto_alloc_tfm(crypto.algo, 0)) == NULL) {
+	if ((crypto.tfm = crypto_alloc_hash(crypto.algo, 0, CRYPTO_ALG_ASYNC)) == NULL) {
 		printk(KERN_ERR MOD "failed to load transform for %s\n", 
                         crypto.algo);
 		return -1;
 	}
-	crypto.size = crypto_tfm_alg_digestsize(crypto.tfm);
+	crypto.size = crypto_hash_digestsize(crypto.tfm);
+
+	crypto.desc.tfm = crypto.tfm;
+	crypto.desc.flags = 0;
 
 	if (!(pde = proc_mkdir("ipt_pknock", proc_net))) {
 		printk(KERN_ERR MOD "proc_mkdir() error in _init().\n");
 		return -1;
 	}
-	return ipt_register_match(&ipt_pknock_match);
+	return xt_register_match(&ipt_pknock_match);
 }
 
 static void __exit ipt_pknock_fini(void) 
 {
 	printk(KERN_INFO MOD "unregister.\n");
 	remove_proc_entry("ipt_pknock", proc_net);
-	ipt_unregister_match(&ipt_pknock_match);
+	xt_unregister_match(&ipt_pknock_match);
 
 	kfree(rule_hashtable);
 
-	if (crypto.tfm != NULL) crypto_free_tfm(crypto.tfm);	
+	if (crypto.tfm != NULL) crypto_free_hash(crypto.tfm);	
 }
 
 module_init(ipt_pknock_init);
