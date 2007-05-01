@@ -1,7 +1,7 @@
 TODO:
 -----
 
-- For Fender. Support for x_tables and IPV6.
+- For Fender. Support for IPV6.
 - For Lucho. --strict behavior should be set by default.
 - For Fender. Possible memory fragmentation when receiving a DoS attack. Slab allocation 
 solves the problem of internal memory fragmentation.
@@ -14,6 +14,9 @@ solves the problem of internal memory fragmentation.
 DONE:
 -----
 
+- By Fender. Support for kernel 2.6.19 and better.
+- By Crux. Use of Crypto API fixed.
+- By Fender. Support for kernel 2.6.18.
 - By Lucho. seq_file instead of read_proc (try dd if=/proc/net/ipt_pknock/SSH ibs=5)
 - By Fender. Memory leak fixed in has_secret() function.
 - By Fender. Input parameters validation at user and kernel space.
