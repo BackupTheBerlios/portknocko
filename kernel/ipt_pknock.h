@@ -1,12 +1,12 @@
 /*
  * Kernel module to implement port knocking matching support.
  * 
- * (C) 2006 J. Federico Hernandez <fede.hernandez@gmail.com>
+ * (C) 2006-2007 J. Federico Hernandez <fede.hernandez@gmail.com>
  * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
  *
  * $Id$
  *
- * This program is released under the terms of GNU GPL.
+ * This program is released under the terms of GNU GPL version 2.
  */
 #ifndef _IPT_PKNOCK_H
 #define _IPT_PKNOCK_H
@@ -21,7 +21,6 @@
 #define IPT_PKNOCK_OPENSECRET  		0x20
 #define IPT_PKNOCK_CLOSESECRET  	0x40
 
-
 #define IPT_PKNOCK_MAX_PORTS 		15
 #define IPT_PKNOCK_MAX_BUF_LEN 		8
 #define IPT_PKNOCK_MAX_PASSWD_LEN 	32
@@ -35,15 +34,15 @@ struct ipt_pknock_info {
 	int		open_secret_len;
 	char		close_secret[IPT_PKNOCK_MAX_PASSWD_LEN];
 	int		close_secret_len;
-	u_int8_t 	count_ports;		/* number of ports */
+	u_int8_t 	count_ports;	/* number of ports */
 	u_int16_t 	port[IPT_PKNOCK_MAX_PORTS]; /* port[,port,port,...] */
 	unsigned long 	max_time;	/* max matching time between ports */
 	u_int8_t 	option;		/* --time, --knock-port, ... */
 };
 
 struct ipt_pknock_nl_msg {
-	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
-	u_int32_t 		peer_ip;
+	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	u_int32_t 	peer_ip;
 };
 
 enum status {ST_INIT=1, ST_MATCHING, ST_ALLOWED};
@@ -75,7 +74,6 @@ struct ipt_pknock_rule {
 	unsigned long		max_time; /* max matching time between ports */
 };
 
-
 #include <linux/crypto.h>
 
 struct ipt_pknock_crypto {
@@ -84,7 +82,6 @@ struct ipt_pknock_crypto {
 	int 			size;
 	struct hash_desc	desc;
 };
-
 
 struct transport_data {
 	u_int8_t	proto;

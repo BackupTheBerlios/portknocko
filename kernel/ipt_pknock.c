@@ -1,12 +1,12 @@
 /*
  * Kernel module to implement port knocking matching support.
  * 
- * (C) 2006 J. Federico Hernandez Scarso <fede.hernandez@gmail.com>
+ * (C) 2006-2007 J. Federico Hernandez Scarso <fede.hernandez@gmail.com>
  * (C) 2006 Luis A. Floreani <luis.floreani@gmail.com>
  *
  * $Id$
  *
- * This program is released under the terms of GNU GPL.
+ * This program is released under the terms of GNU GPL version 2.
  */
 #include <linux/module.h>
 #include <linux/skbuff.h>
@@ -73,7 +73,6 @@ module_param(rule_hashsize, int, S_IRUGO);
 module_param(peer_hashsize, int, S_IRUGO);
 module_param(ipt_pknock_gc_expir_time, int, S_IRUGO);
 module_param(nl_multicast_group, int, S_IRUGO);
-
 
 /**
  * Calculates a value from 0 to max from a hash of the arguments.
@@ -212,7 +211,6 @@ pknock_seq_stop(struct seq_file *s, void *v)
 {	
 	spin_unlock_bh(&list_lock);
 }
-
 
 /**
  * @s
@@ -455,7 +453,6 @@ add_rule(struct ipt_pknock_info *info)
 	return 1;
 }
 
-
 /**
  * It removes a rule only if it exists.
  *
@@ -545,7 +542,6 @@ get_peer(struct ipt_pknock_rule *rule, u_int32_t ip)
 	return NULL;
 }
 
-
 /**
  * Reset the knock sequence status of the peer.
  * 
@@ -585,8 +581,6 @@ new_peer(u_int32_t ip, u_int8_t proto)
 
 	return peer;
 }
-
-
 
 /**
  * It adds a new peer matching status to the list.
@@ -660,7 +654,6 @@ is_allowed(const struct peer *peer)
 {
 	return peer && (peer->status == ST_ALLOWED);
 }
-
 
 /**
  * Sends a message to user space through netlink sockets.
@@ -801,7 +794,6 @@ out:
 	return ret;
 }
 
-
 /**
  * If the peer pass the security policy
  *
@@ -908,7 +900,6 @@ update_peer(struct peer *peer, const struct ipt_pknock_info *info,
 	return 0;
 }
 
-
 /**
  * Make the peer no more ALLOWED sending a payload with a special secret for 
  * closure.
@@ -932,7 +923,6 @@ is_close_knock(const struct peer *peer, const struct ipt_pknock_info *info,
 	}
 	return 0;
 }
-
 
 static int 
 match(const struct sk_buff *skb,
