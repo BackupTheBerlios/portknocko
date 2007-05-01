@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function load() {
-	modprobe cn
+	#modprobe cn
 	modprobe sha256
 	insmod ../kernel/ipt_pknock.ko
 }
