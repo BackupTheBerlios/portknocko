@@ -30,7 +30,7 @@
 #include "ipt_pknock.h"
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
-MODULE_DESCRIPTION("iptables/netfilter's port knocking match module");
+MODULE_DESCRIPTION("netfilter match for Port Knocking and SPA");
 MODULE_LICENSE("GPL");
 
 enum {
@@ -39,16 +39,22 @@ enum {
 	DEFAULT_PEER_HASH_SIZE = 16,
 };
 
-#define hashtable_for_each_safe(pos, n, head, size, i) \
-	for ((i) = 0; (i) < (size); (i)++) \
+#define hashtable_for_each_safe(pos, n, head, size, i) 		\
+	for ((i) = 0; (i) < (size); (i)++) 			\
 		list_for_each_safe((pos), (n), (&head[(i)]))
 
 #if DEBUG
-	#define DEBUGP(msg, peer) printk(KERN_INFO MOD \
-			"(S) peer: %u.%u.%u.%u - %s.\n",  \
+	#define DEBUGP(msg, peer) printk(KERN_INFO MOD 		\
+			"(S) peer: %u.%u.%u.%u - %s.\n",  	\
 			NIPQUAD((peer)->ip), msg)
 #else
 	#define DEBUGP(msg, peer)
+#endif
+
+#if DEBUG
+	#define duprintf(format, args...) printk(format, ## args);
+#else
+	#define during(format, args...)
 #endif
 
 static u_int32_t ipt_pknock_hash_rnd;
@@ -817,8 +823,9 @@ pass_security(struct peer *peer, const struct ipt_pknock_info *info,
 	}
 	/* Check for OPEN secret */
 	if (!has_secret((unsigned char *)info->open_secret, 
-                (int)info->open_secret_len, htonl(peer->ip), payload, payload_len)) {
-	
+                (int)info->open_secret_len, htonl(peer->ip), 
+		payload, payload_len)) 
+	{
         	return 0;
         }
 	return 1;
@@ -830,17 +837,17 @@ pass_security(struct peer *peer, const struct ipt_pknock_info *info,
  * @peer
  * @info
  * @rule
- * @transp
+ * @hdr
  * @return: 1 if allowed, 0 otherwise
  */
 static int 
 update_peer(struct peer *peer, const struct ipt_pknock_info *info, 
 		struct ipt_pknock_rule *rule, 
-		const struct transport_data *transp)
+		const struct transport_data *hdr)
 {
 	unsigned long time;
 
-	if (is_wrong_knock(peer, info, transp->port)) {
+	if (is_wrong_knock(peer, info, hdr->port)) {
 		DEBUGP("DIDN'T MATCH", peer);
 		/* Peer must start the sequence from scratch. */
 		if (info->option & IPT_PKNOCK_STRICT)
@@ -851,11 +858,11 @@ update_peer(struct peer *peer, const struct ipt_pknock_info *info,
 
 	/* If security is needed. */
 	if (info->option & IPT_PKNOCK_OPENSECRET ) {
-        if (transp->proto != IPPROTO_UDP)
+        if (hdr->proto != IPPROTO_UDP)
             return 0;
 
-		if (!pass_security(peer, info, transp->payload,	
-                        transp->payload_len)) {
+		if (!pass_security(peer, info, hdr->payload,	
+                        hdr->payload_len)) {
 			
                         return 0;
 		}
@@ -917,7 +924,8 @@ is_close_knock(const struct peer *peer, const struct ipt_pknock_info *info,
 	/* Check for CLOSE secret. */
 	if (has_secret((unsigned char *)info->close_secret, 
 				(int)info->close_secret_len, htonl(peer->ip), 
-				payload, payload_len)) {
+				payload, payload_len)) 
+	{
 		DEBUGP("RESET", peer);
 		return 1;
 	}
@@ -938,19 +946,29 @@ match(const struct sk_buff *skb,
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
 	struct iphdr *iph = skb->nh.iph;
-	void *transp_h = (void *)iph + (iph->ihl * 4);	/* tranport header */
-	int headers_len = 0;
-	struct transport_data transp = {0, 0, 0, NULL};
+	int hdr_len = 0;
+	__be16 _ports[2], *pptr = NULL;
+	struct transport_data hdr = {0, 0, 0, NULL};
 	int ret = 0;	
 
-	switch ((transp.proto = iph->protocol)) {
+	pptr = skb_header_pointer(skb, protoff, sizeof _ports, &_ports);
+	if (pptr == NULL) {
+		/* We've been asked to examine this packet, and we 
+		 * can't. Hence, no choice but to drop.
+		 */
+		duprintf("Dropping evil offset=0 tinygram.\n");
+		*hotdrop = 1;
+		return 0;
+	}
+		
+	hdr.port = ntohs(pptr[1]);
+
+	switch ((hdr.proto = iph->protocol)) {
 		case IPPROTO_TCP:
-			transp.port = ntohs(((struct tcphdr *)transp_h)->dest);
 			break;
 
 		case IPPROTO_UDP:
-			transp.port = ntohs(((struct udphdr *)transp_h)->dest);
-			headers_len = (iph->ihl * 4) + sizeof(struct udphdr);
+			hdr_len = (iph->ihl * 4) + sizeof(struct udphdr);
 			break;
 
 		default:
@@ -976,17 +994,17 @@ match(const struct sk_buff *skb,
 		goto out;
 	}
 
-	transp.payload = (void *)iph + headers_len;
-	transp.payload_len = skb->len - headers_len;
+	hdr.payload = (void *)iph + hdr_len;
+	hdr.payload_len = skb->len - hdr_len;
 
 	/* Sets, updates, removes or checks the peer matching status. */
 	if (info->option & IPT_PKNOCK_KNOCKPORT) {
 		if ((ret = is_allowed(peer))) {
 			if (info->option & IPT_PKNOCK_CLOSESECRET 
-                                && transp.proto == IPPROTO_UDP) {
+                                && hdr.proto == IPPROTO_UDP) {
 				
-                                if (is_close_knock(peer, info, transp.payload, 
-                                        transp.payload_len)) {
+                                if (is_close_knock(peer, info, hdr.payload, 
+                                        hdr.payload_len)) {
 					
                                         reset_knock_status(peer);
 					ret = 0;
@@ -995,14 +1013,14 @@ match(const struct sk_buff *skb,
 			goto out;
 		}
 
-		if (is_first_knock(peer, info, transp.port)) {
-			peer = new_peer(iph->saddr, transp.proto);
+		if (is_first_knock(peer, info, hdr.port)) {
+			peer = new_peer(iph->saddr, hdr.proto);
 			add_peer(peer, rule);
 		}
 
 		if (peer == NULL) goto out;
 
-		update_peer(peer, info, rule, &transp);
+		update_peer(peer, info, rule, &hdr);
 	}
 
 out:

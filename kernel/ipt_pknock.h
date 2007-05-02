@@ -85,7 +85,7 @@ struct ipt_pknock_crypto {
 
 struct transport_data {
 	u_int8_t	proto;
-	u_int16_t	port;
+	u_int16_t	port;	/* destination port */
 	int		payload_len;
 	unsigned char	*payload;	
 };
