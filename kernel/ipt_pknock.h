@@ -1,10 +1,14 @@
 /*
- * Kernel module to implement port knocking matching support.
+ * Kernel module to implement Port Knocking and SPA matching support.
  * 
  * (C) 2006-2007 J. Federico Hernandez <fede.hernandez@gmail.com>
  * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
  *
  * $Id$
+ *
+ * Fixes:
+ *
+ *	Sebastian Cruz	: use of Crypto API fixed.
  *
  * This program is released under the terms of GNU GPL version 2.
  */
