@@ -54,7 +54,7 @@ enum {
 #if DEBUG
 	#define duprintf(format, args...) printk(format, ## args);
 #else
-	#define during(format, args...)
+	#define duprintf(format, args...)
 #endif
 
 static u_int32_t ipt_pknock_hash_rnd;
