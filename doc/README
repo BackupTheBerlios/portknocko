@@ -5,9 +5,9 @@ The PortKnocko project is composed of two parts: an iptables module (user space)
 and a netfilter module (kernel space). The first one is an iptables extension, 
 and the other one is a netfilter extension.
 
-Both modules are used to implement the "port knocking", a stealthy system for 
-network authentication across closed ports. For instance, this can be used to 
-avoid brute force attacks to ssh or ftp services.
+Both modules are used to implement the Port Knocking, a stealthy system for 
+network authentication across closed ports, and SPA (Simple Packet Authentication). 
+For instance, this can be used to avoid brute force attacks to ssh or ftp services.
 
 
 INSTALLATION
@@ -19,18 +19,18 @@ svn checkout svn://svn.berlios.de/portknocko/trunk
 ---------------------------------------------------
 
 -------------------------------------
-$ cd portknocko
-$ ~/portknocko/cd iptables
-$ ~/portknocko/iptables/make clean
-$ ~/portknocko/iptables/make
-$ ~/portknocko/iptables/make install
+# cd portknocko
+# ~/portknocko/cd iptables
+# ~/portknocko/iptables/make clean
+# ~/portknocko/iptables/make
+# ~/portknocko/iptables/make install
 
-$ cd ../kernel
-$ ~/portknocko/kernel/make clean
-$ ~/portknocko/kernel/make
-$ ~/portknocko/kernel/make install
+# cd ../kernel
+# ~/portknocko/kernel/make clean
+# ~/portknocko/kernel/make
+# ~/portknocko/kernel/make install
 
-$ depmod -Ae
+# depmod -Ae
 ------------------------------------
 
 [icons=None, caption="Note"]
@@ -46,20 +46,20 @@ We will show you some different possibilites on how to use this module:
 1) "the simplest way", one rule portknocking:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --------------------------------------------------------------------
-$ iptables -P INPUT DROP
-$ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-$ iptables -A INPUT -p tcp -m state --state NEW 
+# iptables -A INPUT -p tcp -m state --state NEW 
 	-m pknock --knockports 2002,2001,2004 --name SSH 
 	-m tcp --dport 22 -j ACCEPT
 --------------------------------------------------------------------
 
 ----------------------------------------
-$ telnet yourserver 2002 # first knock
-$ telnet yourserver 2001
-$ telnet yourserver 2004 # last knock
+# telnet yourserver 2002 # first knock
+# telnet yourserver 2001
+# telnet yourserver 2004 # last knock
 
-$ ssh user@yourserver
+# ssh user@yourserver
 ----------------------------------------
 
 [icons=None, caption="Note"]
@@ -75,20 +75,20 @@ options:
 --------------------------------------------------------------------	
 
 
-2) "the crypt way", hmac auth with two iptables rules:
+2) "the SPA way", hmac auth with two iptables rules:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 you can achive nonreplayable and nonspoofable.
 
 -----------------------------------------------------------------------------
-$ iptables -P INPUT DROP
-$ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-$ iptables -A INPUT -p udp -m state --state NEW 
+# iptables -A INPUT -p udp -m state --state NEW 
 	-m pknock --knockports 2000 --name SSH
 	--opensecret your_opensecret --closesecret your_closesecret 
 	-j DROP
-$ iptables -A INPUT -p tcp -m state --state NEW 
+# iptables -A INPUT -p tcp -m state --state NEW 
 	-m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT
 -------------------------------------------------------------------------------
 
@@ -103,8 +103,8 @@ NOTE: "epoch_min" is the min since January 1st 1970, so you must
 keep you hardware clocks sync. You can do it this way:
 
 ---------------------------------------------------------------------------	
-$ rdate time-a.nist.gov # this will set your system clock
-$ /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
+# rdate time-a.nist.gov # this will set your system clock
+# /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 ---------------------------------------------------------------------------
 
 after knock is accepted, you can begin the TCP traffic through port 22. When you 
@@ -114,8 +114,8 @@ use your same IP to log-in.
 We provide you a client for knocking the crypt way:
 
 ------------------------------------------------------
-$ cd test
-$ util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
+# cd test
+# util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
 ------------------------------------------------------
 
 [icons=None, caption="Note"]
@@ -123,14 +123,14 @@ NOTE: You must have python-crypto installed.
 
 e.g: 
 -------------------------------------------------
-$ ~/util/knock.sh 192.168.0.1 2000 your_opensecret
+# ~/util/knock.sh 192.168.0.1 2000 your_opensecret
 -------------------------------------------------
 
 after you finish using the service you should "close the door":
 
 e.g: 
 --------------------------------------------------
-$ ~/util/knock.sh 192.168.0.1 2000 your_closesecret
+# ~/util/knock.sh 192.168.0.1 2000 your_closesecret
 --------------------------------------------------
 
 [icons=None, caption="Note"]
@@ -177,8 +177,8 @@ TESTS: (be careful, it will erase your loaded iptables rules)
 If you are a developer you want to run these while you refactor the code
 
 ---------------------------------------------
-$ ~/portknocko/cd test
-$ ~/portknocko/test/./testrunner.sh all.test
+# ~/portknocko/cd test
+# ~/portknocko/test/./testrunner.sh all.test
 ---------------------------------------------
 
 [icons=None, caption="Note"]
