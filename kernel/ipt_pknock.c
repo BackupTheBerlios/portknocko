@@ -31,6 +31,7 @@
 #include <linux/connector.h>
 
 #include <linux/netfilter/x_tables.h>
+//#include <linux/netfilter_ipv4/ipt_pknock.h>
 #include "ipt_pknock.h"
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");

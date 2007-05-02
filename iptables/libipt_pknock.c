@@ -1,5 +1,6 @@
 /*
- * Shared library add-on to iptables to add port knocking matching support.
+ * Shared library add-on to iptables to add Port Knocking and SPA matching 
+ * support.
  *
  * (C) 2006-2007 J. Federico Hernandez <fede.hernandez@gmail.com>
  * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
@@ -14,6 +15,7 @@
 #include <stdlib.h>
 
 #include <iptables.h>
+//#include <linux/netfilter_ipv4/ipt_pknock.h>
 #include "../kernel/ipt_pknock.h"
 
 static struct option opts[] = {
