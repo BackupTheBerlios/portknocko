@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 7.0.2" />
+<meta name="generator" content="AsciiDoc 7.1.2" />
 <style type="text/css">
 /* Debug borders */
 p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
@@ -16,8 +16,13 @@ body {
   margin: 1em 5% 1em 5%;
 }
 
-a { color: blue; }
-a:visited { color: fuchsia; }
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
 
 em {
   font-style: italic;
@@ -148,8 +153,12 @@ div.listingblock > div.content {
 div.quoteblock > div.content {
   padding-left: 2.0em;
 }
-div.quoteblock .attribution {
+
+div.attribution {
   text-align: right;
+}
+div.verseblock + div.attribution {
+  text-align: left;
 }
 
 div.admonitionblock .icon {
@@ -199,8 +208,7 @@ ol.olist2 {
 }
 
 div.tableblock > table {
-  border-color: #527bbd;
-  border-width: 3px;
+  border: 3px solid #527bbd;
 }
 thead {
   font-family: sans-serif;
@@ -266,9 +274,9 @@ div.exampleblock-content {
 <p>The PortKnocko project is composed of two parts: an iptables module (user space)
 and a netfilter module (kernel space). The first one is an iptables extension,
 and the other one is a netfilter extension.</p>
-<p>Both modules are used to implement the "port knocking", a stealthy system for
-network authentication across closed ports. For instance, this can be used to
-avoid brute force attacks to ssh or ftp services.</p>
+<p>Both modules are used to implement the Port Knocking, a stealthy system for
+network authentication across closed ports, and SPA (Simple Packet Authentication).
+For instance, this can be used to avoid brute force attacks to ssh or ftp services.</p>
 </div>
 </div>
 <h2>INSTALLATION</h2>
@@ -280,18 +288,18 @@ avoid brute force attacks to ssh or ftp services.</p>
 </div></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ cd portknocko
-$ ~/portknocko/cd iptables
-$ ~/portknocko/iptables/make clean
-$ ~/portknocko/iptables/make
-$ ~/portknocko/iptables/make install
+<pre><tt># cd portknocko
+# ~/portknocko/cd iptables
+# ~/portknocko/iptables/make clean
+# ~/portknocko/iptables/make
+# ~/portknocko/iptables/make install
 
-$ cd ../kernel
-$ ~/portknocko/kernel/make clean
-$ ~/portknocko/kernel/make
-$ ~/portknocko/kernel/make install
+# cd ../kernel
+# ~/portknocko/kernel/make clean
+# ~/portknocko/kernel/make
+# ~/portknocko/kernel/make install
 
-$ depmod -Ae</tt></pre>
+# depmod -Ae</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -309,20 +317,20 @@ load the netlink connector.</td>
 <h3>1) "the simplest way", one rule portknocking:</h3>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ iptables -P INPUT DROP
-$ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+<pre><tt># iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-$ iptables -A INPUT -p tcp -m state --state NEW
+# iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --knockports 2002,2001,2004 --name SSH
         -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ telnet yourserver 2002 # first knock
-$ telnet yourserver 2001
-$ telnet yourserver 2004 # last knock
+<pre><tt># telnet yourserver 2002 # first knock
+# telnet yourserver 2001
+# telnet yourserver 2004 # last knock
 
-$ ssh user@yourserver</tt></pre>
+# ssh user@yourserver</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -341,18 +349,18 @@ $ ssh user@yourserver</tt></pre>
 [--strict]              -&gt; if the peer fails one knock during the
                         sequence, must start over.</tt></pre>
 </div></div>
-<h3>2) "the crypt way", hmac auth with two iptables rules:</h3>
+<h3>2) "the SPA way", hmac auth with two iptables rules:</h3>
 <p>you can achive nonreplayable and nonspoofable.</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ iptables -P INPUT DROP
-$ iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+<pre><tt># iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-$ iptables -A INPUT -p udp -m state --state NEW
+# iptables -A INPUT -p udp -m state --state NEW
         -m pknock --knockports 2000 --name SSH
         --opensecret your_opensecret --closesecret your_closesecret
         -j DROP
-$ iptables -A INPUT -p tcp -m state --state NEW
+# iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
 <p>this way you must send the UDP knock packet with a payload containing a sha256 hmac
@@ -372,8 +380,8 @@ keep you hardware clocks sync. You can do it this way:</td>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ rdate time-a.nist.gov # this will set your system clock
-$ /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC</tt></pre>
+<pre><tt># rdate time-a.nist.gov # this will set your system clock
+# /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC</tt></pre>
 </div></div>
 <p>after knock is accepted, you can begin the TCP traffic through port 22. When you
 finish, close the door (see the example below) to avoid others come after you and
@@ -381,8 +389,8 @@ use your same IP to log-in.</p>
 <p>We provide you a client for knocking the crypt way:</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ cd test
-$ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</tt></pre>
+<pre><tt># cd test
+# util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -395,13 +403,13 @@ $ util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</t
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/util/knock.sh 192.168.0.1 2000 your_opensecret</tt></pre>
+<pre><tt># ~/util/knock.sh 192.168.0.1 2000 your_opensecret</tt></pre>
 </div></div>
 <p>after you finish using the service you should "close the door":</p>
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/util/knock.sh 192.168.0.1 2000 your_closesecret</tt></pre>
+<pre><tt># ~/util/knock.sh 192.168.0.1 2000 your_closesecret</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -442,13 +450,13 @@ sequence.</p>
 <p>If you are a developer you want to run these while you refactor the code</p>
 <div class="listingblock">
 <div class="content">
-<pre><tt>$ ~/portknocko/cd test
-$ ~/portknocko/test/./testrunner.sh all.test</tt></pre>
+<pre><tt># ~/portknocko/cd test
+# ~/portknocko/test/./testrunner.sh all.test</tt></pre>
 </div></div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 16-Nov-2006 16:04:56 EDT
+Last updated 02-May-2007 19:46:32 ART
 </div>
 </div>
 </body>
