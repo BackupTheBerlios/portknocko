@@ -1,0 +1,195 @@
+PORTKNOCKO PROJECT
+==================
+
+El proyecto PortKnockO está compuesto de dos partes: un módulo iptables 
+(espacio de usuario) y un módulo netfilter (espacio de kernel). El 
+primero es una extensión de iptables, mientras que el segundo es una 
+extensión de netfilter.
+
+Ambos módulos implementan Port Knocking, un sistema sigiloso para la 
+autenticación a través de puertos cerrados. Por ejemplo, esto podría ser 
+usado para evitar ataques por fuerza bruta a servicios como ssh o ftp.
+
+Estos módulos también implementan SPA (Simple Packet Authentication).
+
+
+INSTALACIÓN
+------------
+
+Anonymous SVN Access via SVN:
+---------------------------------------------------
+svn checkout svn://svn.berlios.de/portknocko/trunk 
+---------------------------------------------------
+
+-------------------------------------
+# cd portknocko
+# ~/portknocko/cd iptables
+# ~/portknocko/iptables/make clean
+# ~/portknocko/iptables/make
+# ~/portknocko/iptables/make install
+
+# cd ../kernel
+# ~/portknocko/kernel/make clean
+# ~/portknocko/kernel/make
+# ~/portknocko/kernel/make install
+
+# depmod -Ae
+------------------------------------
+
+[icons=None, caption="Note"]
+NOTA: si usas: "insmod ./ipt_pknock.ko", primero deberías hacer "modprobe cn"
+para cargar el conector netlink.
+
+
+USO:
+-----
+
+Mostraremos los posibles usos de este módulo:
+
+1) "la forma más simple", una sola relga para implementar portknocking:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------------------------------------------
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# iptables -A INPUT -p tcp -m state --state NEW 
+	-m pknock --knockports 2002,2001,2004 --name SSH 
+	-m tcp --dport 22 -j ACCEPT
+--------------------------------------------------------------------
+
+----------------------------------------
+$ telnet yourserver 2002 # first knock
+$ telnet yourserver 2001
+$ telnet yourserver 2004 # last knock
+
+$ ssh user@yourserver
+----------------------------------------
+
+[icons=None, caption="Note"]
+NOTA: Todos los "knocks" y el tráfico deben ser paquetes TCP.
+
+opciones:
+---------
+
+--------------------------------------------------------------------
+[--time seconds]	-> máximo tiempo entre "knocks" (golpes).
+[--strict] 		-> si uno de los "knocks" del peer falla al 
+			intentar la secuencia de puertos, debe 
+			comenzar de nuevo.
+--------------------------------------------------------------------	
+
+
+2) "la forma SPA", autenticación hmac con dos reglas de iptables:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Con esto puedes lograr evitar la replicación y el spoofing de paquetes.
+
+-----------------------------------------------------------------------------
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# iptables -A INPUT -p udp -m state --state NEW 
+	-m pknock --knockports 2000 --name SSH
+	--opensecret your_opensecret --closesecret your_closesecret 
+	-j DROP
+# iptables -A INPUT -p tcp -m state --state NEW 
+	-m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT
+-------------------------------------------------------------------------------
+
+
+Para esta forma debes enviar paquetes UDP, cuyo payload contenga un "sha256 hmac 
+digest":
+
+	sha256_mac(your_opensecret, your_ip, epoch_min)
+
+[icons=None, caption="Note"]
+NOTA: "epoch_min" son los minutos desde el 1ro de Enero de 1970, por lo que
+debes mantener sincronizados el reloj del servidor y el de tu host. Para 
+sincronizar los relojes, puedes hacer lo siguiente:
+
+---------------------------------------------------------------------------	
+# rdate time-a.nist.gov 	# this will set your system clock
+# /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
+---------------------------------------------------------------------------
+
+Luego de que el "knock" es aceptado, puedes comenzar el tráfico TCP a través
+del puerto 22. Cuando termines, cierra la puerta (ver ejemplo abajo) para evitar
+que los que usen tu misma ip puedan utilizar el servicio ssh.
+
+Nosotros proveemos un cliente para hacer el knocking de la forma SPA:
+
+------------------------------------------------------
+# cd test
+# util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
+------------------------------------------------------
+
+[icons=None, caption="Note"]
+NOTA: Debes tener instalado el paquete python-crypto.
+
+ej: 
+---------------------------------------------------
+# ~/util/knock.sh 192.168.0.1 2000 your_opensecret
+---------------------------------------------------
+
+Luego de que termines de usar el servicio, deberías "cerrar la puerta":
+
+ej: 
+----------------------------------------------------
+# ~/util/knock.sh 192.168.0.1 2000 your_closesecret
+----------------------------------------------------
+
+[icons=None, caption="Note"]
+NOTA: Recuerda que estas son contraseñas de único uso, por lo que no se
+puede reutilizar el mismo hmac. Sólo puedes enviar un paquete (con el 
+secreto) por minuto. Luego de ese minuto, el hmac expira. Dentro de esa
+ventana de tiempo, el módulo aceptará solo un paquete con el mismo
+secreto. Si se intentara replicar este paquete, el módulo lo rechazaría.
+
+En caso de que estés siendo NATeado, sólo reemplaza <IP src> por la IP pública.
+
+El protocolo de seguridad utilizado en este módulo, está basado en una implementación
+de espacio de usario llamada Tumbler: http://tumbler.sourceforge.net/
+
+
+COMUNICACIÓN CON EL ESPACIO DE USUARIO:
+----------------------------------------
+
+En otras implementaciones de port knocking, existe un servidor que periódicamente
+busca en los logs del firewall la secuencia correcta de puertos golpeados (knocks).
+Cuando éste la encuentra, el servidor crea nuevas reglas iptables.
+
+Una muy buena alternativa sería si el servidor sólo escuchara y recibiera un mensaje,
+cuando alguien está interesado en algo. Si esto fuera posible, seguramente 
+simplificaría la arquitectura del servidor y la haría más eficiente.
+
+Gracias a los sockets netlink, un mensaje desde un módulo de kernel puede ser enviado
+a una aplicación de espacio de usario, cada vez que un peer (o host) golpea la
+secuencia correcta de puertos.
+
+De esta manera, podrías tener un servidor (en espacio de usuario) esperando 
+conexiones y cuando alguien golpee los puertos específicos, el servidor puede 
+recibir un mensaje desde el módulo de kernel permitiéndote hacer algo. Por ej: podrías
+iniciar un servidor web, adherir un peer (o host) a una lista blanca, etc. Cualquier
+cosa en una manera eficiente.
+
+Paso a paso:
+
+1) Compila el módulo.
+2) Carga el módulo: insmod ./ipt_pknock.ko nl_multicast_group=<value>
+3) Inicia el servidor. Hay una implementación mínima en el directorio
+experiments/netlink_broadcast que muestra un mensaje cada vez que alguien golpea
+la secuencia de puertos.
+
+
+PRUEBAS: (ten cuidado, esto borrará las reglas iptables que tengas cargadas)
+----------------------------------------------------------------------------
+
+Si eres desarrollador, luego de modificar el código del módulo puedes correr
+estos test:
+
+---------------------------------------------
+# ~/portknocko/cd test
+# ~/portknocko/test/./testrunner.sh all.test
+---------------------------------------------
+
+[icons=None, caption="Note"]
