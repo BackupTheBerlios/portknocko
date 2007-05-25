@@ -16,7 +16,7 @@ Estos módulos también implementan SPA (Simple Packet Authentication).
 INSTALACIÓN
 ------------
 
-Anonymous SVN Access via SVN:
+Acceso anónimo al repositorio via SVN:
 ---------------------------------------------------
 svn checkout svn://svn.berlios.de/portknocko/trunk 
 ---------------------------------------------------

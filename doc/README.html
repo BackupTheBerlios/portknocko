@@ -271,12 +271,13 @@ div.exampleblock-content {
 </div>
 <div id="preamble">
 <div class="sectionbody">
-<p>The PortKnocko project is composed of two parts: an iptables module (user space)
-and a netfilter module (kernel space). The first one is an iptables extension,
-and the other one is a netfilter extension.</p>
-<p>Both modules are used to implement the Port Knocking, a stealthy system for
-network authentication across closed ports, and SPA (Simple Packet Authentication).
-For instance, this can be used to avoid brute force attacks to ssh or ftp services.</p>
+<p>The PortKnockO Project is composed of two parts: an iptables module
+(user space) and a netfilter module (kernel space). The first one
+is an iptables extension, and the other one is a netfilter extension.</p>
+<p>Both modules are used to implement Port Knocking, a stealthy system
+for network authentication across closed ports. For instance, this
+can be used to avoid brute force attacks to ssh or ftp services.</p>
+<p>They are also implement SPA (Simple Packet Authentication).</p>
 </div>
 </div>
 <h2>INSTALLATION</h2>
@@ -326,11 +327,11 @@ load the netlink connector.</td>
 </div></div>
 <div class="listingblock">
 <div class="content">
-<pre><tt># telnet yourserver 2002 # first knock
-# telnet yourserver 2001
-# telnet yourserver 2004 # last knock
+<pre><tt>$ telnet yourserver 2002 # first knock
+$ telnet yourserver 2001
+$ telnet yourserver 2004 # last knock
 
-# ssh user@yourserver</tt></pre>
+$ ssh user@yourserver</tt></pre>
 </div></div>
 <div class="admonitionblock">
 <table><tr>
@@ -350,7 +351,7 @@ load the netlink connector.</td>
                         sequence, must start over.</tt></pre>
 </div></div>
 <h3>2) "the SPA way", hmac auth with two iptables rules:</h3>
-<p>you can achive nonreplayable and nonspoofable.</p>
+<p>You can achive nonreplayable and nonspoofable.</p>
 <div class="listingblock">
 <div class="content">
 <pre><tt># iptables -P INPUT DROP
@@ -363,7 +364,7 @@ load the netlink connector.</td>
 # iptables -A INPUT -p tcp -m state --state NEW
         -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT</tt></pre>
 </div></div>
-<p>this way you must send the UDP knock packet with a payload containing a sha256 hmac
+<p>This way you must send the UDP knock packet with a payload containing a sha256 hmac
 digest:</p>
 <div class="literalblock">
 <div class="content">
@@ -380,13 +381,13 @@ keep you hardware clocks sync. You can do it this way:</td>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre><tt># rdate time-a.nist.gov # this will set your system clock
+<pre><tt># rdate time-a.nist.gov         # this will set your system clock
 # /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC</tt></pre>
 </div></div>
-<p>after knock is accepted, you can begin the TCP traffic through port 22. When you
+<p>After knock is accepted, you can begin the TCP traffic through port 22. When you
 finish, close the door (see the example below) to avoid others come after you and
 use your same IP to log-in.</p>
-<p>We provide you a client for knocking the crypt way:</p>
+<p>We provide you a client for knocking the SPA way:</p>
 <div class="listingblock">
 <div class="content">
 <pre><tt># cd test
@@ -405,7 +406,7 @@ use your same IP to log-in.</p>
 <div class="content">
 <pre><tt># ~/util/knock.sh 192.168.0.1 2000 your_opensecret</tt></pre>
 </div></div>
-<p>after you finish using the service you should "close the door":</p>
+<p>After you finish using the service you should "close the door":</p>
 <p>e.g:</p>
 <div class="listingblock">
 <div class="content">
@@ -438,10 +439,10 @@ userspace each time a peer match a knock sequence.</p>
 someone matches the sequence, the server receives a msg allowing you to do
 whatever you want. e.g: you could start a webserver, add the peer to a whilelist,
 etc. everything in a smooth and efficient way.</p>
-<p>step by step:</p>
-<p>1) compile the module
-2) load the module insmod ./ipt_pknock.ko nl_multicast_group=&lt;value&gt;
-3) load the server. There is a minimal userspace implementation in
+<p>Step by step:</p>
+<p>1) Compile the module.
+2) Load the module: insmod ./ipt_pknock.ko nl_multicast_group=&lt;value&gt;
+3) Load the server. There is a minimal userspace implementation in
 experiments/netlink_broadcast that prints a msg each time someone matches the
 sequence.</p>
 </div>
@@ -456,7 +457,7 @@ sequence.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 02-May-2007 19:46:32 ART
+Last updated 25-May-2007 20:37:54 ART
 </div>
 </div>
 </body>
