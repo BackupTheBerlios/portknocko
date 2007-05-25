@@ -1,13 +1,15 @@
 PORTKNOCKO PROJECT
 ==================
 
-The PortKnocko project is composed of two parts: an iptables module (user space) 
-and a netfilter module (kernel space). The first one is an iptables extension, 
-and the other one is a netfilter extension.
+The PortKnockO Project is composed of two parts: an iptables module 
+(user space) and a netfilter module (kernel space). The first one 
+is an iptables extension, and the other one is a netfilter extension.
 
-Both modules are used to implement the Port Knocking, a stealthy system for 
-network authentication across closed ports, and SPA (Simple Packet Authentication). 
-For instance, this can be used to avoid brute force attacks to ssh or ftp services.
+Both modules are used to implement Port Knocking, a stealthy system 
+for network authentication across closed ports. For instance, this 
+can be used to avoid brute force attacks to ssh or ftp services.
+
+They are also implement SPA (Simple Packet Authentication).
 
 
 INSTALLATION
@@ -55,11 +57,11 @@ We will show you some different possibilites on how to use this module:
 --------------------------------------------------------------------
 
 ----------------------------------------
-# telnet yourserver 2002 # first knock
-# telnet yourserver 2001
-# telnet yourserver 2004 # last knock
+$ telnet yourserver 2002 # first knock
+$ telnet yourserver 2001
+$ telnet yourserver 2004 # last knock
 
-# ssh user@yourserver
+$ ssh user@yourserver
 ----------------------------------------
 
 [icons=None, caption="Note"]
@@ -78,7 +80,7 @@ options:
 2) "the SPA way", hmac auth with two iptables rules:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-you can achive nonreplayable and nonspoofable.
+You can achive nonreplayable and nonspoofable.
 
 -----------------------------------------------------------------------------
 # iptables -P INPUT DROP
@@ -93,7 +95,7 @@ you can achive nonreplayable and nonspoofable.
 -------------------------------------------------------------------------------
 
 
-this way you must send the UDP knock packet with a payload containing a sha256 hmac 
+This way you must send the UDP knock packet with a payload containing a sha256 hmac 
 digest:
 
 	sha256_mac(your_opensecret, your_ip, epoch_min)
@@ -103,15 +105,15 @@ NOTE: "epoch_min" is the min since January 1st 1970, so you must
 keep you hardware clocks sync. You can do it this way:
 
 ---------------------------------------------------------------------------	
-# rdate time-a.nist.gov # this will set your system clock
+# rdate time-a.nist.gov 	# this will set your system clock
 # /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 ---------------------------------------------------------------------------
 
-after knock is accepted, you can begin the TCP traffic through port 22. When you 
+After knock is accepted, you can begin the TCP traffic through port 22. When you 
 finish, close the door (see the example below) to avoid others come after you and 
 use your same IP to log-in.
 
-We provide you a client for knocking the crypt way:
+We provide you a client for knocking the SPA way:
 
 ------------------------------------------------------
 # cd test
@@ -126,7 +128,7 @@ e.g:
 # ~/util/knock.sh 192.168.0.1 2000 your_opensecret
 -------------------------------------------------
 
-after you finish using the service you should "close the door":
+After you finish using the service you should "close the door":
 
 e.g: 
 --------------------------------------------------
@@ -162,11 +164,11 @@ someone matches the sequence, the server receives a msg allowing you to do
 whatever you want. e.g: you could start a webserver, add the peer to a whilelist, 
 etc. everything in a smooth and efficient way.
 
-step by step:
+Step by step:
 
-1) compile the module
-2) load the module insmod ./ipt_pknock.ko nl_multicast_group=<value>
-3) load the server. There is a minimal userspace implementation in 
+1) Compile the module.
+2) Load the module: insmod ./ipt_pknock.ko nl_multicast_group=<value>
+3) Load the server. There is a minimal userspace implementation in 
 experiments/netlink_broadcast that prints a msg each time someone matches the 
 sequence.
 
