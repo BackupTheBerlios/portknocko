@@ -1,5 +1,5 @@
-PORTKNOCKO PROJECT
-==================
+PROYECTO PORTKNOCKO
+===================
 
 El proyecto PortKnockO está compuesto de dos partes: un módulo iptables 
 (espacio de usuario) y un módulo netfilter (espacio de kernel). El 
