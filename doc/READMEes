@@ -46,7 +46,7 @@ USO:
 
 Mostraremos los posibles usos de este módulo:
 
-1) "la forma más simple", una sola relga para implementar portknocking:
+1) "la forma más simple", una sola regla para implementar portknocking:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 --------------------------------------------------------------------
 # iptables -P INPUT DROP
@@ -112,7 +112,7 @@ sincronizar los relojes, puedes hacer lo siguiente:
 # /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 ---------------------------------------------------------------------------
 
-Luego de que el "knock" es aceptado, puedes comenzar el tráfico TCP a través
+Luego de que el "knock" es aceptado, puedes comenzar el tráfico TCP através
 del puerto 22. Cuando termines, cierra la puerta (ver ejemplo abajo) para evitar
 que los que usen tu misma ip puedan utilizar el servicio ssh.
 
