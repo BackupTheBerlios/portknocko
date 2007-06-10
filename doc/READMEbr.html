@@ -271,13 +271,17 @@ div.exampleblock-content {
 </div>
 <div id="preamble">
 <div class="sectionbody">
-<p>O projeto de PortKnocko é composto de duas porções: um módulo do iptables (espaço do usuário) e um módulo do netfilter (espaço da kernel). O primeiro é uma extensão do iptables, e o segundo é uma extensão do netfilter.</p>
-<p>Ambos módulos são usados para executar Port Knocking, um sistema sigiloso para o autenticação da rede através dos portos fechados, e o SPA (Simple Packet Authentication). Por exemplo, isto pode ser usado para evitar ataques da força brute ao ssh ou aos serviços do ftp.</p>
+<p>O projeto de PortKnocko é composto de duas porções: um módulo do iptables (espaço do usuário) e um
+módulo do netfilter (espaço da kernel). O primeiro é uma extensão do iptables, e o segundo é uma
+extensão do netfilter.</p>
+<p>Ambos módulos são usados para executar Port Knocking, um sistema sigiloso para o autenticação da
+rede através dos portos fechados, e o SPA (Simple Packet Authentication). Por exemplo, isto pode
+ser usado para evitar ataques da força brute ao ssh ou aos serviços do ftp.</p>
 </div>
 </div>
-<h2>INSTAÇ&amp;Atilde;O</h2>
+<h2>INSTALAÇÃO</h2>
 <div class="sectionbody">
-<p>Acesso Anonymous ao repositorio atrav&amp;eacute;s de SVN:</p>
+<p>Acesso Anonymous ao repositorio através de SVN:</p>
 <div class="listingblock">
 <div class="content">
 <pre><tt>svn checkout svn://svn.berlios.de/portknocko/trunk</tt></pre>
@@ -398,7 +402,7 @@ replicar este pacote, o módulo rejeitá-lo-ia.</p>
 <p>Em outras implementações do port knocking, existe um servidor que procure periódicamente nos
 registros do firewall a seqüência correta de portos golpeados (knocks). Quando a encontra,
 servidor cría réguas novas dos iptables.</p>
-<p>Uma alternativa muito boa seria se o empregado somente escutasse e recebesse uma mensagem,
+<p>Uma alternativa muito boa seria se o servidor somente escutasse e recebesse uma mensagem,
 quando alguém está interessado em algo.</p>
 <p>Pelos sockets netlink, uma mensagem de um módulo do kernel pode ser emitido a uma aplicação
 do espaço do usario, sempre que um peer (ou host) golpeia a seqüência correta dos portos.</p>
@@ -424,7 +428,7 @@ testes:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 10-Jun-2007 13:55:26 ART
+Last updated 10-Jun-2007 14:15:51 ART
 </div>
 </div>
 </body>
