@@ -148,7 +148,7 @@ secreto. Si se intentara replicar este paquete, el módulo lo rechazaría.
 En caso de que estés siendo NATeado, sólo reemplaza <IP src> por la IP pública.
 
 El protocolo de seguridad utilizado en este módulo, está basado en una implementación
-de espacio de usario llamada Tumbler: http://tumbler.sourceforge.net/
+de espacio de usuario llamada Tumbler: http://tumbler.sourceforge.net/
 
 
 COMUNICACIÓN CON EL ESPACIO DE USUARIO:
@@ -191,5 +191,3 @@ estos test:
 # ~/portknocko/cd test
 # ~/portknocko/test/./testrunner.sh all.test
 ---------------------------------------------
-
-[icons=None, caption="Note"]
