@@ -114,7 +114,7 @@ sincronizar los relojes, puedes hacer lo siguiente:
 
 Luego de que el "knock" es aceptado, puedes comenzar el tráfico TCP através
 del puerto 22. Cuando termines, cierra la puerta (ver ejemplo abajo) para evitar
-que los que usen tu misma ip puedan utilizar el servicio ssh.
+que los que usen tu misma ip, puedan utilizar el servicio ssh.
 
 Nosotros proveemos un cliente para hacer el knocking de la forma SPA:
 
