@@ -36,14 +36,14 @@ svn checkout svn://svn.berlios.de/portknocko/trunk
 ------------------------------------
 
 [icons=None, caption="Note"]
-NOTE: if you use: "insmod ./ipt_pknock.ko", first you should do "modprobe cn" to 
+NOTE: if you use: "insmod ./ipt_pknock.ko", first you should run "modprobe cn" to 
 load the netlink connector.
 
 
 USAGE:
 ------
 
-We will show you some different possibilites on how to use this module:
+We will show you some different possibilities on how to use this module:
 
 1) "the simplest way", one rule portknocking:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,14 +73,14 @@ options:
 --------------------------------------------------------------------
 [--time seconds]	-> max time between knocks.
 [--strict] 		-> if the peer fails one knock during the 
-			sequence, must start over.
+			sequence, it must start over.
 --------------------------------------------------------------------	
 
 
 2) "the SPA way", hmac auth with two iptables rules:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can achive nonreplayable and nonspoofable.
+You can achieve nonreplayable and nonspoofable.
 
 -----------------------------------------------------------------------------
 # iptables -P INPUT DROP
@@ -101,7 +101,7 @@ digest:
 	sha256_mac(your_opensecret, your_ip, epoch_min)
 
 [icons=None, caption="Note"]
-NOTE: "epoch_min" is the min since January 1st 1970, so you must 
+NOTE: "epoch_min" is the value of the minutes since January 1st 1970, so you must 
 keep you hardware clocks sync. You can do it this way:
 
 ---------------------------------------------------------------------------	
@@ -109,7 +109,7 @@ keep you hardware clocks sync. You can do it this way:
 # /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC
 ---------------------------------------------------------------------------
 
-After knock is accepted, you can begin the TCP traffic through port 22. When you 
+After the knock is accepted, you can start the TCP traffic through port 22. When you 
 finish, close the door (see the example below) to avoid others come after you and 
 use your same IP to log-in.
 
@@ -136,8 +136,8 @@ e.g:
 --------------------------------------------------
 
 [icons=None, caption="Note"]
-NOTE: Remeber that these are One Time Password, so you can not re use the same 
-hmac, letting you knock just once per minute (cause the epoch_min).
+NOTE: Remember that these are One Time Passwords, so you can not reuse the same 
+hmac, letting you knock just once per minute (because of the epoch_min).
 
 In case you are being NATed, just replace <IP src> with the NATed IP.
 
@@ -149,11 +149,11 @@ COMUNICATION WITH THE USERSPACE:
 --------------------------------
 
 In other port knocking implementations, there is a server that periodically 
-looks up the firewall logs for a correct sequence of port knocks. When it is 
-found, the server usually set a new iptable rule. 
+looks up the firewall logs for the correct sequence of port knocks. When it is 
+found, the server usually sets a new iptable rule. 
 
 A great possibility would be if the server just listens and receives a msg 
-when something interesting happens. If this would be possible, surely it must 
+when something interesting happens. If this would be possible, surely it would 
 simplify the architecture of the server and make it more efficient.
 
 Thanks to netlink sockets, a message from this kernel module is sent to the 
@@ -176,7 +176,7 @@ sequence.
 TESTS: (be careful, it will erase your loaded iptables rules)
 -------------------------------------------------------------
 
-If you are a developer you want to run these while you refactor the code
+If you are a developer, you may want to run these while you refactor the code
 
 ---------------------------------------------
 # ~/portknocko/cd test

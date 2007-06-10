@@ -307,14 +307,14 @@ can be used to avoid brute force attacks to ssh or ftp services.</p>
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">if you use: "insmod ./ipt_pknock.ko", first you should do "modprobe cn" to
+<td class="content">if you use: "insmod ./ipt_pknock.ko", first you should run "modprobe cn" to
 load the netlink connector.</td>
 </tr></table>
 </div>
 </div>
 <h2>USAGE:</h2>
 <div class="sectionbody">
-<p>We will show you some different possibilites on how to use this module:</p>
+<p>We will show you some different possibilities on how to use this module:</p>
 <h3>1) "the simplest way", one rule portknocking:</h3>
 <div class="listingblock">
 <div class="content">
@@ -348,10 +348,10 @@ $ ssh user@yourserver</tt></pre>
 <div class="content">
 <pre><tt>[--time seconds]        -&gt; max time between knocks.
 [--strict]              -&gt; if the peer fails one knock during the
-                        sequence, must start over.</tt></pre>
+                        sequence, it must start over.</tt></pre>
 </div></div>
 <h3>2) "the SPA way", hmac auth with two iptables rules:</h3>
-<p>You can achive nonreplayable and nonspoofable.</p>
+<p>You can achieve nonreplayable and nonspoofable.</p>
 <div class="listingblock">
 <div class="content">
 <pre><tt># iptables -P INPUT DROP
@@ -375,7 +375,7 @@ digest:</p>
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">"epoch_min" is the min since January 1st 1970, so you must
+<td class="content">"epoch_min" is the value of the minutes since January 1st 1970, so you must
 keep you hardware clocks sync. You can do it this way:</td>
 </tr></table>
 </div>
@@ -384,7 +384,7 @@ keep you hardware clocks sync. You can do it this way:</td>
 <pre><tt># rdate time-a.nist.gov         # this will set your system clock
 # /sbin/hwclock --systohc --utc # this will set your hardware clock to UTC</tt></pre>
 </div></div>
-<p>After knock is accepted, you can begin the TCP traffic through port 22. When you
+<p>After the knock is accepted, you can start the TCP traffic through port 22. When you
 finish, close the door (see the example below) to avoid others come after you and
 use your same IP to log-in.</p>
 <p>We provide you a client for knocking the SPA way:</p>
@@ -417,8 +417,8 @@ use your same IP to log-in.</p>
 <td class="icon">
 <div class="title">Note</div>
 </td>
-<td class="content">Remeber that these are One Time Password, so you can not re use the same
-hmac, letting you knock just once per minute (cause the epoch_min).</td>
+<td class="content">Remember that these are One Time Passwords, so you can not reuse the same
+hmac, letting you knock just once per minute (because of the epoch_min).</td>
 </tr></table>
 </div>
 <p>In case you are being NATed, just replace &lt;IP src&gt; with the NATed IP.</p>
@@ -428,10 +428,10 @@ called Tumbler: http://tumbler.sourceforge.net/</p>
 <h2>COMUNICATION WITH THE USERSPACE:</h2>
 <div class="sectionbody">
 <p>In other port knocking implementations, there is a server that periodically
-looks up the firewall logs for a correct sequence of port knocks. When it is
-found, the server usually set a new iptable rule.</p>
+looks up the firewall logs for the correct sequence of port knocks. When it is
+found, the server usually sets a new iptable rule.</p>
 <p>A great possibility would be if the server just listens and receives a msg
-when something interesting happens. If this would be possible, surely it must
+when something interesting happens. If this would be possible, surely it would
 simplify the architecture of the server and make it more efficient.</p>
 <p>Thanks to netlink sockets, a message from this kernel module is sent to the
 userspace each time a peer match a knock sequence.</p>
@@ -448,7 +448,7 @@ sequence.</p>
 </div>
 <h2>TESTS: (be careful, it will erase your loaded iptables rules)</h2>
 <div class="sectionbody">
-<p>If you are a developer you want to run these while you refactor the code</p>
+<p>If you are a developer, you may want to run these while you refactor the code</p>
 <div class="listingblock">
 <div class="content">
 <pre><tt># ~/portknocko/cd test
@@ -457,7 +457,7 @@ sequence.</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 25-May-2007 20:37:54 ART
+Last updated 10-Jun-2007 12:16:10 ART
 </div>
 </div>
 </body>
