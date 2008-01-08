@@ -1,14 +1,10 @@
 /*
  * Kernel module to implement Port Knocking and SPA matching support.
  *
- * (C) 2006-2007 J. Federico Hernandez <fede.hernandez@gmail.com>
+ * (C) 2006-2008 J. Federico Hernandez <fede.hernandez@gmail.com>
  * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
  *
  * $Id$
- *
- * Fixes:
- *
- *	Sebastian Cruz	: use of Crypto API fixed.
  *
  * This program is released under the terms of GNU GPL version 2.
  */
@@ -26,17 +22,17 @@
 #define IPT_PKNOCK_CLOSESECRET		0x40
 
 #define IPT_PKNOCK_MAX_PORTS		15
-#define IPT_PKNOCK_MAX_BUF_LEN		8
+#define IPT_PKNOCK_MAX_BUF_LEN		32
 #define IPT_PKNOCK_MAX_PASSWD_LEN	32
 
-#define DEBUG 1
+#define DEBUG 0
 
 struct ipt_pknock_info {
-	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN + 1];
 	int		rule_name_len;
-	char		open_secret[IPT_PKNOCK_MAX_PASSWD_LEN];
+	char		open_secret[IPT_PKNOCK_MAX_PASSWD_LEN + 1];
 	int		open_secret_len;
-	char		close_secret[IPT_PKNOCK_MAX_PASSWD_LEN];
+	char		close_secret[IPT_PKNOCK_MAX_PASSWD_LEN + 1];
 	int		close_secret_len;
 	u_int8_t	count_ports;	/* number of ports */
 	u_int16_t	port[IPT_PKNOCK_MAX_PORTS]; /* port[,port,port,...] */
@@ -45,7 +41,7 @@ struct ipt_pknock_info {
 };
 
 struct ipt_pknock_nl_msg {
-	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN + 1];
 	u_int32_t	peer_ip;
 };
 
@@ -69,7 +65,7 @@ struct peer {
 
 struct ipt_pknock_rule {
 	struct list_head	head;
-	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN];
+	char			rule_name[IPT_PKNOCK_MAX_BUF_LEN + 1];
 	int			rule_name_len;
 	unsigned int		ref_count;
 	struct timer_list	timer;		/* garbage collector timer */

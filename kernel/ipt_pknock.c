@@ -1,14 +1,10 @@
 /*
  * Kernel module to implement Port Knocking and SPA matching support.
  *
- * (C) 2006-2007 J. Federico Hernandez Scarso <fede.hernandez@gmail.com>
+ * (C) 2006-2008 J. Federico Hernandez Scarso <fede.hernandez@gmail.com>
  * (C) 2006 Luis A. Floreani <luis.floreani@gmail.com>
  *
  * $Id$
- *
- * Fixes:
- *
- *	Sebastian Cruz	: use of Crypto API fixed.
  *
  * This program is released under the terms of GNU GPL version 2.
  */
@@ -430,7 +426,7 @@ add_rule(struct ipt_pknock_info *info)
 
 	INIT_LIST_HEAD(&rule->head);
 
-	memset(rule->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN);
+	memset(rule->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN + 1);
 	strncpy(rule->rule_name, info->rule_name, info->rule_name_len);
 	rule->rule_name_len = info->rule_name_len;
 

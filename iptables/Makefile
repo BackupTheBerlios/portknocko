@@ -1,9 +1,10 @@
 KERNEL_DIR_INC=/usr/src/linux
 IPT_LIB_DIR=/lib/iptables/
+IPTABLES_VERSION=$(shell iptables -V | sed 's/iptables v//')
 
-CC=gcc
-LD=ld
-CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -Iinclude/ -DIPTABLES_VERSION=\"1.3.7\" -fPIC
+CC=cc
+LD=cc
+CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -Iinclude/ -DIPTABLES_VERSION=\"$(IPTABLES_VERSION)\"  -fPIC
 LDFLAGS=-shared
 
 OBJS=libipt_pknock_sh.o

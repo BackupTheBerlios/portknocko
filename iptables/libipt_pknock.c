@@ -166,7 +166,7 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 			exit_error(PARAMETER_PROBLEM, MOD
 				"Can't specify !.\n");
 
-		memset(info->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN);
+		memset(info->rule_name, 0, IPT_PKNOCK_MAX_BUF_LEN + 1);
 		strncpy(info->rule_name, optarg, IPT_PKNOCK_MAX_BUF_LEN);
 		info->rule_name_len = strlen(info->rule_name);
 #if DEBUG
@@ -184,7 +184,7 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if(invert)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
 
-		memset(info->open_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
+		memset(info->open_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN + 1);
 		strncpy(info->open_secret, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);
 		info->open_secret_len = strlen(info->open_secret);
 
@@ -200,7 +200,7 @@ static int parse(int c, char **argv, int invert, unsigned int *flags,
 		if(invert)
 			exit_error(PARAMETER_PROBLEM, MOD "Can't specify !.\n");
 
-		memset(info->close_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN);
+		memset(info->close_secret, 0, IPT_PKNOCK_MAX_PASSWD_LEN + 1);
 		strncpy(info->close_secret, optarg, IPT_PKNOCK_MAX_PASSWD_LEN);
 		info->close_secret_len = strlen(info->close_secret);
 
