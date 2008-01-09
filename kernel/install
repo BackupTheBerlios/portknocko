@@ -1,6 +1,6 @@
 #!/bin/sh
 if [ -z $2 ]; then
-    echo "usage: ./install <rule_hashsize> <peer_hashsize>"
+    echo "usage: ./install [<rule_hashsize> <peer_hashsize>]"
     exit 1
 fi
 
