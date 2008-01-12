@@ -82,8 +82,7 @@ static int parse_ports(const char *ports, u_int16_t *port_buf, u_int8_t *count)
 		ret = string_to_number(token, 0, 65535,
 					(unsigned int *)port_buf);
 		if (ret == -1) {
-			if (str)
-				free(str);
+			if (str) free(str);
 			return 3;
 		}
 #if DEBUG
@@ -92,8 +91,7 @@ static int parse_ports(const char *ports, u_int16_t *port_buf, u_int8_t *count)
 	}
 	*count = i;
 
-	if (str)
-		free(str);
+	if (str) free(str);
 	return 0;
 }
 
@@ -352,6 +350,7 @@ static struct iptables_match pknock = {
 	.extra_opts	= opts
 };
 
-void _init(void) {
+void _init(void) 
+{
 	register_match(&pknock);
 }
