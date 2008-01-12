@@ -25,7 +25,7 @@
 #define IPT_PKNOCK_MAX_BUF_LEN		32
 #define IPT_PKNOCK_MAX_PASSWD_LEN	32
 
-#define DEBUG 0
+#define DEBUG 1
 
 struct ipt_pknock_info {
 	char		rule_name[IPT_PKNOCK_MAX_BUF_LEN + 1];
