@@ -2,12 +2,12 @@
 
 function load() {
 	#modprobe cn
-	modprobe sha256
-	insmod ../kernel/ipt_pknock.ko
+	#modprobe sha256
+	modprobe ipt_pknock
 }
 
 function unload() {
-	../util/reset.sh
+	scripts/reset.sh
 }
 
 function rule_only() {
