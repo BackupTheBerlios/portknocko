@@ -1,0 +1,32 @@
+DONE:
+-----
+
+- By Fender. Support for kernel 2.6.23 and better.
+- By Fender. Support for kernel 2.6.19 and better.
+- By Crux. Use of Crypto API fixed.
+- By Fender. Support for kernel 2.6.18.
+- By Lucho. seq_file instead of read_proc (try dd if=/proc/net/ipt_pknock/SSH ibs=5)
+- By Fender. Memory leak fixed in has_secret() function.
+- By Fender. Input parameters validation at user and kernel space.
+- By Lucho. SHA256 by default.
+- By Fender. Kernel panic fixed.
+- By Lucho. Close knock done.
+- By Lucho. One knock per IP per minute.
+- By Fender. parse() from libipt_pknock.c done.
+- By Fender & Lucho. 2 rules to allow knocks in UDP and traffic in TCP for instance.
+- By Lucho. macro hashtable_for_each()
+- By Fender. New parameter 'gc_expir_time' to set the expiration time of the garbage collector.
+- By Lucho. Userspace msg as a struct containing rule_name and peer_ip
+- By Lucho. u32 y u_int32_t are a typedef of a 32bits type. We use u_int32_t by convention.
+- By Lucho. kernel/user communication through "netlink connector".
+- By Lucho. --strict option added so the peer must match the exact sequence without any miss
+- By Lucho. some memory leaks fixed.
+- By Fender. Portknocking in one rule.
+- By Fender. Macros to inline functions.
+- By Lucho. auth with hmac, --secure option.
+- By Lucho. hash tables for peers and rules.
+- By Fender. /proc/net/ipt_pknock to see the status of peers by rules.
+- By Fender. Garbage collector to clean old peers automatically.
+- By Fender. Max time to knock between ports.
+- By Fender. Linked List with linux/list.h
+- By Fender. First implementation of a iptables/netfilter extension for portknocking
