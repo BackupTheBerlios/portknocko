@@ -7,8 +7,6 @@ fi
 
 ./init.sh
 
-insmod ../kernel/ipt_pknock.ko
-		
 iptables -A INPUT -p udp -m state --state NEW \
 			-m pknock --opensecret $1 --closesecret $2 --knockports 2000 --name SSH -j DROP
 
