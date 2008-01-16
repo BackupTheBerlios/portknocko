@@ -1,7 +1,7 @@
 DONE:
 -----
 
-- By Fender. Support for kernel 2.6.23 and better.
+- By Fender. Support for kernel 2.6.22 and better.
 - By Piotr Gasidlo. Minor bugs fixed.
 - By Fender. Support for kernel 2.6.19 and better.
 - By Crux. Use of Crypto API fixed.
