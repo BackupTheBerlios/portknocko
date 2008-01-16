@@ -9,6 +9,8 @@
  * This program is released under the terms of GNU GPL version 2.
  */
 #include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
@@ -903,24 +905,40 @@ is_close_knock(const struct peer *peer, const struct ipt_pknock_info *info,
 	return false;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 static bool
+#else
+static int
+#endif
 match(const struct sk_buff *skb,
 	const struct net_device *in,
 	const struct net_device *out,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)
         const struct xt_match *match,
+#endif
 	const void *matchinfo,
 	int offset,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
         unsigned int protoff,
+#endif
 	bool *hotdrop)
 {
 	const struct ipt_pknock_info *info = matchinfo;
 	struct ipt_pknock_rule *rule = NULL;
 	struct peer *peer = NULL;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22)
 	struct iphdr *iph = ip_hdr(skb);
+#else
+	struct iphdr *iph = skb->nh.iph;
+#endif
 	int hdr_len = 0;
 	__be16 _ports[2], *pptr = NULL;
 	struct transport_data hdr = {0, 0, 0, NULL};
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 	bool ret = false;
+#else
+	int ret = 0;
+#endif
 
 	pptr = skb_header_pointer(skb, protoff, sizeof _ports, &_ports);
 
@@ -929,8 +947,13 @@ match(const struct sk_buff *skb,
 		 * can't. Hence, no choice but to drop.
 		 */
 		duprintf("Dropping evil offset=0 tinygram.\n");
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 		*hotdrop = true;
 		return false;
+#else
+		*hotdrop = 1;
+		return 0;
+#endif
 	}
 
 	hdr.port = ntohs(pptr[1]);
@@ -981,7 +1004,11 @@ match(const struct sk_buff *skb,
                                         hdr.payload_len)) 
 				{
                                         reset_knock_status(peer);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 					ret = false;
+#else
+					ret = 0;
+#endif
 				}
 			}
 			goto out;
@@ -1006,13 +1033,30 @@ out:
 	return ret;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 #define RETURN_ERR(err) do { printk(KERN_ERR MOD err); return false; } while (0)
+#else
+#define RETURN_ERR(err) do { printk(KERN_ERR MOD err); return 0; } while (0)
+#endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 static bool
+#else
+static int
+#endif
 checkentry(const char *tablename,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 	const void *ip,
+#else
+	const struct ipt_ip *ip,
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)	
         const struct xt_match *match,
+#endif
 	void *matchinfo,
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,17)
+	unsigned int matchsize,
+#endif
 	unsigned int hook_mask)
 {
 	struct ipt_pknock_info *info = matchinfo;
@@ -1081,11 +1125,20 @@ checkentry(const char *tablename,
 		}
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)
 	return true;
+#else
+	return 1;
+#endif
 }
 
 static void
-destroy(const struct xt_match *match, void *matchinfo)
+destroy(
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)
+		const struct xt_match *match, void *matchinfo)
+#else
+		void *matchinfo, unsigned int matchsize)
+#endif
 {
 	struct ipt_pknock_info *info = matchinfo;
 	/* Removes a rule only if it exits and ref_count is equal to 0. */
@@ -1094,8 +1147,12 @@ destroy(const struct xt_match *match, void *matchinfo)
 
 static struct xt_match ipt_pknock_match __read_mostly = {
 	.name		= "pknock",
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)	
 	.family		= AF_INET,
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)	
         .matchsize      = sizeof (struct ipt_pknock_info),
+#endif
 	.match		= match,
 	.checkentry	= checkentry,
 	.destroy	= destroy,
@@ -1128,15 +1185,22 @@ static int __init ipt_pknock_init(void)
 		printk(KERN_ERR MOD "proc_mkdir() error in _init().\n");
 		return -1;
 	}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
 	return xt_register_match(&ipt_pknock_match);
+#else
+	return ipt_register_match(&ipt_pknock_match);
+#endif
 }
 
 static void __exit ipt_pknock_fini(void)
 {
 	printk(KERN_INFO MOD "unregister.\n");
 	remove_proc_entry("ipt_pknock", proc_net);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
 	xt_unregister_match(&ipt_pknock_match);
-
+#else
+	ipt_unregister_match(&ipt_pknock_match);
+#endif
 	kfree(rule_hashtable);
 
 	if (crypto.tfm != NULL) crypto_free_hash(crypto.tfm);
