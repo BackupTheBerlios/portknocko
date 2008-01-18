@@ -1025,8 +1025,7 @@ match(const struct sk_buff *skb,
 
 out:
 #if DEBUG
-	if (ret)
-		DEBUGP("PASS OK", peer);
+	if (ret) DEBUGP("PASS OK", peer);
 #endif
 	spin_unlock_bh(&list_lock);
 	return ret;
