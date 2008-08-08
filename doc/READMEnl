@@ -1,0 +1,158 @@
+PORTKNOCKO PROJECT
+==================
+
+Het PortKnockO Project bestaat uit twee delen: een iptables module (gebruikers ruimte) en een netfilter module (kern ruimte). De eerste is een uitbreiding op iptables, de tweede is een uitbreiding op netfilter.
+
+Beide modules worden gebruikt om Port Knocking te implementeren, een uitgekookt netwerk authorisatie systeem voor netwerk authenticatie met behulp van gesloten porten. Dit systeem kan bijvoorbeeld gebruikt worden om "brute force" aanvallen op ssh of ftp diensten te voorkomen.
+
+Het implementeert ook SPA (Simple Packet Authentication).
+
+INSTALLATIE
+-----------
+
+Anonymous SVN Access via SVN:
+---------------------------------------------------
+svn checkout svn://svn.berlios.de/portknocko/trunk
+---------------------------------------------------
+
+-------------------------------------
+# cd portknocko
+# ~/portknocko/cd iptables
+# ~/portknocko/iptables/make clean
+# ~/portknocko/iptables/make
+# ~/portknocko/iptables/make install
+
+# cd ../kernel
+# ~/portknocko/kernel/make clean
+# ~/portknocko/kernel/make
+# ~/portknocko/kernel/make install
+
+# depmod -Ae
+-------------------------------------
+
+[icons=None, caption="Note"]
+NOTE: als je "insmod ./ipt_pknock.ko" gebruikt, moet je eerst "modprobe cn" uitvoeren om de netlink connector te laden.
+
+
+GEBRUIK:
+--------
+
+We demonsteren verschillende van de mogelijkheden om deze module te gebruiken:
+
+1) "de simpelste manier", portknocking met een regel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+--------------------------------------------------------------------
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# iptables -A INPUT -p tcp -m state --state NEW
+        -m pknock --knockports 2002,2001,2004 --name SSH
+        -m tcp --dport 22 -j ACCEPT
+--------------------------------------------------------------------
+
+----------------------------------------
+$ telnet yourserver 2002 # eerst kloppen
+$ telnet yourserver 2001
+$ telnet yourserver 2004 # laatste keer kloppen
+
+$ ssh user@yourserver
+-----------------------------------------
+
+[icons=None, caption="Note"]
+NOTE: Alle kloppen moeten TCP packets zijn.
+
+options:
+~~~~~~~~
+
+------------------------------------------------------------------------------------------------------------
+[--time seconds]        -> maximale tijd tussen twee keer kloppen
+[--strict]              -> als de 'collega' tijdens het kloppen een keer faalt moet het overnieuw beginnen. 
+-------------------------------------------------------------------------------------------------------------
+
+
+2) "De SPA way", hmac auth met twee iptables regels:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hiermee kun je niet herhaalbaarbeid en niet 'spoof'baarheid bereiken.
+
+-------------------------------------------------------------------------------
+# iptables -P INPUT DROP
+# iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+# iptables -A INPUT -p udp -m state --state NEW
+        -m pknock --knockports 2000 --name SSH
+        --opensecret your_opensecret --closesecret your_closesecret
+        -j DROP
+# iptables -A INPUT -p tcp -m state --state NEW
+        -m pknock --checkip --name SSH -m tcp --dport 22 -j ACCEPT
+-------------------------------------------------------------------------------
+
+Met deze aanpak moet je aankloppen met een UPD pakket die als lading een sha256 hmac digest heeft:
+
+	sha256_mac(your_opensecret, your_ip, epoch_min)
+
+[icons=None, caption="Note"]
+NOTE: "epoch_min" Is de tijd in minuten sinds 1 januari 1970. Je moet dus zorgen dat de klokken van beide servers gelijk blijven lopen. Dat kan als volgt:
+
+---------------------------------------------------------------------------	
+# rdate time-a.nist.gov         # dit zet je systeem klok
+# /sbin/hwclock --systohc --utc # En dit zet je systeem klok op UTC
+---------------------------------------------------------------------------	
+
+Nadat het kloppen succesvol is afgerond. Kun je TCP verkeer starten over port 22. Als je klaar bent sluit je de deur (zie het voorbeeld hieronder) om te voorkomen dat anderen na jou onder het zelfde IP adres kunnen inloggen.
+
+We leveren ook een SPA aanklop client
+
+------------------------------------------------------
+# cd test
+# util/knock.sh <IP src> <PORT dst> <secret> <IP dst>
+------------------------------------------------------
+
+[icons=None, caption="Note"]
+NOTE: Je moet python-crypto geinstalleerd hebben.
+
+b.v.:
+--------------------------------------------------
+# ~/util/knock.sh 192.168.0.1 2000 your_opensecret
+--------------------------------------------------
+
+Na het gebruik van deze dienst moet je "de deur sluiten":
+
+b.v.:
+--------------------------------------------------
+# ~/util/knock.sh 192.168.0.1 2000 your_closesecret
+--------------------------------------------------
+
+[icons=None, caption="Note"]
+NOTE: Let er op dat dit eenmalige wachtwoorden zijn. Je kunt de hmac niet hergebruiken. Ook kun je maar 1 keer per minuut aankloppen (door epoch_min)
+
+Mocht je ge-NAT worden vervang dan <IP src> door het ge-NAT-te IP.
+Het beveiligings protocol dat gebruikt wordt in deze module is gebaseerd op een gebruikers ruimte implementatie die Tumbler heet: zie http://tumbler.sourceforge.net/
+
+
+COMMUNICATIE MET DE GEBRUIKERSRUIMTE
+-------------------------------------
+
+In andere port knocking implementaties is er een server die periodiek de firewall logs bestudeert op de correcte volgorde van 'kloppen'. Wanneer die gevonden wordt wordt er meestal een nieuwe iptable regel toegevoegd.
+
+Een mooie oplossing zou zijn als de server gewoon luistert en een boodshap ontvangt als er iets interessant gebeurd. Als dat mogelijk zou zijn, zou het de architectuur van de oplossing aanzienlijk versimpelen en de oplossing efficienter maken.
+
+Dankzij de netlink sockets wordt nu een boodschap door dee kernel module gestuurd iedere keer als ene 'collega' een aanklopvolgorde juist uitvoert.
+
+Je kunt dus nu bijvoorbeeld een server laten luistern in de userspace. Zodra iemand correct aanklopt wordt er een boodschap (msg) naar deze server gestuurd die het de server mogelijk maakt om wat dan ook uit te voeren. Bijvoorbeeld een webserver starten of de aankloppende partij toevoegen aan een whitelist etc.etc. Maar alles vlot en efficient..
+
+Stap voor stap
+
+1) compileer de module. 2)laad de module: insmod ./ipt_pknock.ko nl_multicast_group=<value> 3) Laad de server. Er is een minimale implementatie van de gebruikersruimte te vinden onder experiments/netlink_broadcast die iedere boodschap (msg) afdrukt zodra er correct wordt aangeklopt.
+
+TESTS: (Opgelet, dit verwijderd je al ingelade iptables regels)
+---------------------------------------------------------------
+
+Als je een ontwikkelaar bent wil je deze wellicht uitvoeren terwijl de code aanpast.
+
+---------------------------------------------
+# ~/portknocko/cd test
+# ~/portknocko/test/./testrunner.sh all.test
+---------------------------------------------
+
