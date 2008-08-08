@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 7.1.2" />
+<meta name="generator" content="AsciiDoc 8.2.2" />
 <style type="text/css">
 /* Debug borders */
 p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
@@ -75,7 +75,7 @@ span#author {
   color: #527bbd;
   font-family: sans-serif;
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 1.1em;
 }
 span#email {
 }
@@ -144,6 +144,9 @@ div.sidebarblock > div.content {
   padding: 0.5em;
 }
 
+div.listingblock {
+  margin-right: 0%;
+}
 div.listingblock > div.content {
   border: 1px solid silver;
   background: #f4f4f4;
@@ -222,6 +225,9 @@ div.hlist {
   margin-top: 0.8em;
   margin-bottom: 0.8em;
 }
+div.hlist td {
+  padding-bottom: 5px;
+}
 td.hlist1 {
   vertical-align: top;
   font-style: italic;
@@ -233,6 +239,32 @@ td.hlist2 {
 
 @media print {
   div#footer-badges { display: none; }
+}
+
+div#toctitle {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
 }
 /* Workarounds for IE6's broken and incomplete CSS2. */
 
@@ -262,6 +294,9 @@ div.exampleblock-content {
   border-left: 2px solid silver;
   padding-left: 0.5em;
 }
+
+/* IE6 sets dynamically generated links as visited. */
+div#toc a:visited { color: blue; }
 </style>
 <title>PROGETTO PORTKNOCKO</title>
 </head>
@@ -303,8 +338,15 @@ ssh o ftp.</p>
 
 # depmod -Ae</tt></pre>
 </div></div>
-<p>NOTA: Se usi: "insmod ./ipt_pknock.ko", in primo luogo dovresti fare
-"modprobe cn" per caricare il connettore netlink.</p>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Se usi: "insmod ./ipt_pknock.ko", in primo luogo dovresti fare
+"modprobe cn" per caricare il connettore netlink.</td>
+</tr></table>
+</div>
 </div>
 <h2>USO:</h2>
 <div class="sectionbody">
@@ -327,10 +369,15 @@ $ telnet yourserver 2004 # last knock
 
 $ ssh user@yourserver</tt></pre>
 </div></div>
-<p>NOTA: Tutti i colpi (knocks) e il traffico devono essere pacchetti TCP.</p>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Tutti i colpi (knocks) e il traffico devono essere pacchetti TCP.</td>
+</tr></table>
 </div>
-<h2>opzioni:</h2>
-<div class="sectionbody">
+<h3>opzioni:</h3>
 <div class="listingblock">
 <div class="content">
 <pre><tt>[--time seconds]        -&gt; tempo massimo fra i colpi (knocks).
@@ -358,9 +405,16 @@ hmac digest":</p>
 <div class="content">
 <pre><tt>sha256_mac(your_opensecret, your_ip, epoch_min)</tt></pre>
 </div></div>
-<p>NOTA: "epoch_min" è il valore dei minuti dal 1 di Gennaio 1970, per questo
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">"epoch_min" è il valore dei minuti dal 1 di Gennaio 1970, per questo
 devi mantenere sincronizzati gli orologi del server e del tuo computer. Per
-arrivare a questo puoi fare quanto segue:</p>
+arrivare a questo puoi fare quanto segue:</td>
+</tr></table>
+</div>
 <div class="listingblock">
 <div class="content">
 <pre><tt># rdate time-a.nist.gov         # questo setterà l'orologio del server
@@ -375,7 +429,14 @@ che altri che hanno la tua stessa ip, possano utilizzare il servizio ssh.</p>
 <pre><tt># cd test
 # util/knock.sh &lt;IP src&gt; &lt;PORT dst&gt; &lt;secret&gt; &lt;IP dst&gt;</tt></pre>
 </div></div>
-<p>NOTA: Devi avere installato il pacchetto python-crypto.</p>
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Devi avere installato il pacchetto python-crypto.</td>
+</tr></table>
+</div>
 <p>per esempio:</p>
 <div class="listingblock">
 <div class="content">
@@ -387,11 +448,18 @@ che altri che hanno la tua stessa ip, possano utilizzare il servizio ssh.</p>
 <div class="content">
 <pre><tt># ~/util/knock.sh 192.168.0.1 2000 your_closesecret</tt></pre>
 </div></div>
-<p>NOTA: Ricorda che queste sono le parole d'accesso da usare una sola volta,
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">Ricorda che queste sono le parole d'accesso da usare una sola volta,
 così che non puoi riutilizzare lo stesso hmac. Puoi spedire un pacchetto
 (con il segreto) per minuto, dopodichè lo hmac espira. In questo minuto, il
 modulo accetterà un pacchetto con lo stesso segreto. Se si trasmettono
-pacchetti con lo stesso segreto, il modulo li respingere.</p>
+pacchetti con lo stesso segreto, il modulo li respingere.</td>
+</tr></table>
+</div>
 <p>Nel caso tu sia NATed, sostituisci solo l'indirizzo IP src con lo IP NATed.</p>
 <p>Il protocollo di sicurezza usato in questo modulo è basato su un'implementazione
 denominata Tumbler: http://tumbler.sourceforge.net/</p>
@@ -431,7 +499,7 @@ fare funzionare questi tests:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 17-Nov-2007 12:15:36 CEST
+Last updated 08-Aug-2008 20:40:02 ARST
 </div>
 </div>
 </body>

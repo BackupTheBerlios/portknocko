@@ -37,7 +37,7 @@ svn checkout svn://svn.berlios.de/portknocko/trunk
 ------------------------------------
 
 [icons=None, caption="Note"]
-NOTA: si usas: "insmod ./ipt_pknock.ko", primero deberías hacer "modprobe cn"
+NOTE: si usas: "insmod ./ipt_pknock.ko", primero deberías hacer "modprobe cn"
 para cargar el conector netlink.
 
 
@@ -66,10 +66,10 @@ $ ssh user@yourserver
 ----------------------------------------
 
 [icons=None, caption="Note"]
-NOTA: Todos los "knocks" y el tráfico deben ser paquetes TCP.
+NOTE: Todos los "knocks" y el tráfico deben ser paquetes TCP.
 
 opciones:
----------
+~~~~~~~~~
 
 --------------------------------------------------------------------
 [--time seconds]	-> máximo tiempo entre "knocks" (golpes).
@@ -103,7 +103,7 @@ digest":
 	sha256_mac(your_opensecret, your_ip, epoch_min)
 
 [icons=None, caption="Note"]
-NOTA: "epoch_min" son los minutos desde el 1ro de Enero de 1970, por lo que
+NOTE: "epoch_min" son los minutos desde el 1ro de Enero de 1970, por lo que
 debes mantener sincronizados el reloj del servidor y el de tu host. Para 
 sincronizar los relojes, puedes hacer lo siguiente:
 
@@ -124,7 +124,7 @@ Nosotros proveemos un cliente para hacer el knocking de la forma SPA:
 ------------------------------------------------------
 
 [icons=None, caption="Note"]
-NOTA: Debes tener instalado el paquete python-crypto.
+NOTE: Debes tener instalado el paquete python-crypto.
 
 ej: 
 ---------------------------------------------------
@@ -139,7 +139,7 @@ ej:
 ----------------------------------------------------
 
 [icons=None, caption="Note"]
-NOTA: Recuerda que estas son contraseñas de único uso, por lo que no se
+NOTE: Recuerda que estas son contraseñas de único uso, por lo que no se
 puede reutilizar el mismo hmac. Sólo puedes enviar un paquete (con el 
 secreto) por minuto. Luego de ese minuto, el hmac expira. Dentro de esa
 ventana de tiempo, el módulo aceptará solo un paquete con el mismo
