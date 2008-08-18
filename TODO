@@ -1,5 +1,7 @@
 TODO:
 -----
 
-- IPv6
+- pass all tests
+- update pom version
 - SPA reported to cause kernel panic on x86_64
+- IPv6
