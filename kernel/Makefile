@@ -1,6 +1,5 @@
 #KERNEL_DIR=/usr/src/linux-$(shell uname -r)
 KERNEL_DIR=/usr/src/linux
-#KERNEL_DIR=/home/lucho/kernelbuild/linux-2.6.23.17/
 
 TARGET=ipt_pknock.o
 

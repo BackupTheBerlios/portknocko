@@ -1,11 +1,10 @@
-KERNEL_DIR_INC=/usr/src/linux/include
-IPT_DIR_INC=/usr/include/iptables-1.4.0
-IPT_LIB_DIR=/lib/iptables
+KERNEL_DIR_INC=/usr/src/linux
+IPT_LIB_DIR=/lib/iptables/
 IPTABLES_VERSION=$(shell iptables -V | sed 's/iptables v//')
 
 CC=cc
 LD=cc
-CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -I$(IPT_DIR_INC) -DIPTABLES_VERSION=\"$(IPTABLES_VERSION)\"  -fPIC
+CFLAGS=-O2 -Wall -Wunused -I$(KERNEL_DIR_INC) -Iinclude/ -DIPTABLES_VERSION=\"$(IPTABLES_VERSION)\"  -fPIC
 LDFLAGS=-shared
 
 OBJS=libipt_pknock_sh.o

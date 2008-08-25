@@ -5,6 +5,8 @@
  * (C) 2006-2007 J. Federico Hernandez <fede.hernandez@gmail.com>
  * (C) 2006 Luis Floreani <luis.floreani@gmail.com>
  *
+ * $Id$
+ *
  * This program is released under the terms of GNU GPL version 2.
  */
 #include <getopt.h>
@@ -48,8 +50,9 @@ static void help(void)
 		" --chkip\n", IPTABLES_VERSION);
 }
 
-static void init(struct xt_entry_match *m)
+static void init(struct ipt_entry_match *m, unsigned int *nfcache)
 {
+	*nfcache |= NFC_UNKNOWN;
 }
 
 /**
@@ -108,7 +111,9 @@ static int parse_ports(const char *ports, u_int16_t *port_buf, u_int8_t *count)
 } while (0)								\
 
 static int parse(int c, char **argv, int invert, unsigned int *flags,
-		const void *entry, struct xt_entry_match **match)
+		const struct ipt_entry *entry,
+		unsigned int *nfcache,
+		struct ipt_entry_match **match)
 {
 	struct ipt_pknock_info *info;
 	int ret=0;
@@ -279,7 +284,7 @@ static void final_check(unsigned int flags)
 	}
 }
 
-static void print(const void *ip, const struct xt_entry_match *match,
+static void print(const struct ipt_ip *ip, const struct ipt_entry_match *match,
 		 int numeric)
 {
 	const struct ipt_pknock_info *info;
@@ -304,7 +309,7 @@ static void print(const void *ip, const struct xt_entry_match *match,
 		printf("closesecret ");
 }
 
-static void save(const void *ip, const struct xt_entry_match *match)
+static void save(const struct ipt_ip *ip, const struct ipt_entry_match *match)
 {
 	const struct ipt_pknock_info *info;
 	int i;
@@ -336,12 +341,12 @@ static struct iptables_match pknock = {
 	.version	= IPTABLES_VERSION,
 	.size		= IPT_ALIGN(sizeof (struct ipt_pknock_info)),
 	.userspacesize	= IPT_ALIGN(sizeof (struct ipt_pknock_info)),
-	.help		= help,
-	.init		= init,
-	.parse		= parse,
-	.final_check	= final_check,
-	.print		= print,
-	.save		= save,
+	.help		= &help,
+	.init		= &init,
+	.parse		= &parse,
+	.final_check	= &final_check,
+	.print		= &print,
+	.save		= &save,
 	.extra_opts	= opts
 };
 
