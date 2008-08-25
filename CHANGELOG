@@ -2,7 +2,6 @@ v0.5
 ----
 
 - support for kernel 2.6.26 and iptables 1.4.0
-- no more kernel backward compatibility in master. For each new kernel, a new package will be generated as well as a tag in the repository
 
 
 v0.4
