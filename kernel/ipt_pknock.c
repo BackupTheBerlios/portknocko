@@ -28,7 +28,11 @@
 #include <linux/connector.h>
 
 #include <linux/netfilter/x_tables.h>
-//#include <linux/netfilter_ipv4/ipt_pknock.h>
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+#include <net/net_namespace.h>
+#endif
+
 #include "ipt_pknock.h"
 
 MODULE_AUTHOR("J. Federico Hernandez Scarso, Luis A. Floreani");
@@ -1179,7 +1183,11 @@ static int __init ipt_pknock_init(void)
 	crypto.desc.tfm = crypto.tfm;
 	crypto.desc.flags = 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+	if (!(pde = proc_mkdir("ipt_pknock", init_net.proc_net))) {
+#else
 	if (!(pde = proc_mkdir("ipt_pknock", proc_net))) {
+#endif
 		printk(KERN_ERR MOD "proc_mkdir() error in _init().\n");
 		return -1;
 	}
@@ -1193,7 +1201,11 @@ static int __init ipt_pknock_init(void)
 static void __exit ipt_pknock_fini(void)
 {
 	printk(KERN_INFO MOD "unregister.\n");
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+	remove_proc_entry("ipt_pknock", init_net.proc_net);
+#else
 	remove_proc_entry("ipt_pknock", proc_net);
+#endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21)
 	xt_unregister_match(&ipt_pknock_match);
 #else
